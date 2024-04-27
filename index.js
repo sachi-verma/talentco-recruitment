@@ -4,6 +4,9 @@ const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
 const mysql2 = require('mysql2');
+const bodyParser = require('body-parser');
+const multer = require('multer');
+require("dotenv").config();
 const { allowedNodeEnvironmentFlags } = require('process');
 
 const app = express();
@@ -11,6 +14,8 @@ const app = express();
 const port = process.env.PORT;
 
 app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // MySQL connection
 const db = mysql2.createConnection({
