@@ -34,7 +34,7 @@ app.post('/role', (req, res) => {
     const { id, role_id, role } = req.body;
   
     db.query(
-      'INSERT INTO roles (id, role_id, role) VALUES ?',
+      'INSERT INTO roles (role_id, role) VALUES ?',
       [id, role_id, role],
       (err, results) => {
         if (err) {
@@ -49,10 +49,10 @@ app.post('/role', (req, res) => {
   });
 
 app.post('/companyregistration', (req,res) => {
-  const {id, company_id, company_name, summary, industry, address, poc1_name, poc1_designation, poc1_phone, poc1_email, poc2_name, poc2_designation, poc2_phone, poc2_email, username, password, role} = req.body;
+  const {company_id, company_name, summary, industry, address, poc1_name, poc1_designation, poc1_phone, poc1_email, poc2_name, poc2_designation, poc2_phone, poc2_email, username, password, role} = req.body;
 
   db.query(
-    'INSERT INTO company_details (id, company_id, company_name, summary, industry, address, poc1_name, poc1_designation, poc1_phone, poc1_email, poc2_name, poc2_designation, poc2_phone, poc2_email, username, password, role) VALUES ?', [id, company_id, company_name, summary, industry, address, poc1_name, poc1_designation, poc1_phone, poc1_email, poc2_name, poc2_designation, poc2_phone, poc2_email, username, password, role],
+    'INSERT INTO company_details (company_id, company_name, summary, industry, address, poc1_name, poc1_designation, poc1_phone, poc1_email, poc2_name, poc2_designation, poc2_phone, poc2_email, username, password, role) VALUES ?', [company_id, company_name, summary, industry, address, poc1_name, poc1_designation, poc1_phone, poc1_email, poc2_name, poc2_designation, poc2_phone, poc2_email, username, password, role],
     (err, results) => {
       if (err) {
         console.error('MySQL error:', err);
