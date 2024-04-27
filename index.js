@@ -31,11 +31,11 @@ db.connect(err => {
 });
 
 app.post('/role', (req, res) => {
-    const { id, role_id, role } = req.body;
+    const { role_id, role } = req.body;
   
     db.query(
       'INSERT INTO roles (role_id, role) VALUES ?',
-      [id, role_id, role],
+      [role_id, role],
       (err, results) => {
         if (err) {
           console.error('MySQL error:', err);
