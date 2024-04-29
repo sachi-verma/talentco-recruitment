@@ -51,6 +51,17 @@ app.post('/role', (req, res) => {
     );
   });
 
+app.get('/getroles', (req, res) => {
+  db.query('SELECT * FROM roles', (err, results) => {
+    if (err) {
+      console.error('Error is:', err);
+      res.status(500).send('500 server error');
+    } else {
+      res.json(results);
+    }
+  });
+});
+
 app.post('/companyregistration', (req,res) => {
   const {company_id, company_name, summary, industry, address, poc1_name, poc1_designation, poc1_phone, poc1_email, poc2_name, poc2_designation, poc2_phone, poc2_email, username, password, role_id} = req.body;
 
