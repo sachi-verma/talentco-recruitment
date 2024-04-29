@@ -23,8 +23,6 @@ const db = mysql2.createConnection({
   user: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DBNAME
-
-    
 });
 
 db.connect(err => {
@@ -39,7 +37,7 @@ app.post('/role', (req, res) => {
     const { role_id, role_name } = req.body;
   
     db.query(
-      'INSERT INTO roles (role_id, role_name) VALUES ?',
+      'INSERT INTO roles (role_id, role_name) VALUES (?,?)',
       [role_id, role_name],
       (err, results) => {
         if (err) {
@@ -47,7 +45,7 @@ app.post('/role', (req, res) => {
           res.status(500).send('Internal Server Error');
         } else {
           console.log(results);
-          res.status(201).json({ message: 'Resume created successfully' });
+          res.status(200).json({ message: 'Role created successfully' });
         }
       }
     );
