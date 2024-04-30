@@ -1,10 +1,10 @@
 const db = require('../Models/db');
 
 exports.createModule = (req, res) => {
-  const { module_id, module_name, module_url } = req.body;
+  const { id, module_name, module_url } = req.body;
 
   db.query(
-    'INSERT INTO modules (module_id, module_name, module_url) VALUES (?, ?, ?)', [module_id, module_name, module_url],
+    'INSERT INTO modules (id, module_name, module_url) VALUES (?, ?, ?)', [id, module_name, module_url],
     (err, results) => {
       if (err) {
         console.error('Error is: ', err)
@@ -27,3 +27,46 @@ exports.getModule = (req, res) => {
         }
       });
 }
+
+exports.getModuleById = (req, res) => {
+    const id = req.params.id;
+    db.query('SELECT * FROM modules WHERE id = ?', [id], (err, results) => {
+        if (err) {
+            console.error('Error retrieving module:', err);
+            res.status(500).json({ error: 'Internal server error' });
+        } else {
+            if (results.length === 0) {
+                res.status(404).json({ error: 'Module not found' });
+            } else {
+                res.json(results[0]);
+            }
+        }
+    });
+};
+
+exports.updateModule = (req, res) => {
+    const id = req.params.id;
+    const { module_name, module_url } = req.body;
+  
+    try {
+      db.query(
+        'UPDATE modules SET module_name, module_url = ? WHERE id = ?',
+        [module_name, module_url, id],
+        (err, result) => {
+          if (err) {
+            console.error('Error updating module:', err);
+            return res.status(500).json({ error: 'Internal server error' });
+          }
+  
+          if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'module not found' });
+          }
+  
+          return res.status(200).json({ success: true }); // Return success message
+        }
+      );
+    } catch (error) {
+      console.error('Error updating module:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };
