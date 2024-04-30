@@ -1,0 +1,28 @@
+# to create a table with a foreign key
+CREATE TABLE roles (
+    id BIGINT(20) AUTO_INCREMENT PRIMARY KEY,
+    role_name VARCHAR(255)
+);
+
+CREATE TABLE company_details (
+    id BIGINT(20) PRIMARY KEY,
+    role_id BIGINT(20),
+    FOREIGN KEY (role_id) 
+        REFERENCES roles(id)
+);
+
+#to drop a foreign key column
+ALTER TABLE `table_name` DROP COLUMN `column_name`; 
+
+(usually when you do this either it is successful or an error pops up showing the foreign key constraint it is tied with, so if that is the case then do the following)
+
+ALTER TABLE `table_name` DROP FOREIGN KEY `constraint_mentioned_in_error`;
+ALTER TABLE `table_name` DROP COLUMN `column_name`; 
+
+#to add a foreign key to an existing table (without constraint)
+ALTER TABLE `table_name` ADD COLUMN `required_foreign_key_column_name` INT NOT NULL;
+ALTER TABLE `table_name` ADD FOREIGN KEY (`required_foreign_key_column_name`) REFERENCES points(id);
+
+#to add a foreign key to an existing table (with constraint)
+ALTER TABLE `table_name` ADD COLUMN `required_foreign_key_column_name` INT NOT NULL;
+ALTER TABLE `table_name` ADD CONSTRAINT fk_constraint FOREIGN KEY `required_foreign_key_column_name` REFERENCES points(id);
