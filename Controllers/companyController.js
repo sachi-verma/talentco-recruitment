@@ -71,4 +71,25 @@ exports.updateCompany = (req, res) => {
     }
   };
 
+  exports.deleteCompany = (req, res) => {
+    const id = req.params.id;
+
+    try {
+        db.query('DELETE FROM company_details WHERE id = ?', [id], (err, result) => {
+            if (err) {
+                console.error('Error deleting company:', err);
+                return res.status(500).json({ error: 'Internal server error' });
+            }
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: 'company not found' });
+            }
+
+            return res.status(200).json({ success: "company deleted successfully" }); // Return success message
+        });
+    } catch (error) {
+        console.error('Error deleting company:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
 

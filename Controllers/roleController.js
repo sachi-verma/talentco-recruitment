@@ -71,3 +71,25 @@ exports.updateRole = (req, res) => {
       return res.status(500).json({ error: 'Internal server error' });
     }
   };
+
+  exports.deleteRole = (req, res) => {
+    const id = req.params.id;
+
+    try {
+        db.query('DELETE FROM roles WHERE id = ?', [id], (err, result) => {
+            if (err) {
+                console.error('Error deleting role:', err);
+                return res.status(500).json({ error: 'Internal server error' });
+            }
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: 'Role not found' });
+            }
+
+            return res.status(200).json({ success: "Role deleted successfully" }); // Return success message
+        });
+    } catch (error) {
+        console.error('Error deleting role:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
