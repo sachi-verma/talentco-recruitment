@@ -63,7 +63,7 @@ exports.updateRole = (req, res) => {
             return res.status(404).json({ error: 'Role not found' });
           }
   
-          return res.status(200).json({ success: true }); // Return success message
+          return res.status(200).json({ success: "role updated sucessfully" }); // Return success message
         }
       );
     } catch (error) {

@@ -50,7 +50,7 @@ exports.updateCompany = (req, res) => {
   
     try {
       db.query(
-        'UPDATE companys SET company_name, summary, industry, address, poc1_name, poc1_designation, poc1_phone, poc1_email, poc2_name, poc2_designation, poc2_phone, poc2_email, company_username, company_password, role_id = ? WHERE id = ?',
+        'UPDATE companys SET company_name = ?, summary = ?, industry = ?, address = ?, poc1_name = ?, poc1_designation = ?, poc1_phone = ?, poc1_email = ?, poc2_name = ?, poc2_designation = ?, poc2_phone = ?, poc2_email = ?, company_username = ?, company_password = ?, role_id = ? WHERE id = ?',
         [company_name, summary, industry, address, poc1_name, poc1_designation, poc1_phone, poc1_email, poc2_name, poc2_designation, poc2_phone, poc2_email, company_username, company_password, role_id, id],
         (err, result) => {
           if (err) {
@@ -62,7 +62,7 @@ exports.updateCompany = (req, res) => {
             return res.status(404).json({ error: 'company not found' });
           }
   
-          return res.status(200).json({ success: true }); // Return success message
+          return res.status(200).json({ success: "Company updated successfully" }); // Return success message
         }
       );
     } catch (error) {

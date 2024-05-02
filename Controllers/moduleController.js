@@ -50,7 +50,7 @@ exports.updateModule = (req, res) => {
   
     try {
       db.query(
-        'UPDATE modules SET module_name, module_url = ? WHERE id = ?',
+        'UPDATE modules SET module_name = ?, module_url = ? WHERE id = ?',
         [module_name, module_url, id],
         (err, result) => {
           if (err) {
@@ -62,7 +62,7 @@ exports.updateModule = (req, res) => {
             return res.status(404).json({ error: 'module not found' });
           }
   
-          return res.status(200).json({ success: true }); // Return success message
+          return res.status(200).json({ success: "Module updated sucessfully" }); // Return success message
         }
       );
     } catch (error) {
