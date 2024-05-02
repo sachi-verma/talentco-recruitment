@@ -46,7 +46,7 @@ exports.getCompanyById = (req, res) => {
 
 exports.updateCompany = (req, res) => {
     const id = req.params.id;
-    const { company_name } = req.body;
+    const { company_name, summary, industry, address, poc1_name, poc1_designation, poc1_phone, poc1_email, poc2_name, poc2_designation, poc2_phone, poc2_email, company_username, company_password, role_id } = req.body;
   
     try {
       db.query(
