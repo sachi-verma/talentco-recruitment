@@ -50,7 +50,7 @@ exports.updateCompany = (req, res) => {
   
     try {
       db.query(
-        'UPDATE companys SET company_name = ?, summary = ?, industry = ?, address = ?, poc1_name = ?, poc1_designation = ?, poc1_phone = ?, poc1_email = ?, poc2_name = ?, poc2_designation = ?, poc2_phone = ?, poc2_email = ?, company_username = ?, company_password = ?, role_id = ? WHERE id = ?',
+        'UPDATE company_details SET company_name = ?, summary = ?, industry = ?, address = ?, poc1_name = ?, poc1_designation = ?, poc1_phone = ?, poc1_email = ?, poc2_name = ?, poc2_designation = ?, poc2_phone = ?, poc2_email = ?, company_username = ?, company_password = ?, role_id = ? WHERE id = ?',
         [company_name, summary, industry, address, poc1_name, poc1_designation, poc1_phone, poc1_email, poc2_name, poc2_designation, poc2_phone, poc2_email, company_username, company_password, role_id, id],
         (err, result) => {
           if (err) {
