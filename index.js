@@ -7,6 +7,7 @@ const errorHandler = require('./Middleware/errorHandler');
 const roleRoutes = require('./Routes/roleRoutes');
 const moduleRoutes = require('./Routes/moduleRoutes');
 const companyRoutes = require('./Routes/companyRoutes');
+const permissionRoutes = require('./Routes/permissionRoutes');
 const protectedRoutes = require('./Routes/protectedRoutes');
 
 const app = express();
@@ -18,7 +19,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(roleRoutes);
 app.use(moduleRoutes);
 app.use(companyRoutes);
+app.use(permissionRoutes);
 app.use("/protected_routes", protectedRoutes);
+
 
 app.use(errorHandler);
 
