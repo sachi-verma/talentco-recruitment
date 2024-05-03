@@ -19,3 +19,30 @@ exports.createPermission = (req, res) => {
     }
   );
 };
+
+exports.getPermission = (req,res) => {
+    db.query('SELECT * FROM permissions', (err, results) => {
+        if (err) {
+          console.error('Error is:', err);
+          res.status(500).send('500 server error');
+        } else {
+          res.json(results);
+        }
+});
+}
+
+exports.getPermissionById = (req, res) => {
+    const id = req.params.id;
+    db.query('SELECT * FROM permissions WHERE id = ?', [id], (err, results) => {
+        if (err) {
+            console.error('Error retrieving permission:', err);
+            res.status(500).json({ error: 'Internal server error' });
+        } else {
+            if (results.length === 0) {
+                res.status(404).json({ error: 'Permission not found' });
+            } else {
+                res.json(results[0]);
+            }
+        }
+    });
+};
