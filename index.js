@@ -9,6 +9,7 @@ const moduleRoutes = require('./Routes/moduleRoutes');
 const companyRoutes = require('./Routes/companyRoutes');
 const permissionRoutes = require('./Routes/permissionRoutes');
 const protectedRoutes = require('./Routes/protectedRoutes');
+const userRoutes = require('./Routes/userRoutes');
 
 const app = express();
 
@@ -21,7 +22,7 @@ app.use(moduleRoutes);
 app.use(companyRoutes);
 app.use(permissionRoutes);
 app.use("/protected_routes", protectedRoutes);
-
+app.use(userRoutes);
 
 app.use(errorHandler);
 
