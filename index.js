@@ -21,6 +21,8 @@ app.use(roleRoutes);
 app.use(moduleRoutes);
 app.use(companyRoutes);
 app.use(permissionRoutes);
+
+
 app.use("/protected_routes", protectedRoutes);
 app.use(userRoutes);
 
