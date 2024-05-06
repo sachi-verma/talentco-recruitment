@@ -1,12 +1,12 @@
 const db = require('../Models/db');
 
 exports.createJob = (req, res) => {
-  const { id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, upload_date } = req.body;
-  const jd_upload = req.file ? req.file.path : null;
+  const { id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification } = req.body;
+//   const jd_upload = req.file ? req.file.path : null;
 
   db.query(
-    'INSERT INTO roles (id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, jd_upload, upload_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, jd_upload, upload_date],
+    'INSERT INTO job_details (id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification],
     (err, results) => {
       if (err) {
         console.error('MySQL error:', err);
@@ -30,7 +30,7 @@ exports.getJob = (req,res) => {
 });
 }
 
-exports.getRoleById = (req, res) => {
+exports.getJobById = (req, res) => {
     const id = req.params.id;
     db.query('SELECT * FROM job_details WHERE id = ?', [id], (err, results) => {
         if (err) {
