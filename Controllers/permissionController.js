@@ -46,3 +46,30 @@ exports.getPermissionById = (req, res) => {
         }
     });
 };
+
+exports.getPermissionDetails = (req,res) => {
+    db.query('SELECT permissions.id, permissions.role_id, permissions.module_id, permissions.list_access, permissions.view_access, permissions.add_access, permissions.edit_access, permissions.delete_access, modules.module_name, modules.module_url FROM permissions INNER JOIN modules ON permissions.module_id = modules.id', (err, results) => {
+        if (err) {
+          console.error('Error is:', err);
+          res.status(500).send('500 server error');
+        } else {
+          res.json(results);
+        }
+});
+}
+
+exports.getPermissionDetailsById = (req, res) => {
+    const id = req.params.id;
+    db.query('SELECT permissions.id, permissions.role_id, permissions.module_id, permissions.list_access, permissions.view_access, permissions.add_access, permissions.edit_access, permissions.delete_access, modules.module_name, modules.module_url FROM permissions INNER JOIN modules ON permissions.module_id = modules.id WHERE permissions.id = ?;', [id], (err, results) => {
+        if (err) {
+            console.error('Error retrieving permission:', err);
+            res.status(500).json({ error: 'Internal server error' });
+        } else {
+            if (results.length === 0) {
+                res.status(404).json({ error: 'Permission not found' });
+            } else {
+                res.json(results[0]);
+            }
+        }
+    });
+};
