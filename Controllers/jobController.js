@@ -2,11 +2,11 @@ const db = require('../Models/db');
 
 exports.createJob = (req, res) => {
   const { id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification } = req.body;
-//   const jd_upload = req.file ? req.file.path : null;
+  const jd_upload = req.file ? req.file.path : null;
 
   db.query(
-    'INSERT INTO job_details (id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification],
+    'INSERT INTO job_details (id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, jd_upload) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, jd_upload],
     (err, results) => {
       if (err) {
         console.error('MySQL error:', err);
