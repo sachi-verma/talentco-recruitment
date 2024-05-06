@@ -8,8 +8,10 @@ const roleRoutes = require('./Routes/roleRoutes');
 const moduleRoutes = require('./Routes/moduleRoutes');
 const companyRoutes = require('./Routes/companyRoutes');
 const permissionRoutes = require('./Routes/permissionRoutes');
+const jobRoutes = require('./Routes/jobRoutes');
 const protectedRoutes = require('./Routes/protectedRoutes');
 const userRoutes = require('./Routes/userRoutes');
+
 
 const app = express();
 
@@ -21,6 +23,7 @@ app.use(roleRoutes);
 app.use(moduleRoutes);
 app.use(companyRoutes);
 app.use(permissionRoutes);
+app.use(jobRoutes);
 
 
 app.use("/protected_routes", protectedRoutes);

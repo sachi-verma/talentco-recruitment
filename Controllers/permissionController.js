@@ -73,3 +73,52 @@ exports.getPermissionDetailsById = (req, res) => {
         }
     });
 };
+
+exports.updatePermission = (req, res) => {
+    const id = req.params.id;
+    const { role_id, module_id, list_access, view_access, add_access, edit_access, delete_access } = req.body;
+  
+    try {
+      db.query(
+        'UPDATE permissions SET role_id = ?, module_id = ?, list_access = ?, view_access = ?, add_access = ?, edit_access = ?, delete_access = ? WHERE id = ?',
+        [role_id, module_id, list_access, view_access, add_access, edit_access, delete_access, id],
+        (err, result) => {
+          if (err) {
+            console.error('Error updating permission:', err);
+            return res.status(500).json({ error: 'Internal server error' });
+          }
+  
+          if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Permission not found' });
+          }
+  
+          return res.status(200).json({ success: "Permission updated sucessfully" }); // Return success message
+        }
+      );
+    } catch (error) {
+      console.error('Error updating permission:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+
+  exports.deletePermission = (req, res) => {
+    const id = req.params.id;
+
+    try {
+        db.query('DELETE FROM permissions WHERE id = ?', [id], (err, result) => {
+            if (err) {
+                console.error('Error deleting permission:', err);
+                return res.status(500).json({ error: 'Internal server error' });
+            }
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: 'permission not found' });
+            }
+
+            return res.status(200).json({ success: "permission deleted successfully" }); // Return success message
+        });
+    } catch (error) {
+        console.error('Error deleting permission:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
