@@ -9,6 +9,7 @@ const moduleRoutes = require('./Routes/moduleRoutes');
 const companyRoutes = require('./Routes/companyRoutes');
 const permissionRoutes = require('./Routes/permissionRoutes');
 const jobRoutes = require('./Routes/jobRoutes');
+const authRoutes = require('./Routes/authRoutes');
 const protectedRoutes = require('./Routes/protectedRoutes');
 const userRoutes = require('./Routes/userRoutes');
 
@@ -24,7 +25,7 @@ app.use(moduleRoutes);
 app.use(companyRoutes);
 app.use(permissionRoutes);
 app.use(jobRoutes);
-
+app.use(authRoutes);
 
 
 app.use("/protected_routes", protectedRoutes);
