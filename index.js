@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const { port } = require('./Config/config');
 const corsMiddleware = require('./Middleware/corsMiddleware');
 const errorHandler = require('./Middleware/errorHandler');
+const {sequelize, connectToDb} = require('./Models/db');
 
 const roleRoutes = require('./Routes/roleRoutes');
 const moduleRoutes = require('./Routes/moduleRoutes');
@@ -28,11 +29,12 @@ app.use(jobRoutes);
 app.use(authRoutes);
 
 
-app.use("/protected_routes", protectedRoutes);
+// app.use("/protected_routes", protectedRoutes);
 app.use(userRoutes);
 
 app.use(errorHandler);
 
-app.listen(port, () => {
+app.listen(port, async () => {
   console.log(`Server running on port ${port}`);
+  await connectToDb();
 });

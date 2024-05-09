@@ -1,28 +1,34 @@
-class Role {
-    constructor(db) {
-    //   const db = require('./db');  
-      this.db = db
-    }
-  
-    async getRoleById(roleId) {
-        const query = "SELECT * FROM roles WHERE role_id = $1";
-        const values = [roleId];
-        const result = await this.db.query(query, values);
-        return result.rows[0];
-      }
-    
-      async getRoleByName(roleName) {
-        const query = "SELECT * FROM roles WHERE role_name = $1";
-        const values = [roleName];
-        const result = await this.db.query(query, values);
-        return result.rows[0];
-      }
-    
-      async getRoles() {
-        const query = "SELECT * FROM roles";
-        const result = await this.db.query(query);
-        return result.rows;
-    }
-  }
+const {sequelize} = require('./db');
+const {DataTypes} = require('sequelize');
 
-module.exports = Role;
+const Roles = sequelize.define('Roles',{
+    id: {
+      type: DataTypes.BIGINT,
+      autoIncrement: true,
+      primaryKey: true,
+      allowNull: false,
+    },
+    role_name: {
+        type: DataTypes.STRING,
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+    created_by: {
+        type: DataTypes.STRING,
+    },
+    updated_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+    updated_by: {
+        type: DataTypes.STRING,
+    }
+},
+{
+    tableName: 'roles',
+})
+
+
+module.exports = Roles

@@ -1,20 +1,38 @@
-class Module {
-    constructor(db) {
-      this.db = db
+const {sequelize} = require('./db');
+const {DataTypes} = require('sequelize');
+
+const Modules = sequelize.define('Modules',{
+    id: {
+      type: DataTypes.BIGINT,
+      autoIncrement: true,
+      primaryKey: true,
+      allowNull: false,
+    },
+    module_name: {
+        type: DataTypes.STRING,
+    },
+    module_name: {
+        type: DataTypes.STRING,
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+    created_by: {
+        type: DataTypes.STRING,
+    },
+    updated_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+    updated_by: {
+        type: DataTypes.STRING,
     }
-  
-    async getModuleById(moduleId) {
-      const query = "SELECT * FROM modules WHERE module_id = $1";
-      const values = [moduleId];
-      const result = await this.db.query(query, values);
-      return result.rows[0];
-    }
-  
-    async getModules() {
-      const query = "SELECT * FROM modules";
-      const result = await this.db.query(query);
-      return result.rows;
-    }
-  }
-  
-  module.exports = Module;
+},
+
+{
+    tableName: 'modules',
+})
+
+
+module.exports = Modules

@@ -1,5 +1,27 @@
 require("dotenv").config();
 
 module.exports = {
-  port: process.env.PORT || 3001
+  NODE_ENV: process.env.NODE_ENV,
+  port: process.env.PORT || 3002,
+
+  db: {
+    DB_HOST: process.env.DB_HOST,
+    DB_USER: process.env.DB_USERNAME,
+    DB_PASS: process.env.DB_PASSWORD,
+    DB_NAME: process.env.DB_DBNAME,
+    dialect: "mysql",
+
+    // pool is optional, it will be used for Sequelize connection pool configuration
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
+    }
+  },
+
+  /** AUTH KEY */
+//   auth: {
+//     secret: "our-secret-key"
+//   }
 };

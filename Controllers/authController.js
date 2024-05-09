@@ -29,7 +29,7 @@ exports.getAuth = (req, res) => {
             // Passwords match, generate JWT token
             const payload = {
               username_login: user.username_login,
-              role: user.role
+              role_id: user.role_id
             };
             const token = jwt.sign(payload, 'eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJUYWxlbnRjbyIsIlVzZXJuYW1lIjoiUmVjcnVpdG1lbnQiLCJleHAiOjE3MTQ5OTQxNTksImlhdCI6MTcxNDk5NDE1OX0.yyq-wrXwrQBtjjXz5ZInkS-CnWPUECrR6jcFPr5XYJk', { expiresIn: '1h' });
             res.json({ token });
@@ -55,15 +55,15 @@ exports.getAuth = (req, res) => {
     });
   };
   
-//   // Protected route to get user permissions
-//   app.get('/permissions', verifyToken, (req, res) => {
-//     const { role } = req.user;
+  // Protected route to get user permissions
+//   exports.getPermission(verifyToken) = (req, res) => {
+//     const { role_id } = req.user;
 //     // Query permissions based on user's role
-//     connection.query('SELECT * FROM permissions WHERE role = ?', [role], (error, results) => {
+//     db.query('SELECT permissions.id, permissions.role_id, permissions.module_id, permissions.list_access, permissions.view_access, permissions.add_access, permissions.edit_access, permissions.delete_access, modules.module_name, modules.module_url FROM permissions INNER JOIN modules ON permissions.module_id = modules.id WHERE permissions.role_id = ?;', [role_id], (error, results) => {
 //       if (error) {
 //         res.status(500).json({ error: 'Internal server error' });
 //       } else {
 //         res.json(results);
 //       }
 //     });
-//   });
+//   };

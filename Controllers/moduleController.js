@@ -1,70 +1,50 @@
 const db = require('../Models/db');
+const Modules = require('../Models/modules')
 
-exports.createModule = (req, res) => {
-  const { id, module_name, module_url } = req.body;
-
-  db.query(
-    'INSERT INTO modules (id, module_name, module_url) VALUES (?, ?, ?)', [id, module_name, module_url],
-    (err, results) => {
-      if (err) {
-        console.error('Error is: ', err)
-        res.status(500).send("Internal Server Error")
-      } else {
-        console.log(results)
-        res.status(200).json({ message: 'Module Created Successfully' })
+exports.createModule = async (req, res) => {
+    try {
+        const { id, module_name, module_url } = req.body;
+        const module = await Modules.create({ id, module_name, module_url });
+        res.status(200).json({ message: 'module created successfully', module });
+      } catch (error) {
+        console.error('Error creating module:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
       }
-    }
-  );
 };
 
-exports.getModule = (req, res) => {
-    db.query('SELECT * FROM modules', (err, results) => {
-        if (err) {
-          console.error('Error is:', err);
-          res.status(500).send('500 server error');
-        } else {
-          res.json(results);
-        }
-      });
+exports.getModule = async (req, res) => {
+    try {
+        const modules = await Modules.findAll(); 
+        res.status(200).json(modules); 
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('500 server error');
+    }
 }
 
-exports.getModuleById = (req, res) => {
-    const id = req.params.id;
-    db.query('SELECT * FROM modules WHERE id = ?', [id], (err, results) => {
-        if (err) {
-            console.error('Error retrieving module:', err);
-            res.status(500).json({ error: 'Internal server error' });
-        } else {
-            if (results.length === 0) {
-                res.status(404).json({ error: 'Module not found' });
-            } else {
-                res.json(results[0]);
-            }
-        }
-    });
+exports.getModuleById = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const module = await Modules.findByPk(id); 
+        res.status(200).json(module); 
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('500 server error');
+    }
 };
 
-exports.updateModule = (req, res) => {
-    const id = req.params.id;
-    const { module_name, module_url } = req.body;
-  
+exports.updateModule = async (req, res) => {
     try {
-      db.query(
-        'UPDATE modules SET module_name = ?, module_url = ? WHERE id = ?',
-        [module_name, module_url, id],
-        (err, result) => {
-          if (err) {
-            console.error('Error updating module:', err);
-            return res.status(500).json({ error: 'Internal server error' });
-          }
+        const id = req.params.id;
+        const { module_name, module_url } = req.body;
+        const module = await Modules.update(req.body, {where: {id: id}});
   
-          if (result.affectedRows === 0) {
+          if (module[0] === 0) {
             return res.status(404).json({ error: 'module not found' });
           }
   
-          return res.status(200).json({ success: "Module updated sucessfully" }); // Return success message
-        }
-      );
+          return res.status(200).json({ success: "module updated sucessfully", module: {id, module_name, module_url} }); 
+
     } catch (error) {
       console.error('Error updating module:', error);
       return res.status(500).json({ error: 'Internal server error' });
@@ -72,21 +52,14 @@ exports.updateModule = (req, res) => {
   };
 
   exports.deleteModule = (req, res) => {
-    const id = req.params.id;
-
     try {
-        db.query('DELETE FROM modules WHERE id = ?', [id], (err, result) => {
-            if (err) {
-                console.error('Error deleting module:', err);
-                return res.status(500).json({ error: 'Internal server error' });
-            }
-
-            if (result.affectedRows === 0) {
+        const id = req.params.id;
+        const module = Modules.destroy({where: {id: id}})
+            if (module[0] === 0) {
                 return res.status(404).json({ error: 'module not found' });
             }
-
-            return res.status(200).json({ success: "module deleted successfully" }); // Return success message
-        });
+            return res.status(200).json({ success: "module deleted successfully" }); 
+        
     } catch (error) {
         console.error('Error deleting module:', error);
         return res.status(500).json({ error: 'Internal server error' });

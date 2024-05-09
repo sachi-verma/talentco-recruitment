@@ -1,72 +1,52 @@
 const db = require('../Models/db');
+const Jobs = require('../Models/jobDetails')
 
-exports.createJob = (req, res) => {
-  const { id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification } = req.body;
-  const jd_upload = req.file ? req.file.path : null;
-
-  db.query(
-    'INSERT INTO job_details (id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, jd_upload) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, jd_upload],
-    (err, results) => {
-      if (err) {
-        console.error('MySQL error:', err);
-        res.status(500).send('Internal Server Error');
-      } else {
-        console.log(results);
-        res.status(200).json({ message: 'Job created successfully' });
+exports.createJob = async (req, res) => {
+    try {
+        const { id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification } = req.body;
+        const jd_upload = req.file ? req.file.path : null;
+        const jobs = await Jobs.create({ id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, jd_upload });
+        res.status(200).json({ message: 'jobs created successfully', jobs });
+      } catch (error) {
+        console.error('Error creating jobs:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
       }
-    }
-  );
 };
 
-exports.getJob = (req,res) => {
-    db.query('SELECT * FROM job_details', (err, results) => {
-        if (err) {
-          console.error('Error is:', err);
-          res.status(500).send('500 server error');
-        } else {
-          res.json(results);
-        }
-});
+exports.getJob = async (req,res) => {
+    try {
+        const job = await Jobs.findAll(); 
+        res.status(200).json(job); 
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('500 server error');
+    }
 }
 
-exports.getJobById = (req, res) => {
-    const id = req.params.id;
-    db.query('SELECT * FROM job_details WHERE id = ?', [id], (err, results) => {
-        if (err) {
-            console.error('Error retrieving job:', err);
-            res.status(500).json({ error: 'Internal server error' });
-        } else {
-            if (results.length === 0) {
-                res.status(404).json({ error: 'Job not found' });
-            } else {
-                res.json(results[0]);
-            }
-        }
-    });
+exports.getJobById = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const job = await Jobs.findByPk(id); 
+        res.status(200).json(job); 
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('500 server error');
+    }
 };
 
-exports.updateJob = (req, res) => {
-    const id = req.params.id;
-    const { company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, upload_date } = req.body;
-  
+exports.updateJob = async (req, res) => {
     try {
-      db.query(
-        'UPDATE job_details SET company_id = ?, position = ?, location = ?, experience = ?, min_ctc = ?, max_ctc = ?, no_of_positions = ?, gender_pref = ?, qualification = ?, upload_date = ? WHERE id = ?',
-        [company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, upload_date, id],
-        (err, result) => {
-          if (err) {
-            console.error('Error updating job:', err);
-            return res.status(500).json({ error: 'Internal server error' });
-          }
+        const id = req.params.id;
+        const { company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification } = req.body;
+        const jd_upload = req.file ? req.file.path : null;
+        const job = await Jobs.update({ company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, jd_upload }, {where: {id: id}});
   
-          if (result.affectedRows === 0) {
+          if (job[0] === 0) {
             return res.status(404).json({ error: 'job not found' });
           }
   
-          return res.status(200).json({ success: "job updated sucessfully" }); // Return success message
-        }
-      );
+          return res.status(200).json({ success: "job updated sucessfully", job: {id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, jd_upload} }); 
+
     } catch (error) {
       console.error('Error updating job:', error);
       return res.status(500).json({ error: 'Internal server error' });
@@ -74,21 +54,14 @@ exports.updateJob = (req, res) => {
   };
 
   exports.deleteJob = (req, res) => {
-    const id = req.params.id;
-
     try {
-        db.query('DELETE FROM job_details WHERE id = ?', [id], (err, result) => {
-            if (err) {
-                console.error('Error deleting job:', err);
-                return res.status(500).json({ error: 'Internal server error' });
-            }
-
-            if (result.affectedRows === 0) {
+        const id = req.params.id;
+        const job = Jobs.destroy({where: {id: id}})
+            if (job[0] === 0) {
                 return res.status(404).json({ error: 'job not found' });
             }
-
-            return res.status(200).json({ success: "job deleted successfully" }); // Return success message
-        });
+            return res.status(200).json({ success: "job deleted successfully" }); 
+        
     } catch (error) {
         console.error('Error deleting job:', error);
         return res.status(500).json({ error: 'Internal server error' });
