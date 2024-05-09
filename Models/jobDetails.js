@@ -38,6 +38,10 @@ const Jobs = sequelize.define('Jobs',{
     jd_upload: {
         type: DataTypes.STRING,
     },
+    upload_date: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
     created_at: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,

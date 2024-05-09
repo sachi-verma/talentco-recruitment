@@ -1,100 +1,87 @@
 // to insert or update the values in the permissions database
 
 const db = require('../Models/db');
+const Permissions = require('../Models/permissions');
+const Modules = require('../Models/modules');
 
-exports.createPermission = (req, res) => {
-  const { id, role_id, module_id, list_access, view_access, add_access, edit_access, delete_access } = req.body;
 
-  db.query(
-    'INSERT INTO permissions (id, role_id, module_id, list_access, view_access, add_access, edit_access, delete_access) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE list_access = VALUES(list_access), view_access = VALUES(view_access), add_access = VALUES(add_access), edit_access = VALUES(edit_access), delete_access = VALUES(delete_access);',
-    [id, role_id, module_id, list_access, view_access, add_access, edit_access, delete_access],
-    (err, results) => {
-      if (err) {
-        console.error('MySQL error:', err);
-        res.status(500).json({ error: 'Internal Server Error' });
-      } else {
-        console.log(results);
-        res.status(200).json({ message: 'Permission created or updated successfully' });
-      }
-    }
-  );
-};
-
-exports.getPermission = (req,res) => {
-    db.query('SELECT * FROM permissions', (err, results) => {
-        if (err) {
-          console.error('Error is:', err);
-          res.status(500).send('500 server error');
-        } else {
-          res.json(results);
-        }
-});
-}
-
-exports.getPermissionById = (req, res) => {
-    const id = req.params.id;
-    db.query('SELECT * FROM permissions WHERE id = ?', [id], (err, results) => {
-        if (err) {
-            console.error('Error retrieving permission:', err);
-            res.status(500).json({ error: 'Internal server error' });
-        } else {
-            if (results.length === 0) {
-                res.status(404).json({ error: 'Permission not found' });
-            } else {
-                res.json(results[0]);
-            }
-        }
-    });
-};
-
-exports.getPermissionDetails = (req,res) => {
-    db.query('SELECT permissions.id, permissions.role_id, permissions.module_id, permissions.list_access, permissions.view_access, permissions.add_access, permissions.edit_access, permissions.delete_access, modules.module_name, modules.module_url FROM permissions INNER JOIN modules ON permissions.module_id = modules.id', (err, results) => {
-        if (err) {
-          console.error('Error is:', err);
-          res.status(500).send('500 server error');
-        } else {
-          res.json(results);
-        }
-});
-}
-
-exports.getPermissionDetailsById = (req, res) => {
-    const id = req.params.id;
-    db.query('SELECT permissions.id, permissions.role_id, permissions.module_id, permissions.list_access, permissions.view_access, permissions.add_access, permissions.edit_access, permissions.delete_access, modules.module_name, modules.module_url FROM permissions INNER JOIN modules ON permissions.module_id = modules.id WHERE permissions.id = ?;', [id], (err, results) => {
-        if (err) {
-            console.error('Error retrieving permission:', err);
-            res.status(500).json({ error: 'Internal server error' });
-        } else {
-            if (results.length === 0) {
-                res.status(404).json({ error: 'Permission not found' });
-            } else {
-                res.json(results[0]);
-            }
-        }
-    });
-};
-
-exports.updatePermission = (req, res) => {
-    const id = req.params.id;
-    const { role_id, module_id, list_access, view_access, add_access, edit_access, delete_access } = req.body;
-  
+exports.createPermission = async (req, res) => {
     try {
-      db.query(
-        'UPDATE permissions SET role_id = ?, module_id = ?, list_access = ?, view_access = ?, add_access = ?, edit_access = ?, delete_access = ? WHERE id = ?',
-        [role_id, module_id, list_access, view_access, add_access, edit_access, delete_access, id],
-        (err, result) => {
-          if (err) {
-            console.error('Error updating permission:', err);
-            return res.status(500).json({ error: 'Internal server error' });
+        const { id, role_id, module_id, list_access, view_access, add_access, edit_access, delete_access } = req.body;
+        const permission = await Permissions.create({ id, role_id, module_id, list_access, view_access, add_access, edit_access, delete_access });
+        res.status(200).json({ message: 'permission created successfully', permission });
+      } catch (error) {
+        console.error('Error creating permission:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+};
+
+exports.getPermission = async (req,res) => {
+    try {
+        const permission = await Permissions.findAll(); 
+        res.status(200).json(permission); 
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('500 server error');
+    }
+}
+
+exports.getPermissionById = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const permission = await Permissions.findByPk(id); 
+        res.status(200).json(permission); 
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('500 server error');
+    }
+};
+
+
+// exports.getPermissionDetails = async (req, res) => {
+//     try {
+//         const permissions = await Permissions.findAll({
+//           include: [{
+//             association: 'modules',
+//             required: true,
+//           }],
+//         });
+//         res.status(200).json(permissions);
+//       } catch (error) {
+//         console.error("Error fetching permissions details:", error);
+//         res.status(500).send('500 server error');
+//       }
+// };
+
+
+// exports.getPermissionDetailsById = (req, res) => {
+//     const id = req.params.id;
+//     db.query('SELECT permissions.id, permissions.role_id, permissions.module_id, permissions.list_access, permissions.view_access, permissions.add_access, permissions.edit_access, permissions.delete_access, modules.module_name, modules.module_url FROM permissions INNER JOIN modules ON permissions.module_id = modules.id WHERE permissions.id = ?;', [id], (err, results) => {
+//         if (err) {
+//             console.error('Error retrieving permission:', err);
+//             res.status(500).json({ error: 'Internal server error' });
+//         } else {
+//             if (results.length === 0) {
+//                 res.status(404).json({ error: 'Permission not found' });
+//             } else {
+//                 res.json(results[0]);
+//             }
+//         }
+//     });
+// };
+
+exports.updatePermission = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const { role_id, module_id, list_access, view_access, add_access, edit_access, delete_access } = req.body;
+        const permission = await Permissions.update(req.body, {where: {id: id}});
+  
+          if (permission[0] === 0) {
+            return res.status(404).json({ error: 'permission not found' });
           }
   
-          if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'Permission not found' });
-          }
-  
-          return res.status(200).json({ success: "Permission updated sucessfully" }); // Return success message
-        }
-      );
+          return res.status(200).json({ success: "permission updated sucessfully", permission: {id, role_id, module_id, list_access, view_access, add_access, edit_access, delete_access} }); 
+
     } catch (error) {
       console.error('Error updating permission:', error);
       return res.status(500).json({ error: 'Internal server error' });
@@ -102,21 +89,14 @@ exports.updatePermission = (req, res) => {
   };
 
   exports.deletePermission = (req, res) => {
-    const id = req.params.id;
-
     try {
-        db.query('DELETE FROM permissions WHERE id = ?', [id], (err, result) => {
-            if (err) {
-                console.error('Error deleting permission:', err);
-                return res.status(500).json({ error: 'Internal server error' });
-            }
-
-            if (result.affectedRows === 0) {
+        const id = req.params.id;
+        const permission = Permissions.destroy({where: {id: id}})
+            if (permission[0] === 0) {
                 return res.status(404).json({ error: 'permission not found' });
             }
-
-            return res.status(200).json({ success: "permission deleted successfully" }); // Return success message
-        });
+            return res.status(200).json({ success: "permission deleted successfully" }); 
+        
     } catch (error) {
         console.error('Error deleting permission:', error);
         return res.status(500).json({ error: 'Internal server error' });

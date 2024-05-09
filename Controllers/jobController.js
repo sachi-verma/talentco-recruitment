@@ -3,9 +3,9 @@ const Jobs = require('../Models/jobDetails')
 
 exports.createJob = async (req, res) => {
     try {
-        const { id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification } = req.body;
+        const { id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, upload_date } = req.body;
         const jd_upload = req.file ? req.file.path : null;
-        const jobs = await Jobs.create({ id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, jd_upload });
+        const jobs = await Jobs.create({ id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, upload_date, jd_upload });
         res.status(200).json({ message: 'jobs created successfully', jobs });
       } catch (error) {
         console.error('Error creating jobs:', error);

@@ -1,21 +1,52 @@
-class Permissions {
-    constructor(db) {
-      this.db = db 
+const {sequelize} = require('./db');
+const {DataTypes} = require('sequelize');
+
+const Permissions = sequelize.define('Permissions',{
+    id: {
+      type: DataTypes.BIGINT,
+      autoIncrement: true,
+      primaryKey: true,
+      allowNull: false,
+    },
+    role_id: {
+        type: DataTypes.BIGINT,
+    },
+    module_id: {
+        type: DataTypes.BIGINT,
+    },
+    list_access: {
+        type: DataTypes.BOOLEAN,
+    },
+    view_access: {
+        type: DataTypes.BOOLEAN,
+    },
+    add_access: {
+        type: DataTypes.BOOLEAN,
+    },
+    edit_access: {
+        type: DataTypes.BOOLEAN,
+    },
+    delete_access: {
+        type: DataTypes.BOOLEAN,
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+    created_by: {
+        type: DataTypes.STRING,
+    },
+    updated_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+    updated_by: {
+        type: DataTypes.STRING,
     }
-  
-    async getPermissionById(permissionId) {
-        const query = "SELECT * FROM permissions WHERE id = $1";
-        const values = [permissionId];
-        const result = await this.db.query(query, values);
-        return result.rows[0];
-      }
-    
-      async getPermissionsByRoleAndModule(roleId, moduleId) {
-        const query = "SELECT * FROM permissions WHERE role_id = $1 AND module_id = $2";
-        const values = [roleId, moduleId];
-        const result = await this.db.query(query, values);
-        return result.rows[0];
-    }
-  }
-  
-  module.exports = Permissions;
+},
+{
+    tableName: 'permissions',
+})
+
+
+module.exports = Permissions
