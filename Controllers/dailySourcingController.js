@@ -104,7 +104,7 @@ exports.getFilteredUpdate = async (req, res) => {
             }
             n++;
         }
-        res.status(200).json({ data: { alldata: alldata, filterArr: filterArr } });
+        res.status(200).json({ data: { alldata: alldata, filterArr: filterArr, date: sourcing_date} });
     } catch (error) {
         res.status(400).send(error);
     }
