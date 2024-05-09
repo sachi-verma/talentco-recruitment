@@ -11,7 +11,7 @@ const Modules = sequelize.define('Modules',{
     module_name: {
         type: DataTypes.STRING,
     },
-    module_name: {
+    module_url: {
         type: DataTypes.STRING,
     },
     created_at: {
