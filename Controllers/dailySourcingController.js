@@ -2,20 +2,21 @@ const db = require('../Models/db');
 const Report = require('../Models/dailySourcingReport');
 const Update = require('../Models/dailySourcingUpdate');
 
-// exports.createSourcingReport = async (req, res) => {
-//     try {
-//         const { id, candidate, company, position, location, ctc, cv_sourced_from, relevant, candidate_status, remarks, sourcing_date } = req.body;
-//         const report = await Report.bulkCreate({ id, candidate, company, position, location, ctc, cv_sourced_from, relevant, candidate_status, remarks, sourcing_date });
-//         res.status(200).json({ message: 'Report created successfully', report });
-//       } catch (error) {
-//         console.error('Error creating Report:', error);
-//         res.status(500).json({ error: 'Internal Server Error' });
-//       }
-// };
-
 exports.createSourcingReport = async (req, res) => {
     try {
-        const reportsData = req.body.reports; // Assuming the frontend sends an array of report objects
+        const { id, candidate, company, position, location, ctc, cv_sourced_from, relevant, candidate_status, remarks, sourcing_date } = req.body;
+        const report = await Report.create({ id, candidate, company, position, location, ctc, cv_sourced_from, relevant, candidate_status, remarks, sourcing_date });
+        res.status(200).json({ message: 'Report created successfully', report });
+      } catch (error) {
+        console.error('Error creating Report:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+};
+
+exports.createBulkSourcingReport = async (req, res) => {
+    try {
+        const reportsData = req.body; // Assuming the frontend sends an array of report objects
+        console.log("=====>>>>>")
         if (!Array.isArray(reportsData) || reportsData.length === 0) {
             console.error('No reports data provided');
             return res.status(400).json({ error: 'No reports data provided' });
