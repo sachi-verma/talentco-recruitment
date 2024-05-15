@@ -2,15 +2,37 @@ const db = require('../Models/db');
 const Report = require('../Models/dailySourcingReport');
 const Update = require('../Models/dailySourcingUpdate');
 
+// exports.createSourcingReport = async (req, res) => {
+//     try {
+//         const { id, candidate, company, position, location, ctc, cv_sourced_from, relevant, candidate_status, remarks, sourcing_date } = req.body;
+//         const report = await Report.bulkCreate({ id, candidate, company, position, location, ctc, cv_sourced_from, relevant, candidate_status, remarks, sourcing_date });
+//         res.status(200).json({ message: 'Report created successfully', report });
+//       } catch (error) {
+//         console.error('Error creating Report:', error);
+//         res.status(500).json({ error: 'Internal Server Error' });
+//       }
+// };
+
 exports.createSourcingReport = async (req, res) => {
     try {
-        const { id, candidate, company, position, location, ctc, cv_sourced_from, relevant, candidate_status, remarks, sourcing_date } = req.body;
-        const report = await Report.bulkCreate({ id, candidate, company, position, location, ctc, cv_sourced_from, relevant, candidate_status, remarks, sourcing_date });
-        res.status(200).json({ message: 'Report created successfully', report });
-      } catch (error) {
-        console.error('Error creating Report:', error);
+        const reportsData = req.body.reports; // Assuming the frontend sends an array of report objects
+        if (!Array.isArray(reportsData) || reportsData.length === 0) {
+            console.error('No reports data provided');
+            return res.status(400).json({ error: 'No reports data provided' });
+        }
+        
+        const createdReports = await Report.bulkCreate(reportsData);
+
+        if (!createdReports || createdReports.length === 0) {
+            console.error('No reports created');
+            return res.status(400).json({ error: 'No reports created' });
+        }
+
+        res.status(200).json({ message: 'Reports created successfully', reports: createdReports });
+    } catch (error) {
+        console.error('Error creating Reports:', error);
         res.status(500).json({ error: 'Internal Server Error' });
-      }
+    }
 };
 
 exports.getFilteredUpdate = async (req, res) => {
