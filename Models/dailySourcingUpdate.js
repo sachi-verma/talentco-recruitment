@@ -23,6 +23,9 @@ const Update = sequelize.define('Update', {
     total_sent_to_client: {
         type: DataTypes.STRING,
     }
+},
+{
+    tableName: 'daily_sourcing_update',
 })
 
 module.exports = Update

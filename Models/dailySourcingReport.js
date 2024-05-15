@@ -38,6 +38,9 @@ const Report = sequelize.define('Report', {
     sourcing_date: {
         type: DataTypes.DATE,
     }
+},
+{
+    tableName: 'daily_sourcing_report',
 })
 
 module.exports = Report
