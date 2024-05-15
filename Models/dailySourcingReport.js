@@ -37,6 +37,20 @@ const Report = sequelize.define('Report', {
     },
     sourcing_date: {
         type: DataTypes.DATE,
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+    created_by: {
+        type: DataTypes.STRING,
+    },
+    updated_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+    updated_by: {
+        type: DataTypes.STRING,
     }
 },
 {

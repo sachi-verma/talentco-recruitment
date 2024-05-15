@@ -22,6 +22,20 @@ const Update = sequelize.define('Update', {
     },
     total_sent_to_client: {
         type: DataTypes.STRING,
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+    created_by: {
+        type: DataTypes.STRING,
+    },
+    updated_at: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+    updated_by: {
+        type: DataTypes.STRING,
     }
 },
 {
