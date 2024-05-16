@@ -4,7 +4,7 @@ const Users = require('../Models/userDetails')
 
 exports.getRecruiter = async (req,res) => {
   try {
-      const users = await Users.findAll({where : {role_id: '1',},}); 
+      const users = await Users.findAll({where : {role_id: '17',},}); 
       res.status(200).json(users); 
   } catch (error) {
       console.error('Error:', error);
