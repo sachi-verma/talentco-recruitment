@@ -2,9 +2,9 @@ const db = require('../Models/db');
 const Positions = require('../Models/allPositions')
 const Users = require('../Models/userDetails')
 
-exports.getUser = async (req,res) => {
+exports.getRecruiter = async (req,res) => {
   try {
-      const users = await Users.findAll({where : {role_id: '17',},}); 
+      const users = await Users.findAll({where : {role_id: '1',},}); 
       res.status(200).json(users); 
   } catch (error) {
       console.error('Error:', error);
