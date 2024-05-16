@@ -1,6 +1,16 @@
 const db = require('../Models/db');
-const Jobs = require('../Models/jobDetails')
 const Positions = require('../Models/allPositions')
+const Users = require('../Models/userDetails')
+
+exports.getUser = async (req,res) => {
+  try {
+      const users = await Users.findAll({where : {role_id: '17',},}); 
+      res.status(200).json(users); 
+  } catch (error) {
+      console.error('Error:', error);
+      res.status(500).send('500 server error');
+  }
+}
 
 exports.assignRecruiter = async (req, res) => {
     try {
