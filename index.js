@@ -11,6 +11,7 @@ const companyRoutes = require('./Routes/companyRoutes');
 const permissionRoutes = require('./Routes/permissionRoutes');
 const jobRoutes = require('./Routes/jobRoutes');
 const dailySourcingRoutes = require('./Routes/dailySourcingRoutes');
+const assignRecruiterRoutes = require('./Routes/assignRecruiterRoutes');
 const authRoutes = require('./Routes/authRoutes');
 const protectedRoutes = require('./Routes/protectedRoutes');
 const userRoutes = require('./Routes/userRoutes');
@@ -28,6 +29,7 @@ app.use(companyRoutes);
 app.use(permissionRoutes);
 app.use(jobRoutes);
 app.use(dailySourcingRoutes);
+app.use(assignRecruiterRoutes);
 app.use(authRoutes);
 
 
