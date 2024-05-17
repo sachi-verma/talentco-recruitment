@@ -121,3 +121,17 @@ exports.getFilteredUpdate = async (req, res) => {
         res.status(500).send('500 server error');
     }
 }
+
+exports.statusChange = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const { candidate_status } = req.body;
+        await Report.update({ candidate_status }, {where: {id: id}});
+  
+        return res.status(200).json({ success: "status changed sucessfully", candidate: {id, candidate_status} }); 
+
+    } catch (error) {
+      console.error('Error changing status:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };

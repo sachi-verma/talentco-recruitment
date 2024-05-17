@@ -6,6 +6,7 @@ router.post('/sourcingreport', dailySourcingController.createSourcingReport);
 router.post('/bulksourcingreport', dailySourcingController.createBulkSourcingReport);
 router.get('/filteredupdate', dailySourcingController.getFilteredUpdate);
 router.get('/getsourcingreport', dailySourcingController.getSourcingReport);
+router.get('/statuschange', dailySourcingController.statusChange);
 
 
 module.exports = router;
