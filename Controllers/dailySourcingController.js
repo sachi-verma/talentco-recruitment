@@ -3,9 +3,14 @@ const Report = require('../Models/dailySourcingReport');
 const Update = require('../Models/dailySourcingUpdate');
 const Candidate = require('../Models/allCandidates');
 const Position = require('../Models/allPositions');
+const Company = require('../Models/companyDetails');
 
 Position.hasMany(Candidate, { foreignKey: 'position' });
 Candidate.belongsTo(Position, { foreignKey: 'position' });
+
+Company.hasMany(Position, { foreignKey: 'company_id' });
+Position.belongsTo(Company, { foreignKey: 'company_id' });
+
 
 //USING THE daily_sourcing_report DATABASE
 exports.createSourcingReport = async (req, res) => {
@@ -132,10 +137,15 @@ exports.getSourcingReport = async (req, res) => {
             include: [{ 
                 model: Position,
                 required: true,
-                attributes: ['id', 'company_id', 'position', 'location', 'experience', 'min_ctc', ' max_ctc']
+                attributes: ['id', 'company_id', 'position', 'location', 'experience', 'min_ctc'],
+                include: [{ 
+                    model:Company,
+                    required: true,
+                    attributes: ['company_name']
+                }]
             }]
         }); 
-        res.status(200).json(report); 
+        res.status(200).json({message: 'candidate fetched successfully', Candidates: report}); 
     } catch (error) {
         console.error('Error:', error);
         res.status(500).send('500 server error');

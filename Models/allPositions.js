@@ -10,6 +10,11 @@ const Positions = sequelize.define('Positions',{
     },
     company_id: {
         type: DataTypes.BIGINT,
+        allowNull: false,
+        references: {
+            model: 'companyDetails',
+            key: 'id'
+        }
     },
     position: {
         type: DataTypes.STRING,
