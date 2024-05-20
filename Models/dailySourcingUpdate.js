@@ -9,7 +9,7 @@ const Update = sequelize.define('Update', {
         allowNull: false,
       },
     update_date: {
-        type: DataTypes.STRING,
+        type: DataTypes.DATE,
     },
     total_cv_sourced: {
         type: DataTypes.STRING,

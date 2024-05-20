@@ -1,12 +1,34 @@
 const db = require('../Models/db');
 const Report = require('../Models/dailySourcingReport');
 const Update = require('../Models/dailySourcingUpdate');
+const Candidate = require('../Models/allCandidates');
+const Position = require('../Models/allPositions');
 
+Position.hasMany(Candidate, { foreignKey: 'position' });
+Candidate.belongsTo(Position, { foreignKey: 'position' });
+
+//USING THE daily_sourcing_report DATABASE
 exports.createSourcingReport = async (req, res) => {
     try {
         const { id, candidate, company, position, location, ctc, cv_sourced_from, relevant, candidate_status, remarks, sourcing_date } = req.body;
 
         const report = await Report.create({ id, candidate, company, position, location, ctc, cv_sourced_from, relevant, candidate_status, remarks, sourcing_date });
+
+        const alldata = await FilteredUpdate();
+
+        res.status(200).json({ message: 'Report created successfully', report, alldata });
+      } catch (error) {
+        console.error('Error creating Report:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+      }
+};
+
+//USING THE all_candidates DATABASE
+exports.addSourcingReport = async (req, res) => {
+    try {
+        const { id, candidate, position, cv_sourced_from, relevant, candidate_status, remarks, created_at } = req.body;
+
+        const report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, candidate_status, remarks, created_at });
 
         const alldata = await FilteredUpdate();
 
@@ -26,13 +48,13 @@ async function FilteredUpdate() {
         let dates = [];
 
         allReports.forEach((report) => {
-            dates.push(report.sourcing_date);
+            dates.push(report.created_at);
         });
 
         const uniqueDates = [...new Set(dates)];
 
         uniqueDates.forEach(async (update_date) => {
-            const filteredReports = allReports.filter((report) => report.sourcing_date === update_date);
+            const filteredReports = allReports.filter((report) => report.created_at === update_date);
 
             let total_cv_sourced = filteredReports.length;
             let total_cv_relevant = filteredReports.filter((report) => report.relevant === "Yes").length;
@@ -86,7 +108,7 @@ exports.createBulkSourcingReport = async (req, res) => {
             return res.status(400).json({ error: 'No reports data provided' });
         }
         
-        const createdReports = await Report.bulkCreate(reportsData);
+        const createdReports = await Candidate.bulkCreate(reportsData);
 
         const alldata = await FilteredUpdate();
 
@@ -102,7 +124,26 @@ exports.createBulkSourcingReport = async (req, res) => {
     }
 };
 
+//from daily_sourcing_report table
 exports.getSourcingReport = async (req, res) => {
+    try {
+        const report = await Candidate.findAll({
+            attributes: ['id', 'candidate', 'position', 'cv_sourced_from', 'relevant', 'candidate_status', 'remarks', 'created_at', 'updated_at'],
+            include: [{ 
+                model: Position,
+                required: true,
+                attributes: ['id', 'company_id', 'position', 'location', 'experience', 'min_ctc', ' max_ctc']
+            }]
+        }); 
+        res.status(200).json(report); 
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('500 server error');
+    }
+}
+
+//from all_candidates table
+exports.getCandidateSourcing = async (req, res) => {
     try {
         const report = await Report.findAll(); 
         res.status(200).json(report); 
