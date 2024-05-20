@@ -124,7 +124,7 @@ exports.createBulkSourcingReport = async (req, res) => {
     }
 };
 
-//from daily_sourcing_report table
+//from all_candidates table
 exports.getSourcingReport = async (req, res) => {
     try {
         const report = await Candidate.findAll({
@@ -142,7 +142,7 @@ exports.getSourcingReport = async (req, res) => {
     }
 }
 
-//from all_candidates table
+//from daily_sourcing_report table
 exports.getCandidateSourcing = async (req, res) => {
     try {
         const report = await Report.findAll(); 
