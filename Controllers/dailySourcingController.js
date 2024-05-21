@@ -11,6 +11,26 @@ Candidate.belongsTo(Position, { foreignKey: 'position' });
 Company.hasMany(Position, { foreignKey: 'company_id' });
 Position.belongsTo(Company, { foreignKey: 'company_id' });
 
+exports.getCompanies = async (req, res) => {
+    try {
+        const companies = await Company.findAll();
+        res.json(companies);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
+exports.getPositionsOfCompany = async (req,res) => {
+    const companyId = req.params.companyId;
+    try {
+        const positions = await Position.findAll({ where: { company_id: companyId } });
+        res.json(positions);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
 
 //USING THE daily_sourcing_report DATABASE
 exports.createSourcingReport = async (req, res) => {
