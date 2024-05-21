@@ -4,6 +4,9 @@ const db = require('../Models/db');
 const Permissions = require('../Models/permissions');
 const Modules = require('../Models/modules');
 
+Modules.hasMany(Permissions, { foreignKey: 'module_id' });
+Permissions.belongsTo(Modules, { foreignKey: 'module_id' });
+
 
 exports.createPermission = async (req, res) => {
     try {
@@ -18,7 +21,13 @@ exports.createPermission = async (req, res) => {
 
 exports.getPermission = async (req,res) => {
     try {
-        const permission = await Permissions.findAll(); 
+        const permission = await Permissions.findAll({
+            include: [{
+                model: Modules,
+                required: true,
+                attributes: ['id', 'module_name', 'module_url']
+            }]
+        }); 
         res.status(200).json(permission); 
     } catch (error) {
         console.error('Error:', error);
@@ -29,7 +38,13 @@ exports.getPermission = async (req,res) => {
 exports.getPermissionById = async (req, res) => {
     try {
         const id = req.params.id;
-        const permission = await Permissions.findByPk(id); 
+        const permission = await Permissions.findByPk(id, {
+            include: [{
+                model: Modules,
+                required: true,
+                attributes: ['id', 'module_name', 'module_url']
+            }]
+        }); 
         res.status(200).json(permission); 
     } catch (error) {
         console.error('Error:', error);

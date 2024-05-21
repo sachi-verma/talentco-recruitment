@@ -10,9 +10,19 @@ const Permissions = sequelize.define('Permissions',{
     },
     role_id: {
         type: DataTypes.BIGINT,
+        allowNull: false,
+        references: {
+            model: 'roles',
+            key: 'id',
+        }
     },
     module_id: {
         type: DataTypes.BIGINT,
+        allowNull: false,
+        references: {
+            model: 'modules',
+            key: 'id',
+        }
     },
     list_access: {
         type: DataTypes.BOOLEAN,

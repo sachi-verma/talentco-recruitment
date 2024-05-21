@@ -46,7 +46,7 @@ exports.addSourcingReport = async (req, res) => {
 
 async function FilteredUpdate() {
     try {
-        const allReports = await Report.findAll();
+        const allReports = await Candidate.findAll();
 
         let alldata = [];
         let filterArr = [];
