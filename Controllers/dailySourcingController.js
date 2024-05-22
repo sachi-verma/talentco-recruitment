@@ -54,7 +54,7 @@ exports.addSourcingReport = async (req, res) => {
         const { id, candidate, position, cv_sourced_from, relevant, candidate_status, remarks, created_at } = req.body;
 
         // Define the required fields for validation
-        const requiredFields = ['candidate', 'company', 'position', 'location', 'ctc', 'cv_sourced_from', 'relevant', 'candidate_status', 'created_at'];
+        const requiredFields = ['candidate', 'company', 'position', 'location', 'ctc', 'cv_sourced_from', 'relevant', 'candidate_status'];
 
         // Validate the request body
         for (let field of requiredFields) {
@@ -146,7 +146,7 @@ exports.createBulkSourcingReport = async (req, res) => {
         }
 
         // Define the required fields for validation
-        const requiredFields = ['candidate', 'company', 'position', 'location', 'ctc', 'cv_sourced_from', 'relevant', 'candidate_status', 'created_at'];
+        const requiredFields = ['candidate', 'company', 'position', 'location', 'ctc', 'cv_sourced_from', 'relevant', 'candidate_status'];
 
         // Validate each report object
         for (let report of reportsData) {
