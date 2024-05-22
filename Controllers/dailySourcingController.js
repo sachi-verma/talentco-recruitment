@@ -286,9 +286,12 @@ exports.statusChange = async (req, res) => {
     try {
         const id = req.params.id;
         const { candidate_status } = req.body;
+
         await Candidate.update({ candidate_status }, {where: {id: id}});
+
+        const alldata = await FilteredUpdate();
   
-        return res.status(200).json({ success: "status changed sucessfully", candidate: {id, candidate_status} }); 
+        return res.status(200).json({ success: "status changed sucessfully", candidate: {id, candidate_status}, alldata }); 
 
     } catch (error) {
       console.error('Error changing status:', error);
