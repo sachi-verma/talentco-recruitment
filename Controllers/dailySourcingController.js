@@ -53,6 +53,18 @@ exports.addSourcingReport = async (req, res) => {
     try {
         const { id, candidate, position, cv_sourced_from, relevant, candidate_status, remarks, created_at } = req.body;
 
+        // Define the required fields for validation
+        const requiredFields = ['id', 'candidate', 'position', 'cv_sourced_from', 'relevant', 'candidate_status', 'remarks', 'created_at'];
+
+        // Validate the request body
+        for (let field of requiredFields) {
+            if (!req.body.hasOwnProperty(field) || req.body[field] === null || req.body[field] === '') {
+                console.error(`Missing or empty field: ${field} in report:`, req.body);
+                return res.status(400).json({ error: `Missing or empty fields detected` });
+            }
+        }
+
+
         const report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, candidate_status, remarks, created_at });
 
         const alldata = await FilteredUpdate();
@@ -131,6 +143,19 @@ exports.createBulkSourcingReport = async (req, res) => {
         if (!Array.isArray(reportsData) || reportsData.length === 0) {
             console.error('No reports data provided');
             return res.status(400).json({ error: 'No reports data provided' });
+        }
+
+        // Define the required fields for validation
+        const requiredFields = ['candidate', 'company', 'position', 'location', 'ctc', 'cv_sourced_from', 'relevant', 'candidate_status', 'created_at'];
+
+        // Validate each report object
+        for (let report of reportsData) {
+            for (let field of requiredFields) {
+                if (!report.hasOwnProperty(field) || report[field] === null || report[field] === '') {
+                    console.error(`Missing or empty field: ${field} in report:`, report);
+                    return res.status(400).json({ error: `Missing or empty fields detected` });
+                }
+            }
         }
         
         const createdReports = await Candidate.bulkCreate(reportsData);
