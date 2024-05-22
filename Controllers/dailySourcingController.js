@@ -141,7 +141,8 @@ async function FilteredUpdate() {
         const allReports = await Candidate.findAll();
 
         let groupedReports = allReports.reduce((acc, report) => {
-            const date = report.created_at.toISOString().split('T')[0]; // Use only the date part of created_at
+            //const date = report.created_at.toISOString().split('T')[0]; // Use only the date part of created_at
+            const date = report.sourcing_date;
             if (!acc[date]) {
                 acc[date] = [];
             }

@@ -62,6 +62,10 @@ const Candidates = sequelize.define('Candidates',{
     },
     updated_by: {
         type: DataTypes.STRING,
+    },
+    sourcing_date: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
     }
 },
 {
