@@ -12,7 +12,7 @@ const Candidates = sequelize.define('Candidates',{
         type: DataTypes.STRING,
     },
     position: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false,
         references: {
             model: 'allPositions',

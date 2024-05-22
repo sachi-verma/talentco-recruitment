@@ -235,28 +235,28 @@ exports.createBulkSourcingReport = async (req, res) => {
     }
 };
 
-//from all_candidates table
+// FROM all_candidates table
 exports.getSourcingReport = async (req, res) => {
     try {
         const report = await Candidate.findAll({
             attributes: ['id', 'candidate', 'position', 'cv_sourced_from', 'relevant', 'candidate_status', 'remarks', 'created_at', 'updated_at'],
-            include: [{ 
+            include: [{
                 model: Position,
                 required: true,
-                attributes: ['id', 'company_id', 'position', 'location', 'experience', 'min_ctc'],
-                include: [{ 
-                    model:Company,
+                attributes: ['id', 'company_id', 'position', 'location', 'experience', 'min_ctc', 'max_ctc'],
+                include: [{
+                    model: Company,
                     required: true,
                     attributes: ['company_name']
                 }]
             }]
-        }); 
-        res.status(200).json({message: 'candidate fetched successfully', Candidates: report}); 
+        });
+        res.status(200).json({ message: 'Candidates fetched successfully', Candidates: report });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).send('500 server error');
     }
-}
+};
 
 //from daily_sourcing_report table
 exports.getCandidateSourcing = async (req, res) => {
@@ -283,7 +283,7 @@ exports.statusChange = async (req, res) => {
     try {
         const id = req.params.id;
         const { candidate_status } = req.body;
-        await Report.update({ candidate_status }, {where: {id: id}});
+        await Candidate.update({ candidate_status }, {where: {id: id}});
   
         return res.status(200).json({ success: "status changed sucessfully", candidate: {id, candidate_status} }); 
 
