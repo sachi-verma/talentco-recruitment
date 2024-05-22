@@ -51,7 +51,7 @@ exports.createSourcingReport = async (req, res) => {
 //USING THE all_candidates DATABASE
 exports.addSourcingReport = async (req, res) => {
     try {
-        const { id, candidate, position, cv_sourced_from, relevant, candidate_status, remarks, created_at } = req.body;
+        const { id, candidate, position, cv_sourced_from, relevant, candidate_status, remarks, sourcing_date } = req.body;
 
         // Define the required fields for validation
         const requiredFields = ['candidate', 'position', 'cv_sourced_from', 'relevant', 'candidate_status'];
@@ -65,7 +65,7 @@ exports.addSourcingReport = async (req, res) => {
         }
 
 
-        const report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, candidate_status, remarks, created_at });
+        const report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, candidate_status, remarks, sourcing_date });
 
         const alldata = await FilteredUpdate();
 
@@ -141,8 +141,7 @@ async function FilteredUpdate() {
         const allReports = await Candidate.findAll();
 
         let groupedReports = allReports.reduce((acc, report) => {
-            //const date = report.created_at.toISOString().split('T')[0]; // Use only the date part of created_at
-            const date = report.sourcing_date;
+            const date = report.sourcing_date; // Ensure sourcing_date is being used correctly
             if (!acc[date]) {
                 acc[date] = [];
             }
@@ -160,20 +159,23 @@ async function FilteredUpdate() {
             let total_confirmation_pending = reports.filter(report => report.candidate_status === "Confirmation Pending").length;
             let total_sent_to_client = reports.filter(report => report.candidate_status === "Sent To Client").length;
 
-            // Find or create the entry based on the update_date
-            const [update, created] = await Update.findOrCreate({
-                where: { update_date: date },
-                defaults: {
+            // Find the entry based on the update_date
+            let update = await Update.findOne({
+                where: { update_date: date }
+            });
+
+            if (update) {
+                // Update the existing entry
+                await update.update({
                     total_cv_sourced,
                     total_cv_relevant,
                     total_confirmation_pending,
                     total_sent_to_client
-                }
-            });
-
-            // If the entry already existed, update its values
-            if (!created) {
-                await update.update({
+                });
+            } else {
+                // Create a new entry
+                update = await Update.create({
+                    update_date: date,
                     total_cv_sourced,
                     total_cv_relevant,
                     total_confirmation_pending,
