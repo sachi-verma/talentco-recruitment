@@ -11,7 +11,7 @@ exports.getAtsPipeline = async (req, res) => {
             include: [{ 
                 model: Position,
                 required: true,
-                attributes: ['id', 'company_id', 'position', 'location', 'experience', 'min_ctc'],
+                attributes: ['id', 'company_id', 'position', 'location', 'experience', 'min_ctc', 'max_ctc'],
                 include: [{ 
                     model:Company,
                     required: true,
