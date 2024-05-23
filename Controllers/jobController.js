@@ -1,6 +1,10 @@
 const db = require('../Models/db');
-const Jobs = require('../Models/jobDetails')
-const Positions = require('../Models/allPositions')
+const Jobs = require('../Models/jobDetails');
+const Positions = require('../Models/allPositions');
+const Company = require('../Models/companyDetails');
+
+Company.hasMany(Positions, { foreignKey: 'company_id' });
+Positions.belongsTo(Company, { foreignKey: 'company_id' });
 
 exports.createJob = async (req, res) => {
     try {
@@ -16,7 +20,12 @@ exports.createJob = async (req, res) => {
 
 exports.getJob = async (req,res) => {
     try {
-        const job = await Positions.findAll(); 
+        const job = await Positions.findAll({
+            include: [{
+                model: Company,
+                required: true
+            }]
+        }); 
         res.status(200).json(job); 
     } catch (error) {
         console.error('Error:', error);

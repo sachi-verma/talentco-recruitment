@@ -1,6 +1,6 @@
 const db = require('../Models/db');
-const Positions = require('../Models/allPositions')
-const Users = require('../Models/userDetails')
+const Positions = require('../Models/allPositions');
+const Users = require('../Models/userDetails');
 
 exports.getRecruiter = async (req,res) => {
   try {
