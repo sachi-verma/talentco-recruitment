@@ -1,8 +1,16 @@
 // to insert or update the values in the permissions database
 
 const db = require('../Models/db');
+const User = require('../Models/userDetails');
 const Permissions = require('../Models/permissions');
 const Modules = require('../Models/modules');
+const Roles = require('../Models/roles');
+
+User.belongsTo(Roles, { foreignKey: 'role_id' });
+Roles.hasMany(User, { foreignKey: 'role_id' });
+
+Permissions.belongsTo(Roles, { foreignKey: 'role_id' });
+Roles.hasMany(Permissions, { foreignKey: 'role_id' });
 
 Modules.hasMany(Permissions, { foreignKey: 'module_id' });
 Permissions.belongsTo(Modules, { foreignKey: 'module_id' });

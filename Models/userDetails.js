@@ -22,6 +22,11 @@ const Users = sequelize.define('Users',{
     },
     role_id: {
         type: DataTypes.BIGINT,
+        allowNull: false,
+        references: {
+            model: 'roles',
+            key: 'id',
+        }
     },
     username_login: {
         type: DataTypes.STRING,
