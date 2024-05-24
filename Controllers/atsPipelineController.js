@@ -28,7 +28,7 @@ exports.getAtsPipeline = async (req, res) => {
             // }
             where: {
                 candidate_status: {
-                  [Op.or]: ['Sent To Client', 'Shortlisted', 'Interview Done', 'Selected', 'Rejected', 'Backout']
+                  [Op.or]: ['Sent To Client', 'Shortlisted', 'Interview Done', 'Selected', 'Not Selected', 'Backout']
                 }
               }
         }); 
