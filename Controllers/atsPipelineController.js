@@ -19,13 +19,18 @@ exports.getAtsPipeline = async (req, res) => {
                     attributes: ['company_name']
                 }]
             }],
+            // where: {
+            //     // candidate_status: {
+            //     //     [Op.ne]: 'sent to client'
+            //     //     //Op is the object and ne stands for not equal
+            //     // }
+            //     candidate_status: 'sent to client',
+            // }
             where: {
-                // candidate_status: {
-                //     [Op.ne]: 'sent to client'
-                //     //Op is the object and ne stands for not equal
-                // }
-                candidate_status: 'sent to client',
-            }
+                candidate_status: {
+                  [Op.or]: ['Sent To Client', 'Shortlisted', 'Interview Done', 'Selected', 'Rejected', 'Backout']
+                }
+              }
         }); 
         res.status(200).json({message: 'candidates fetched successfully', Candidates: report}); 
     } catch (error) {
