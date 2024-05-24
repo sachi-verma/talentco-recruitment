@@ -16,7 +16,7 @@ const Status = sequelize.define('Status',{
             key: 'id',
         }
     },
-    status_name: {
+    candidate_status: {
         type: DataTypes.STRING,
     },
     status_date: {

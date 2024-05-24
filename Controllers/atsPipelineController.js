@@ -70,20 +70,12 @@ exports.editAtsStatus = async (req, res) => {
 
 exports.getStatusHistory = async (req, res) => {
     try {
-        const report = await Candidate.findAll({
-            attributes: ['id', 'candidate', 'position', 'cv_sourced_from', 'relevant', 'candidate_status', 'remarks', 'created_at', 'updated_at'],
-            include: [{
-                model: Position,
-                required: true,
-                attributes: ['id', 'company_id', 'position', 'location', 'experience', 'min_ctc', 'max_ctc'],
-                include: [{
-                    model: Company,
-                    required: true,
-                    attributes: ['company_name']
-                }]
-            }]
+        const id = req.params.id;
+        const history = await Status.findAll({
+            attributes: ['id', 'candidate_status', 'status_date'],
+            where: { candidate_id: id}
         });
-        res.status(200).json({ message: 'Candidates fetched successfully', Candidates: report });
+        res.status(200).json({ message: 'Status history fetched successfully', history });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).send('500 server error');
