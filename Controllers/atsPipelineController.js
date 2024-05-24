@@ -59,10 +59,10 @@ exports.editAtsStatus = async (req, res) => {
         const { candidate_status, status_date } = req.body;
         const candidate = await Candidate.update({ candidate_status, status_date }, {where: {id: id}});
         const status = await Status.create({ candidate_id: id, candidate_status: candidate_status, status_date: status_date });
-        return res.status(200).json({ success: "candidate data updated sucessfully", candidate: {id, candidate_status, status_date}, status });
+        return res.status(200).json({ success: "candidate status updated sucessfully", candidate: {id, candidate_status, status_date}, status });
 
     } catch (error) {
-        console.error('Error updating candidate:', error);
+        console.error('Error updating candidate status:', error);
         return res.status(500).json({ error: 'Internal server error' });
       }
 }
