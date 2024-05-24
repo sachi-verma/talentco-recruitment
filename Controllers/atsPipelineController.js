@@ -8,7 +8,7 @@ const Status = require('../Models/statusHistory');
 exports.getAtsPipeline = async (req, res) => {
     try {
         const report = await Candidate.findAll({
-            attributes: ['id', 'candidate', 'position', 'cv_sourced_from', 'relevant', 'candidate_status', 'remarks', 'created_at', 'updated_at'],
+            attributes: ['id', 'candidate', 'position', 'candidate_location', 'candidate_experience', 'candidate_ctc', 'candidate_qualification', 'candidate_gender', 'cv_sourced_from', 'relevant', 'candidate_status', 'remarks', 'created_at', 'updated_at'],
             include: [{ 
                 model: Position,
                 required: true,

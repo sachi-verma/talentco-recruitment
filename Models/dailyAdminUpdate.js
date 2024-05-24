@@ -1,7 +1,7 @@
 const {sequelize} = require('./db');
 const {DataTypes} = require('sequelize');
 
-const Status = sequelize.define('Status',{
+const AdminUpdate = sequelize.define('AdminUpdate',{
     id: {
       type: DataTypes.BIGINT,
       autoIncrement: true,
@@ -16,12 +16,12 @@ const Status = sequelize.define('Status',{
             key: 'id',
         }
     },
-    status_name: {
+    cv_count: {
         type: DataTypes.STRING,
     },
-    status_date: {
+    update_date: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW
+        defaultValue: DataTypes.NOW,
     },
     created_at: {
         type: DataTypes.DATE,
@@ -39,8 +39,8 @@ const Status = sequelize.define('Status',{
     }
 },
 {
-    tableName: 'status_history',
+    tableName: 'daily_admin_update',
 })
 
 
-module.exports = Status
+module.exports = AdminUpdate
