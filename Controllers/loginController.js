@@ -49,15 +49,7 @@ exports.loginAccess = async (req, res) => {
 
         const { id, role_id, name } = user;
 
-        let jwtSecretKey = process.env.JWT_SECRET_KEY;
-        let data = {
-            time: Date(),
-            userId: id,
-            usersName: name,
-            userRole: role_id
-        }
- 
-        const token = jwt.sign(data, jwtSecretKey);
+        
         // const token = jwt.sign({ name: user.name, role: user.role_id }, jwtSecretKey, { expiresIn: '24h' });
 
         // Extract necessary details
@@ -71,8 +63,19 @@ exports.loginAccess = async (req, res) => {
             ]
         });
 
-        // if (permissions.length === 0) {
-        // }
+        if (permissions.length === 0) {
+            return res.status(403).json({error: 'This user has no access for any page'});
+        }
+
+        let jwtSecretKey = process.env.JWT_SECRET_KEY;
+        let data = {
+            time: Date(),
+            userId: id,
+            usersName: name,
+            userRole: role_id
+        }
+ 
+        const token = jwt.sign(data, jwtSecretKey);
 
         // Return the user details and permissions
         res.json({
