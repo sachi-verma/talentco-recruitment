@@ -51,7 +51,12 @@ const Positions = sequelize.define('Positions',{
         type: DataTypes.STRING,
     },
     recruiter_assign: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'userDetails',
+            key: 'id'
+        }
     },
     cv_sent: {
         type: DataTypes.STRING,

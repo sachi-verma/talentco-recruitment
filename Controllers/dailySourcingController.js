@@ -6,6 +6,7 @@ const Candidate = require('../Models/allCandidates');
 const Position = require('../Models/allPositions');
 const Company = require('../Models/companyDetails');
 const AdminUpdate = require('../Models/dailyAdminUpdate');
+const User = require('../Models/userDetails');
 
 
 Position.hasMany(Candidate, { foreignKey: 'position' });
@@ -13,6 +14,9 @@ Candidate.belongsTo(Position, { foreignKey: 'position' });
 
 Company.hasMany(Position, { foreignKey: 'company_id' });
 Position.belongsTo(Company, { foreignKey: 'company_id' });
+
+User.hasMany(Position, { foreignKey: 'recruiter_assign' });
+Position.belongsTo(User, { foreignKey: 'recruiter_assign' });
 
 exports.getCompanies = async (req, res) => {
     try {
@@ -371,15 +375,20 @@ exports.getAdminReport = async (req, res) => {
             include: [{
                 model: Position,
                 required: true,
-                attributes: ['id', 'company_id', 'position', 'location', 'experience', 'min_ctc', 'max_ctc'],
+                attributes: ['id', 'company_id', 'position', 'location', 'recruiter_assign'],
                 include: [{
                     model: Company,
                     required: true,
-                    attributes: ['company_name']
+                    attributes: ['company_name'],
+                }, 
+                {
+                    model: User,
+                    required: true,
+                    attributes: ['name']
                 }]
             }],
             group: ['position.id', Sequelize.fn('DATE', Sequelize.col('sourcing_date'))],
-            raw: true
+            // raw: true
         });
         res.status(200).json({ message: 'Report fetched successfully', Candidates: report });
     } catch (error) {
