@@ -40,8 +40,18 @@ const Candidates = sequelize.define('Candidates',{
     relevant: {
         type: DataTypes.STRING,
     },
+    sourcing_status: {
+        type: DataTypes.STRING,
+    },
+    sourcing_date: {
+        type: DataTypes.DATEONLY,
+        defaultValue: DataTypes.NOW,
+    },
     candidate_status: {
         type: DataTypes.STRING,
+    },
+    status_date: {
+        type: DataTypes.DATEONLY,
     },
     resume_file: {
         type: DataTypes.STRING,
@@ -62,13 +72,6 @@ const Candidates = sequelize.define('Candidates',{
     },
     updated_by: {
         type: DataTypes.STRING,
-    },
-    sourcing_date: {
-        type: DataTypes.DATEONLY,
-        defaultValue: DataTypes.NOW,
-    },
-    status_date: {
-        type: DataTypes.DATEONLY,
     }
 },
 {

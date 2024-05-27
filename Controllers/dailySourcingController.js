@@ -42,9 +42,9 @@ exports.getPositionsOfCompany = async (req,res) => {
 //USING THE daily_sourcing_report DATABASE
 exports.createSourcingReport = async (req, res) => {
     try {
-        const { id, candidate, company, position, location, ctc, cv_sourced_from, relevant, candidate_status, remarks, sourcing_date } = req.body;
+        const { id, candidate, company, position, location, ctc, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date } = req.body;
 
-        const report = await Report.create({ id, candidate, company, position, location, ctc, cv_sourced_from, relevant, candidate_status, remarks, sourcing_date });
+        const report = await Report.create({ id, candidate, company, position, location, ctc, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date });
 
         const alldata = await FilteredUpdate();
 
@@ -58,10 +58,10 @@ exports.createSourcingReport = async (req, res) => {
 //USING THE all_candidates DATABASE
 exports.addSourcingReport = async (req, res) => {
     try {
-        const { id, candidate, position, cv_sourced_from, relevant, candidate_status, remarks, sourcing_date } = req.body;
+        const { id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date } = req.body;
 
         // Define the required fields for validation
-        const requiredFields = ['candidate', 'position', 'cv_sourced_from', 'relevant', 'candidate_status'];
+        const requiredFields = ['candidate', 'position', 'cv_sourced_from', 'relevant', 'sourcing_status'];
 
         // Validate the request body
         for (let field of requiredFields) {
@@ -72,7 +72,7 @@ exports.addSourcingReport = async (req, res) => {
         }
 
 
-        const report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, candidate_status, remarks, sourcing_date });
+        const report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date });
 
         const alldata = await FilteredUpdate();
         const admindata = await DailyAdminUpdate();
@@ -164,8 +164,8 @@ async function FilteredUpdate() {
 
             let total_cv_sourced = reports.length;
             let total_cv_relevant = reports.filter(report => report.relevant === "Yes").length;
-            let total_confirmation_pending = reports.filter(report => report.candidate_status === "Confirmation Pending").length;
-            let total_sent_to_client = reports.filter(report => report.candidate_status === "Sent To Client").length;
+            let total_confirmation_pending = reports.filter(report => report.sourcing_status === "Confirmation Pending").length;
+            let total_sent_to_client = reports.filter(report => report.sourcing_status === "Sent To Client").length;
 
             // Find the entry based on the update_date
             let update = await Update.findOne({
@@ -226,7 +226,7 @@ async function DailyAdminUpdate() {
         for (let date in groupedReports) {
             const reports = groupedReports[date];
 
-            let cv_count = reports.filter(report => report.candidate_status === "Sent To Client").length;
+            let cv_count = reports.filter(report => report.sourcing_status === "Sent To Client").length;
 
             // Find the entry based on the update_date
             let update = await AdminUpdate.findOne({
@@ -270,7 +270,7 @@ exports.createBulkSourcingReport = async (req, res) => {
         }
 
         // Define the required fields for validation
-        const requiredFields = ['candidate', 'company', 'position', 'location', 'min_ctc', 'max_ctc', 'cv_sourced_from', 'relevant', 'candidate_status'];
+        const requiredFields = ['candidate', 'company', 'position', 'location', 'min_ctc', 'max_ctc', 'cv_sourced_from', 'relevant', 'sourcing_status'];
 
         // Validate each report object
         for (let report of reportsData) {
@@ -304,7 +304,7 @@ exports.createBulkSourcingReport = async (req, res) => {
 exports.getSourcingReport = async (req, res) => {
     try {
         const report = await Candidate.findAll({
-            attributes: ['id', 'candidate', 'position', 'cv_sourced_from', 'relevant', 'candidate_status', 'remarks', 'created_at', 'updated_at'],
+            attributes: ['id', 'candidate', 'position', 'cv_sourced_from', 'relevant', 'sourcing_status', 'remarks', 'created_at', 'updated_at'],
             include: [{
                 model: Position,
                 required: true,
@@ -347,13 +347,13 @@ exports.getFilteredUpdate = async (req, res) => {
 exports.statusChange = async (req, res) => {
     try {
         const id = req.params.id;
-        const { candidate_status } = req.body;
+        const { sourcing_status } = req.body;
 
-        await Candidate.update({ candidate_status }, {where: {id: id}});
+        await Candidate.update({ sourcing_status }, {where: {id: id}});
 
         const alldata = await FilteredUpdate();
   
-        return res.status(200).json({ success: "status changed sucessfully", candidate: {id, candidate_status}, alldata }); 
+        return res.status(200).json({ success: "status changed sucessfully", candidate: {id, sourcing_status}, alldata }); 
 
     } catch (error) {
       console.error('Error changing status:', error);
@@ -367,10 +367,10 @@ exports.getAdminReport = async (req, res) => {
             attributes: [
                 'position',
                 [Sequelize.fn('DATE', Sequelize.col('sourcing_date')), 'date'],
-                [Sequelize.fn('COUNT', Sequelize.col('candidate_status')), 'sentToClientCount']
+                [Sequelize.fn('COUNT', Sequelize.col('sourcing_status')), 'sentToClientCount']
             ],
             where: {
-                candidate_status: 'Sent To Client'
+                sourcing_status: 'Sent To Client'
             },
             include: [{
                 model: Position,
