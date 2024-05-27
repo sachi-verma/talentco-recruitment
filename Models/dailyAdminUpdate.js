@@ -8,15 +8,15 @@ const AdminUpdate = sequelize.define('AdminUpdate',{
       primaryKey: true,
       allowNull: false,
     },
-    candidate_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'allCandidates',
-            key: 'id',
-        }
-    },
-    cv_count: {
+    // candidate_id: {
+    //     type: DataTypes.INTEGER,
+    //     allowNull: false,
+    //     references: {
+    //         model: 'allCandidates',
+    //         key: 'id',
+    //     }
+    // },
+    cv_sent_count: {
         type: DataTypes.STRING,
     },
     update_date: {

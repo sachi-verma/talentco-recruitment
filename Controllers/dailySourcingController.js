@@ -1,9 +1,12 @@
 const db = require('../Models/db');
+const { Sequelize} = require('sequelize');
 const Report = require('../Models/dailySourcingReport');
 const Update = require('../Models/dailySourcingUpdate');
 const Candidate = require('../Models/allCandidates');
 const Position = require('../Models/allPositions');
 const Company = require('../Models/companyDetails');
+const AdminUpdate = require('../Models/dailyAdminUpdate');
+
 
 Position.hasMany(Candidate, { foreignKey: 'position' });
 Candidate.belongsTo(Position, { foreignKey: 'position' });
@@ -68,8 +71,9 @@ exports.addSourcingReport = async (req, res) => {
         const report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, candidate_status, remarks, sourcing_date });
 
         const alldata = await FilteredUpdate();
+        const admindata = await DailyAdminUpdate();
 
-        res.status(200).json({ message: 'Report created successfully', report, alldata });
+        res.status(200).json({ message: 'Report created successfully', report, alldata, admindata });
       } catch (error) {
         console.error('Error creating Report:', error);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -200,6 +204,58 @@ async function FilteredUpdate() {
     }
 };
 
+async function DailyAdminUpdate() {
+    try {
+        const allReports = await Candidate.findAll();
+
+        let groupedReports = allReports.reduce((acc, report) => {
+            const date = report.sourcing_date; // Ensure sourcing_date is being used correctly
+            if (!acc[date]) {
+                acc[date] = [];
+            }
+            acc[date].push(report);
+            return acc;
+        }, {});
+
+        let alldata = [];
+
+        for (let date in groupedReports) {
+            const reports = groupedReports[date];
+
+            let cv_count = reports.filter(report => report.candidate_status === "Sent To Client").length;
+
+            // Find the entry based on the update_date
+            let update = await AdminUpdate.findOne({
+                where: { update_date: date }
+            });
+
+            if (update) {
+                // Update the existing entry
+                await update.update({
+                    cv_count
+                });
+            } else {
+                // Create a new entry
+                update = await AdminUpdate.create({
+                    update_date: date,
+                    cv_count
+                });
+            }
+
+            alldata.push({
+                update_date: date,
+                cv_count
+            });
+        }
+
+        return alldata;
+
+    } catch (error) {
+        console.error('Error:', error);
+        throw error;
+    }
+}
+
 exports.createBulkSourcingReport = async (req, res) => {
     try {
         const reportsData = req.body; // Assuming the frontend sends an array of report objects
@@ -226,12 +282,14 @@ exports.createBulkSourcingReport = async (req, res) => {
 
         const alldata = await FilteredUpdate();
 
+        const admindata = await DailyAdminUpdate();
+
         if (!createdReports || createdReports.length === 0) {
             console.error('No reports created');
             return res.status(400).json({ error: 'No reports created' });
         }
 
-        res.status(200).json({ message: 'Reports created successfully', reports: createdReports, alldata: alldata });
+        res.status(200).json({ message: 'Reports created successfully', reports: createdReports, alldata: alldata, admindata: admindata });
     } catch (error) {
         console.error('Error creating Reports:', error);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -298,3 +356,34 @@ exports.statusChange = async (req, res) => {
       return res.status(500).json({ error: 'Internal server error' });
     }
   };
+
+exports.getAdminReport = async (req, res) => {
+    try {
+        const report = await Candidate.findAll({
+            attributes: [
+                'position',
+                [Sequelize.fn('DATE', Sequelize.col('sourcing_date')), 'date'],
+                [Sequelize.fn('COUNT', Sequelize.col('candidate_status')), 'sentToClientCount']
+            ],
+            where: {
+                candidate_status: 'Sent To Client'
+            },
+            include: [{
+                model: Position,
+                required: true,
+                attributes: ['id', 'company_id', 'position', 'location', 'experience', 'min_ctc', 'max_ctc'],
+                include: [{
+                    model: Company,
+                    required: true,
+                    attributes: ['company_name']
+                }]
+            }],
+            group: ['position.id', Sequelize.fn('DATE', Sequelize.col('sourcing_date'))],
+            raw: true
+        });
+        res.status(200).json({ message: 'Report fetched successfully', Candidates: report });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('500 server error');
+    }
+}

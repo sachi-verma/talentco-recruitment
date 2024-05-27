@@ -11,6 +11,7 @@ router.post('/bulksourcingreport', dailySourcingController.createBulkSourcingRep
 router.get('/filteredupdate', dailySourcingController.getFilteredUpdate);
 router.get('/getsourcingreport', dailySourcingController.getSourcingReport);
 router.patch('/statuschange/:id', dailySourcingController.statusChange);
+router.get('/getadminreport', dailySourcingController.getAdminReport);
 
 
 module.exports = router;
