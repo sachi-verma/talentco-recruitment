@@ -8,7 +8,7 @@ const Status = require('../Models/statusHistory');
 exports.getAtsPipeline = async (req, res) => {
     try {
         const report = await Candidate.findAll({
-            attributes: ['id', 'candidate', 'position', 'candidate_location', 'candidate_experience', 'candidate_ctc', 'candidate_qualification', 'candidate_gender', 'cv_sourced_from', 'relevant', 'candidate_status', 'remarks', 'created_at', 'updated_at'],
+            attributes: ['id', 'candidate', 'position', 'candidate_phone', 'candidate_email', 'candidate_location', 'candidate_experience', 'candidate_ctc', 'candidate_qualification', 'candidate_gender', 'cv_sourced_from', 'relevant', 'candidate_status', 'remarks', 'created_at', 'updated_at'],
             include: [{ 
                 model: Position,
                 required: true,
@@ -42,10 +42,10 @@ exports.getAtsPipeline = async (req, res) => {
 exports.editAtsPipeline = async (req,res) => {
     try {
         const id = req.params.id;
-        const { candidate_location, candidate_experience, candidate_ctc, candidate_qualification, candidate_gender } = req.body;
-        await Candidate.update({ candidate_location, candidate_experience, candidate_ctc, candidate_qualification, candidate_gender }, {where: {id: id}});
+        const { candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_ctc, candidate_qualification, candidate_gender } = req.body;
+        await Candidate.update({ candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_ctc, candidate_qualification, candidate_gender }, {where: {id: id}});
   
-        return res.status(200).json({ success: "candidate data updated sucessfully", candidate: {id, candidate_location, candidate_experience, candidate_ctc, candidate_qualification, candidate_gender} }); 
+        return res.status(200).json({ success: "candidate data updated sucessfully", candidate: {id, candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_ctc, candidate_qualification, candidate_gender} }); 
 
     } catch (error) {
         console.error('Error updating candidate:', error);
