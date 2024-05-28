@@ -1,5 +1,6 @@
 const db = require('../Models/db');
 const { Sequelize} = require('sequelize');
+const { Op } = require('sequelize');
 const Candidate = require('../Models/allCandidates');
 const Position = require('../Models/allPositions');
 const Company = require('../Models/companyDetails');
@@ -20,7 +21,29 @@ Position.belongsTo(User, { foreignKey: 'recruiter_assign' });
 
 exports.getCandidates = async (req, res) => {
     try {
-        const candidates = await Candidate.findAll();
+        const candidates = await Candidate.findAll({
+            attributes: ['candidate', 'sourcing_status'],
+            include: [{ 
+                model: Position,
+                required: true,
+                attributes: ['company_id', 'position'],
+                include: [{ 
+                    model:Company,
+                    required: true,
+                    attributes: ['company_name']
+                },
+                {
+                    model: User,
+                    required: true,
+                    attributes: ['name']
+                }]
+            }],
+            where: {
+                sourcing_status: {
+                  [Op.notIn]: ['Rejected', 'Confirmation Pending']
+                }
+              } 
+        });
         res.json(candidates);
     } catch (error) {
         console.error('Error:', error);
@@ -51,7 +74,6 @@ exports.getInterviewSchedule = async (req, res) => {
                     }]
                 }],
             }]
-            
         }); 
         res.status(200).json({message: 'interview schedule fetched successfully', Interview: report}); 
     } catch (error) {
