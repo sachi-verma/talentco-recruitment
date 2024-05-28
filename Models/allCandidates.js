@@ -19,6 +19,12 @@ const Candidates = sequelize.define('Candidates',{
             key: 'id',
         }
     },
+    candidate_phone: {
+        type: DataTypes.STRING,
+    },
+    candidate_email: {
+        type: DataTypes.STRING,
+    },
     candidate_location: {
         type: DataTypes.STRING,
     },
