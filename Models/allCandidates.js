@@ -3,7 +3,7 @@ const {DataTypes} = require('sequelize');
 
 const Candidates = sequelize.define('Candidates',{
     id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
       allowNull: false,
