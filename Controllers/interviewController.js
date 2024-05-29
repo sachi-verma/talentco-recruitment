@@ -61,7 +61,7 @@ exports.getInterviewSchedule = async (req, res) => {
                 include: [{ 
                     model: Position,
                     required: true,
-                    attributes: ['company_id', 'position'],
+                    attributes: ['company_id', 'position', 'location'],
                     include: [{ 
                         model:Company,
                         required: true,
