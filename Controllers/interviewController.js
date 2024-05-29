@@ -84,7 +84,7 @@ exports.getInterviewSchedule = async (req, res) => {
 
 exports.addInterviewSchedule = async (req, res) => {
     try {
-        const { id, candidate, interview_round, interview_mode, interview_date, interview_time, interview_location, interview_link, interview_status, interview_remarks, interview_done } = req.body;
+        const { id, candidate_id, interview_round, interview_mode, interview_date, interview_time, interview_location, interview_link, interview_status, interview_remarks, interview_done } = req.body;
 
         // // Define the required fields for validation
         // const requiredFields = ['id', 'candidate', 'interview_round', 'interview_mode', 'interview_date', 'interview_time', 'interview_location', 'interview_link', 'interview_status', 'interview_remarks', 'interview_done'];
@@ -97,7 +97,7 @@ exports.addInterviewSchedule = async (req, res) => {
         //     }
         // }
 
-        const report = await Interview.create({ id, candidate, interview_round, interview_mode, interview_date, interview_time, interview_location, interview_link, interview_status, interview_remarks, interview_done });
+        const report = await Interview.create({ id, candidate_id, interview_round, interview_mode, interview_date, interview_time, interview_location, interview_link, interview_status, interview_remarks, interview_done });
 
         res.status(200).json({ message: 'Interview created successfully', report });
     } catch (error) {
