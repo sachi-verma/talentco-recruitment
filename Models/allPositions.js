@@ -52,7 +52,7 @@ const Positions = sequelize.define('Positions',{
     },
     recruiter_assign: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
             model: 'userDetails',
             key: 'id'

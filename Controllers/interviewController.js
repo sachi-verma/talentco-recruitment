@@ -119,3 +119,39 @@ exports.editInterviewSchedule = async (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
       }
 }
+
+exports.bulkInterviewSchedule = async (req, res) => {
+    try {
+        const interviewData = req.body; // Assuming the frontend sends an array of report objects
+        console.log("=====>>>>>")
+        if (!Array.isArray(interviewData) || interviewData.length === 0) {
+            console.error('No interview data provided');
+            return res.status(400).json({ error: 'No interview data provided' });
+        }
+
+        // // Define the required fields for validation
+        // const requiredFields = ['id', 'candidate', 'interview_round', 'interview_mode', 'interview_date', 'interview_time', 'interview_location', 'interview_link', 'interview_status', 'interview_remarks', 'interview_done'];
+
+        // // Validate each report object
+        // for (let report of interviewData) {
+        //     for (let field of requiredFields) {
+        //         if (!report.hasOwnProperty(field) || report[field] === null || report[field] === '') {
+        //             console.error(`Missing or empty field: ${field} in report:`, report);
+        //             return res.status(400).json({ error: `Missing or empty fields detected` });
+        //         }
+        //     }
+        // }
+        
+        const createdReports = await Interview.bulkCreate(interviewData);
+
+        if (!createdReports || createdReports.length === 0) {
+            console.error('No interview schedule created');
+            return res.status(400).json({ error: 'No interview schedule created' });
+        }
+
+        res.status(200).json({ message: 'Interview schedule created successfully', reports: createdReports, alldata: alldata, admindata: admindata });
+    } catch (error) {
+        console.error('Error creating Interview Schedule:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};

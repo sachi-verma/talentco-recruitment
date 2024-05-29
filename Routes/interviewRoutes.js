@@ -6,6 +6,7 @@ router.get('/candidates', interviewController.getCandidates);
 router.get('/getinterview', interviewController.getInterviewSchedule);
 router.post('/addinterview', interviewController.addInterviewSchedule);
 router.patch('/editinterview/:id', interviewController.editInterviewSchedule);
+router.post('/bulkinterview', interviewController.bulkInterviewSchedule);
 
 
 module.exports = router;
