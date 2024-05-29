@@ -212,8 +212,9 @@ async function DailyAdminUpdate() {
     try {
         const allReports = await Candidate.findAll();
 
+        // Group reports by sourcing_date
         let groupedReports = allReports.reduce((acc, report) => {
-            const date = report.sourcing_date; // Ensure sourcing_date is being used correctly
+            const date = report.sourcing_date;
             if (!acc[date]) {
                 acc[date] = [];
             }
@@ -221,11 +222,13 @@ async function DailyAdminUpdate() {
             return acc;
         }, {});
 
-        let alldata = [];
+        let admindata = [];
 
+        // Iterate through each date and update or create the AdminUpdate entry
         for (let date in groupedReports) {
             const reports = groupedReports[date];
 
+            // Count how many reports have sourcing_status as "Sent To Client"
             let cv_sent_count = reports.filter(report => report.sourcing_status === "Sent To Client").length;
 
             // Find the entry based on the update_date
@@ -240,19 +243,19 @@ async function DailyAdminUpdate() {
                 });
             } else {
                 // Create a new entry
-                update = await AdminUpdate.create({
+                await AdminUpdate.create({
                     update_date: date,
                     cv_sent_count
                 });
             }
 
-            alldata.push({
+            admindata.push({
                 update_date: date,
                 cv_sent_count
             });
         }
 
-        return alldata;
+        return admindata;
 
     } catch (error) {
         console.error('Error:', error);
@@ -391,6 +394,16 @@ exports.getAdminReport = async (req, res) => {
             // raw: true
         });
         res.status(200).json({ message: 'Report fetched successfully', Candidates: report });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('500 server error');
+    }
+}
+
+exports.getFilteredAdmin = async (req, res) => {
+    try{
+        const update = await AdminUpdate.findAll();
+        res.status(200).json(update);
     } catch (error) {
         console.error('Error:', error);
         res.status(500).send('500 server error');

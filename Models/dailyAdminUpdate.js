@@ -20,8 +20,7 @@ const AdminUpdate = sequelize.define('AdminUpdate',{
         type: DataTypes.STRING,
     },
     update_date: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
+        type: DataTypes.DATEONLY,
     },
     created_at: {
         type: DataTypes.DATE,
