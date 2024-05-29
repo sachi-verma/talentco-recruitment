@@ -226,7 +226,7 @@ async function DailyAdminUpdate() {
         for (let date in groupedReports) {
             const reports = groupedReports[date];
 
-            let cv_count = reports.filter(report => report.sourcing_status === "Sent To Client").length;
+            let cv_sent_count = reports.filter(report => report.sourcing_status === "Sent To Client").length;
 
             // Find the entry based on the update_date
             let update = await AdminUpdate.findOne({
@@ -236,19 +236,19 @@ async function DailyAdminUpdate() {
             if (update) {
                 // Update the existing entry
                 await update.update({
-                    cv_count
+                    cv_sent_count
                 });
             } else {
                 // Create a new entry
                 update = await AdminUpdate.create({
                     update_date: date,
-                    cv_count
+                    cv_sent_count
                 });
             }
 
             alldata.push({
                 update_date: date,
-                cv_count
+                cv_sent_count
             });
         }
 
