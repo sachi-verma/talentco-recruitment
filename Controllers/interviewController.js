@@ -22,7 +22,7 @@ Position.belongsTo(User, { foreignKey: 'recruiter_assign' });
 exports.getCandidates = async (req, res) => {
     try {
         const candidates = await Candidate.findAll({
-            attributes: ['candidate', 'sourcing_status'],
+            attributes: ['id', 'candidate', 'sourcing_status'],
             include: [{ 
                 model: Position,
                 required: true,
