@@ -1,3 +1,3 @@
 .env
-emailController.js
-emailRoutes.js
+Controllers/emailController.js
+Routes/emailRoutes.js
