@@ -9,17 +9,16 @@ app.use(express.json());
 
 
 const transporter = nodemailer.createTransport({
-    // service: "Outlook365",
-    host: "insl2.managedns.org", // hostname
+    host: process.env.EMAIL_HOST, // hostname
     secure: false, // TLS requires secureConnection to be false
-    port: 587, // port for secure SMTP
+    port: process.env.EMAIL_PORT, // port for secure SMTP
     // tls: {
     //     ciphers: "SSLv3",
     //     rejectUnauthorized: false,
     // },  
     auth: {
-      user: "noreply@abstarthr.com",
-      pass: "TalentCo@ABStart"
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
     }
   });
 
@@ -31,7 +30,7 @@ exports.sendMail = async (req, res) => {
     }
   
     const mailOptions = {
-      from: '"TalentCo HR Recruitment" <recruitment@talentcohr.com>',
+      from: process.env.EMAIL_FROM,
       to,
       subject,
       text
