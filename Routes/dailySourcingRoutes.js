@@ -12,6 +12,7 @@ router.get('/filteredupdate', dailySourcingController.getFilteredUpdate);
 router.get('/getsourcingreport', dailySourcingController.getSourcingReport);
 router.patch('/statuschange/:id', dailySourcingController.statusChange);
 router.get('/getadminreport', dailySourcingController.getAdminReport);
+router.get('/filteredadmin', dailySourcingController.getFilteredAdmin);
 
 
 module.exports = router;
