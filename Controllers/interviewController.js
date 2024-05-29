@@ -149,7 +149,7 @@ exports.bulkInterviewSchedule = async (req, res) => {
             return res.status(400).json({ error: 'No interview schedule created' });
         }
 
-        res.status(200).json({ message: 'Interview schedule created successfully', reports: createdReports, alldata: alldata, admindata: admindata });
+        res.status(200).json({ message: 'Interview schedule created successfully', reports: createdReports });
     } catch (error) {
         console.error('Error creating Interview Schedule:', error);
         res.status(500).json({ error: 'Internal Server Error' });
