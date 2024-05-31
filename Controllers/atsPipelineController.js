@@ -57,7 +57,9 @@ exports.editAtsStatus = async (req, res) => {
     try {
         const id = req.params.id;
         const { candidate_status, status_date } = req.body;
+        //changing the status in all candidates table
         const candidate = await Candidate.update({ candidate_status, status_date }, {where: {id: id}});
+        //creating a new status to add in status history
         const status = await Status.create({ candidate_id: id, candidate_status: candidate_status, status_date: status_date });
         return res.status(200).json({ success: "candidate status updated sucessfully", candidate: {id, candidate_status, status_date}, status });
 

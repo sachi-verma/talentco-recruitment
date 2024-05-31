@@ -19,7 +19,7 @@ const upload = multer({ storage });
 
 
 router.get('/getatspipeline', atsPipelineController.getAtsPipeline);
-router.patch('/editatspipeline/:id', atsPipelineController.editAtsPipeline );
+router.patch('/editatspipeline/:id', upload.single('jd_upload'), atsPipelineController.editAtsPipeline );
 router.patch('/atsstatus/:id', atsPipelineController.editAtsStatus);
 router.get('/statushistory/:id', atsPipelineController.getStatusHistory);
 

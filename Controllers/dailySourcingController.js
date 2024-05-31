@@ -364,6 +364,23 @@ exports.statusChange = async (req, res) => {
     }
   };
 
+
+  exports.editCandidateDetails = async (req,res) => {
+    try {
+        const id = req.params.id;
+        const { candidate_phone, candidate_alt_phone, candidate_email, candidate_location, candidate_qualification, candidate_experience, candidate_current_ctc, candidate_expected_ctc, candidate_last_organization, candidate_last_designation, candidate_notice_period, candidate_gender, candidate_remarks } = req.body;
+        
+        await Candidate.update({ candidate_phone, candidate_alt_phone, candidate_email, candidate_location, candidate_qualification, candidate_experience, candidate_current_ctc, candidate_expected_ctc, candidate_last_organization, candidate_last_designation, candidate_notice_period, candidate_gender, candidate_remarks }, {where: {id: id}});
+  
+        return res.status(200).json({ success: "candidate data updated sucessfully", candidate: {id, candidate_phone, candidate_alt_phone, candidate_email, candidate_location, candidate_qualification, candidate_experience, candidate_current_ctc, candidate_expected_ctc, candidate_last_organization, candidate_last_designation, candidate_notice_period, candidate_gender, candidate_remarks } }); 
+
+    } catch (error) {
+        console.error('Error updating candidate:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+}
+
+
 exports.getAdminReport = async (req, res) => {
     try {
         const report = await Candidate.findAll({
