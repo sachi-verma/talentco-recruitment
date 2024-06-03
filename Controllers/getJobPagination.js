@@ -14,7 +14,8 @@ exports.getJobByPage = async (req, res) => {
     const companyName = req.query.companyName;
     const location = req.query.location;
     const industryName = req.query.industryName;
-
+    const assignRecruiter = req.query.assignRecruiter;
+ 
     const companyFilters = {};
     if (companyName) {
       companyFilters.company_name = { [Op.like]: `%${companyName}%` };
@@ -46,7 +47,11 @@ exports.getJobByPage = async (req, res) => {
       limit,
       offset,
     });
-    res.status(200).json(job);
+    
+    const totalRecords= job.length;
+    const pages = Math.floor(totalRecords/limit);
+    console.log(totalRecords,pages);
+    res.status(200).json({totalRecords:totalRecords,pages:pages, data:[...job] });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");
