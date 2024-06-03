@@ -3,6 +3,7 @@ const router = express.Router();
 const atsPipelineController = require('../Controllers/atsPipelineController');
 const multer = require('multer');
 const path = require('path');
+const getAtsPipelinePagination = require('../Controllers/getAtsPipelinePagination');
 
 // Multer storage configuration for file uploads
 const storage = multer.diskStorage({
@@ -22,6 +23,11 @@ router.get('/getatspipeline', atsPipelineController.getAtsPipeline);
 router.patch('/editatspipeline/:id', upload.single('jd_upload'), atsPipelineController.editAtsPipeline );
 router.patch('/atsstatus/:id', atsPipelineController.editAtsStatus);
 router.get('/statushistory/:id', atsPipelineController.getStatusHistory);
+
+
+//new route
+
+router.get('/getatspipelinebypage', getAtsPipelinePagination.getAtsPipelinePagination );
 
 
 module.exports = router;

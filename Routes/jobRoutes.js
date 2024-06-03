@@ -4,6 +4,8 @@ const jobController = require('../Controllers/jobController');
 const multer = require('multer');
 const path = require('path');
 
+const getJobPagination = require('../Controllers/getJobPagination');
+
 // Multer storage configuration for file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -24,4 +26,6 @@ router.get('/getjob/:id', jobController.getJobById);
 router.patch('/updatejob/:id', upload.single('jd_upload'), jobController.updateJob);
 router.delete('/deletejob/:id', jobController.deleteJob);
 
+//new route
+router.get('/',getJobPagination.getJobByPage);
 module.exports = router;
