@@ -37,6 +37,8 @@ exports.getSourcingReportByPage = async (req, res) => {
       companyFilters.position = { [Op.like]: `%${position}%` };
     }
 
+    
+
     const report = await Candidate.findAll({
       attributes: [
         "id",

@@ -32,26 +32,39 @@ exports.getJobByPage = async (req, res) => {
       ? { location: { [Op.like]: `%${location}%` } }
       : {};
 
-    const job = await Positions.findAll({
-      include: [
-        {
-          model: Company,
-          required: true,
-          where: companyFilters,
-        },
-      ],
-      where: {
-        ...positionFilter,
-        ...locationFilter,
-      },
-      limit,
-      offset,
-    });
-    
-    const totalRecords= job.length;
-    const pages = Math.floor(totalRecords/limit);
-    console.log(totalRecords,pages);
-    res.status(200).json({totalRecords:totalRecords,pages:pages, data:[...job] });
+      const [job, totalRecords] = await Promise.all([
+        Positions.findAll({
+          include: [
+            {
+              model: Company,
+              required: true,
+              where: companyFilters,
+            },
+          ],
+          where: {
+            ...positionFilter,
+            ...locationFilter,
+          },
+          limit,
+          offset,
+        }),
+        Positions.count({
+          include: [
+            {
+              model: Company,
+              required: true,
+              where: companyFilters,
+            },
+          ],
+          where: {
+            ...positionFilter,
+            ...locationFilter,
+          }
+        })
+      ]);
+  
+      const pages = Math.ceil(totalRecords / limit);
+      res.status(200).json({ totalRecords: totalRecords, pages: pages, data: [...job] });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");
