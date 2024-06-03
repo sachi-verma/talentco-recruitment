@@ -27,5 +27,5 @@ router.patch('/updatejob/:id', upload.single('jd_upload'), jobController.updateJ
 router.delete('/deletejob/:id', jobController.deleteJob);
 
 //new route
-router.get('/',getJobPagination.getJobByPage);
+router.get('/getjobBypage',getJobPagination.getJobByPage);
 module.exports = router;
