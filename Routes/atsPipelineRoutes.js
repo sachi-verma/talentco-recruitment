@@ -25,15 +25,9 @@ router.patch('/atsstatus/:id', atsPipelineController.editAtsStatus);
 router.get('/statushistory/:id', atsPipelineController.getStatusHistory);
 
 
-<<<<<<< Updated upstream
 //new route
 
 router.get('/getatspipelinebypage', getAtsPipelinePagination.getAtsPipelinePagination );
-=======
-// new route 
-
-
->>>>>>> Stashed changes
 
 
 module.exports = router;
