@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const dailySourcingController = require('../Controllers/dailySourcingController');
 const getDailysourcingPagination = require('../Controllers/getDailysourcingPagination');
+const getDailySourcingByDateController = require('../Controllers/getDailySourcingByDateController');
 
 
 router.get('/getcompanies', dailySourcingController.getCompanies);
@@ -19,7 +20,9 @@ router.get('/filteredadmin', dailySourcingController.getFilteredAdmin);
 router.get('/getsourcingreportbypage',getDailysourcingPagination.getSourcingReportByPage);
 router.get('/getadminreportbypage',getDailysourcingPagination.getAdminReportByPage);
 
-router.get('/getfilteredupdatebypage', getDailysourcingPagination.getFilteredUpdateByPage)
+router.get('/getfilteredupdatebypage', getDailysourcingPagination.getFilteredUpdateByPage);
+
+router.get('/getSourcingReportByDate', getDailySourcingByDateController.getSourcingReportByDate);
 
 
 

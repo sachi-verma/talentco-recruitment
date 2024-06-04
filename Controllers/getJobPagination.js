@@ -61,7 +61,7 @@ exports.getJobByPage = async (req, res) => {
       whereClause.upload_date = {
         [Op.between]: [fromDate, newDate],
       };
-    } else if (fromDate) {
+    } else if (fromDate) { 
       whereClause.upload_date = {
         [Op.gte]:  fromDate,
       };
@@ -70,12 +70,7 @@ exports.getJobByPage = async (req, res) => {
         [Op.lte]:  toDate,
       };
     }
- 
-    
-
-    
   
-    console.log(theDate, ndate); 
     console.log('Where clause:', whereClause);
     console.log('Company filters:', companyFilters);
 
