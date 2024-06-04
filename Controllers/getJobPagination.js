@@ -8,12 +8,14 @@ exports.getJobByPage = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const offset = (page - 1) * limit;
+    const offset = (page - 1) * limit; 
 
-    //const filter = JSON.parse(req.query.filter);
+    const filter = req.query.filter ? JSON.parse(req.query.filter):"";
+
+    console.log(filter);  
 
 
-    const {position, company, location, gender, qualification, recruiterId}= req.query.filter;
+    const {position, company, location, gender, qualification, recruiterId}= filter;
 
     // const position = req.query.position;
     // const companyName = req.query.companyName;
@@ -30,20 +32,28 @@ exports.getJobByPage = async (req, res) => {
     // if (industryName) {
     //   companyFilters.industry = { [Op.like]: `%${industryName}%` };
     // }
-//console.log(position);
-    const positionFilter = position
-      ? { position: { [Op.like]: `%${position}%` } }
-      : {};
+ 
+    // const positionFilter = position
+    //   ? { position: { [Op.like]: `%${position}%` } }
+    //   : {};
 
-    const locationFilter = location
-      ? { location: { [Op.like]: `%${location}%` } }
-      : {};
+    // const locationFilter = location
+    //   ? { location: { [Op.like]: `%${location}%` } }
+    //   : {};
 
-      const genderFilter = gender?{gender_pref:{[Op.like]:`%${gender}%`}}:{};
-      const qualificationFilter = qualification?{qualification:{[Op.like]:`%${qualification}%`}}:{};
-      const recruiterIdFilter = recruiterId?{recruiter_assign:{[Op.like]:`%${recruiterId}%`}}:{};
-      
+    //   const genderFilter = gender?{gender_pref:{[Op.like]:`%${gender}%`}}:{};
+    //   const qualificationFilter = qualification?{qualification:{[Op.like]:`%${qualification}%`}}:{};
+    //   const recruiterIdFilter = recruiterId?{recruiter_assign:{[Op.like]:`%${recruiterId}%`}}:{};
 
+    const whereClause = {};
+    if (position) whereClause.position = { [Op.like]: `%${position}%` };
+    if (location) whereClause.location = { [Op.like]: `%${location}%` };
+    if (gender) whereClause.gender_pref = { [Op.like]: `%${gender}%` };
+    if (qualification) whereClause.qualification = { [Op.like]: `%${qualification}%` };
+    if (recruiterId) whereClause.recruiter_assign = { [Op.like]: `%${recruiterId}%` };
+
+    console.log('Where clause:', whereClause);
+    console.log('Company filters:', companyFilters);
 
 
       const [job, totalRecords] = await Promise.all([
@@ -55,12 +65,10 @@ exports.getJobByPage = async (req, res) => {
               where: companyFilters,
             },
           ],
-          where: {
-            ...positionFilter,
-            ...locationFilter,
-          },
+          where:whereClause,
           limit,
           offset,
+          logging: console.log, // Enable logging
         }),
         Positions.count({
           include: [
@@ -70,15 +78,8 @@ exports.getJobByPage = async (req, res) => {
               where: companyFilters,
             },
           ],
-          where: {
-            ...positionFilter,
-            ...locationFilter,
-            ...genderFilter,
-            ...qualificationFilter,
-            ...recruiterIdFilter
-
-
-          }
+          where:whereClause,
+          logging: console.log, // Enable logging
         })
       ]);
   

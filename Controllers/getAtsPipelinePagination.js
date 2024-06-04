@@ -12,7 +12,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
     const page = parseInt(req.query.page) || 1; // Current page, default to 1
     const limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
     const offset = (page - 1) * limit; // Calculate offset based on page number
-
+    
     //console.log(page, limit, offset);
 
     const candidateName = req.query.candidateName;
