@@ -22,6 +22,9 @@ const Candidates = sequelize.define('Candidates',{
     candidate_phone: {
         type: DataTypes.STRING,
     },
+    candidate_alt_phone: {
+        type: DataTypes.STRING,
+    },
     candidate_email: {
         type: DataTypes.STRING,
     },
@@ -31,13 +34,28 @@ const Candidates = sequelize.define('Candidates',{
     candidate_experience: {
         type: DataTypes.TEXT,
     },
-    candidate_ctc: {
+    candidate_organization: {
+        type: DataTypes.TEXT,
+    },
+    candidate_designation: {
+        type: DataTypes.TEXT,
+    },
+    candidate_notice_period: {
+        type: DataTypes.TEXT,
+    },
+    candidate_current_ctc: {
+        type: DataTypes.STRING,
+    },
+    candidate_expected_ctc: {
         type: DataTypes.STRING,
     },
     candidate_qualification: {
         type: DataTypes.STRING,
     },
     candidate_gender: {
+        type: DataTypes.STRING,
+    },
+    candidate_remarks: {
         type: DataTypes.STRING,
     },
     cv_sourced_from: {

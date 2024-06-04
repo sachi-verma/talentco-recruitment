@@ -61,7 +61,7 @@ exports.addSourcingReport = async (req, res) => {
         const { id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date } = req.body;
 
         // Define the required fields for validation
-        const requiredFields = ['candidate', 'position', 'cv_sourced_from', 'relevant', 'sourcing_status'];
+        let requiredFields = ['candidate', 'position', 'cv_sourced_from', 'relevant', 'sourcing_status'];
 
         // Check if candidate status is 'Screened', then add candidate_phone and candidate_email to required fields
         if (candidate_status === 'Screened') {
@@ -278,7 +278,7 @@ exports.createBulkSourcingReport = async (req, res) => {
         }
 
         // Define the required fields for validation
-        const requiredFields = ['candidate', 'company', 'position', 'location', 'min_ctc', 'max_ctc', 'cv_sourced_from', 'relevant', 'sourcing_status'];
+        let requiredFields = ['candidate', 'company', 'position', 'location', 'min_ctc', 'max_ctc', 'cv_sourced_from', 'relevant', 'sourcing_status'];
 
         // Check if candidate status is 'Screened', then add candidate_phone and candidate_email to required fields
         if (candidate_status === 'Screened') {
