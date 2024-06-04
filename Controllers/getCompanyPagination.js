@@ -19,12 +19,27 @@ exports.getCompanyByPage = async (req, res) => {
       filters.industry = { [Op.like]: `%${industryName}%` };
     }
 
-    const company = await Companys.findAll({
-      where: filters,
-      limit,
-      offset,
-    });
-    res.status(200).json(company);
+const [company, totalRecords] = await Promise.all([
+  await Companys.findAll({
+    where: filters,
+    limit,
+    offset,
+  }),
+  await Companys.count({
+    where: filters,
+     
+  })
+
+]);
+
+    // const company = await Companys.findAll({
+    //   where: filters,
+    //   limit,
+    //   offset,
+    // });
+
+    const pages = Math.ceil(totalRecords/limit);
+    res.status(200).json({totalRecords:totalRecords, pages:pages, data:[...company]});
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");
