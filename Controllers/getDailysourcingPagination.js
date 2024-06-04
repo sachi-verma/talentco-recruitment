@@ -8,6 +8,7 @@ const Company = require("../Models/companyDetails");
 const AdminUpdate = require("../Models/dailyAdminUpdate");
 const User = require("../Models/userDetails");
 const { Op } = require("sequelize");
+ 
 
 
 
@@ -38,49 +39,133 @@ exports.getSourcingReportByPage = async (req, res) => {
     }
 
     
+    const [ report, totalRecords]= await Promise.all([
 
-    const report = await Candidate.findAll({
-      attributes: [
-        "id",
-        "candidate",
-        "position",
-        "cv_sourced_from",
-        "relevant",
-        "sourcing_status",
-        "remarks",
-        "created_at",
-        "updated_at",
-      ],
-      include: [
-        {
-          model: Position,
-          required: true,
-          where: companyFilters,
-          attributes: [
-            "id",
-            "company_id",
-            "position",
-            "location",
-            "experience",
-            "min_ctc",
-            "max_ctc",
-          ],
-          include: [
-            {
-              model: Company,
-              required: true,
-              attributes: ["company_name"],
-            },
-          ],
-        },
-      ],
-      where: filters,
-      limit,
-      offset,
-    });
+      await Candidate.findAll({
+        attributes: [
+          "id",
+          "candidate",
+          "position",
+          "cv_sourced_from",
+          "relevant",
+          "sourcing_status",
+          "remarks",
+          "created_at",
+          "updated_at",
+        ],
+        include: [
+          {
+            model: Position,
+            required: true,
+            where: companyFilters,
+            attributes: [
+              "id",
+              "company_id",
+              "position",
+              "location",
+              "experience",
+              "min_ctc",
+              "max_ctc",
+            ],
+            include: [
+              {
+                model: Company,
+                required: true,
+                attributes: ["company_name"],
+              },
+            ],
+          },
+        ],
+        where: filters,
+        limit,
+        offset,
+      }),
+      await Candidate.count({
+        attributes: [
+          "id",
+          "candidate",
+          "position",
+          "cv_sourced_from",
+          "relevant",
+          "sourcing_status",
+          "remarks",
+          "created_at",
+          "updated_at",
+        ],
+        include: [
+          {
+            model: Position,
+            required: true,
+            where: companyFilters,
+            attributes: [
+              "id",
+              "company_id",
+              "position",
+              "location",
+              "experience",
+              "min_ctc",
+              "max_ctc",
+            ],
+            include: [
+              {
+                model: Company,
+                required: true,
+                attributes: ["company_name"],
+              },
+            ],
+          },
+        ],
+        where: filters,
+        
+      })
+
+    ]);
+
+
+    // const report = await Candidate.findAll({
+    //   attributes: [
+    //     "id",
+    //     "candidate",
+    //     "position",
+    //     "cv_sourced_from",
+    //     "relevant",
+    //     "sourcing_status",
+    //     "remarks",
+    //     "created_at",
+    //     "updated_at",
+    //   ],
+    //   include: [
+    //     {
+    //       model: Position,
+    //       required: true,
+    //       where: companyFilters,
+    //       attributes: [
+    //         "id",
+    //         "company_id",
+    //         "position",
+    //         "location",
+    //         "experience",
+    //         "min_ctc",
+    //         "max_ctc",
+    //       ],
+    //       include: [
+    //         {
+    //           model: Company,
+    //           required: true,
+    //           attributes: ["company_name"],
+    //         },
+    //       ],
+    //     },
+    //   ],
+    //   where: filters,
+    //   limit,
+    //   offset,
+    // });
+
+    const pages = Math.ceil(totalRecords/limit);
     res
       .status(200)
-      .json({ message: "Candidates fetched successfully", Candidates: report });
+      .json({ message: "Candidates fetched successfully",totalRecords:totalRecords,pages:pages, Candidates: report });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");
