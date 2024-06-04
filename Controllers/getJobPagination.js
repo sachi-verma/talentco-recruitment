@@ -3,6 +3,8 @@ const Jobs = require("../Models/jobDetails");
 const Positions = require("../Models/allPositions");
 const Company = require("../Models/companyDetails");
 const { Op } = require("sequelize");
+const { join } = require("path");
+const { connect } = require("http2");
 
 exports.getJobByPage = async (req, res) => {
   try {
@@ -54,10 +56,10 @@ exports.getJobByPage = async (req, res) => {
     if (fromDate) whereClause.upload_date = { [Op.gte]: `%${fromDate}%` };
 
     if (fromDate && toDate) {
+      let theDate = parseInt(toDate.split('-')[2]) + 1;
+      let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, '0');
       whereClause.upload_date = {
-        [Op.between]: [
-           fromDate, toDate
-        ],
+        [Op.between]: [fromDate, newDate],
       };
     } else if (fromDate) {
       whereClause.upload_date = {
@@ -68,7 +70,12 @@ exports.getJobByPage = async (req, res) => {
         [Op.lte]:  toDate,
       };
     }
+ 
+    
 
+    
+  
+    console.log(theDate, ndate); 
     console.log('Where clause:', whereClause);
     console.log('Company filters:', companyFilters);
 
