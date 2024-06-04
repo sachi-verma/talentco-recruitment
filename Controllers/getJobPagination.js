@@ -15,7 +15,7 @@ exports.getJobByPage = async (req, res) => {
     console.log(filter);  
 
 
-    const {position, company, location, gender, qualification, recruiterId}= filter;
+    const {position, company, location, gender, qualification, recruiterId, fromDate, toDate}= filter;
 
     // const position = req.query.position;
     // const companyName = req.query.companyName;
@@ -23,7 +23,7 @@ exports.getJobByPage = async (req, res) => {
     // const industryName = req.query.industryName;
     //const assignRecruiter = req.query.assignRecruiter;
 
-    console.log(position, company, location, gender, qualification, recruiterId);
+    console.log(position, company, location, gender, qualification, recruiterId,fromDate, toDate);
  
     const companyFilters = {};
     if (company) {
@@ -51,6 +51,23 @@ exports.getJobByPage = async (req, res) => {
     if (gender) whereClause.gender_pref = { [Op.like]: `%${gender}%` };
     if (qualification) whereClause.qualification = { [Op.like]: `%${qualification}%` };
     if (recruiterId) whereClause.recruiter_assign = { [Op.like]: `%${recruiterId}%` };
+    if (fromDate) whereClause.upload_date = { [Op.gte]: `%${fromDate}%` };
+
+    if (fromDate && toDate) {
+      whereClause.upload_date = {
+        [Op.between]: [
+           fromDate, toDate
+        ],
+      };
+    } else if (fromDate) {
+      whereClause.upload_date = {
+        [Op.gte]:  fromDate,
+      };
+    } else if (toDate) {
+      whereClause.upload_date = {
+        [Op.lte]:  toDate,
+      };
+    }
 
     console.log('Where clause:', whereClause);
     console.log('Company filters:', companyFilters);

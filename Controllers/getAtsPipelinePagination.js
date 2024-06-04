@@ -38,7 +38,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
     // Date filter
     const dateFilter = {};
     if (startDate) {
-      dateFilter[Op.gte] = new Date(startDate);
+      dateFilter[Op.gte] = new Date(startDate).setHours(0, 0, 0, 0);
     }
     if (endDate) {
       dateFilter[Op.lte] = new Date(endDate);
