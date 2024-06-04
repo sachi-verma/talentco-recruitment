@@ -63,6 +63,11 @@ exports.addSourcingReport = async (req, res) => {
         // Define the required fields for validation
         const requiredFields = ['candidate', 'position', 'cv_sourced_from', 'relevant', 'sourcing_status'];
 
+        // Check if candidate status is 'Screened', then add candidate_phone and candidate_email to required fields
+        if (candidate_status === 'Screened') {
+            requiredFields = requiredFields.concat(['candidate_phone', 'candidate_alt_phone', 'candidate_email', 'candidate_location', 'candidate_qualification', 'candidate_experience', 'candidate_current_ctc', 'candidate_expected_ctc', 'candidate_last_organization', 'candidate_last_designation', 'candidate_notice_period', 'candidate_gender', 'candidate_remarks']);
+        }
+
         // Validate the request body
         for (let field of requiredFields) {
             if (!req.body.hasOwnProperty(field) || req.body[field] === null || req.body[field] === '') {
@@ -274,6 +279,11 @@ exports.createBulkSourcingReport = async (req, res) => {
 
         // Define the required fields for validation
         const requiredFields = ['candidate', 'company', 'position', 'location', 'min_ctc', 'max_ctc', 'cv_sourced_from', 'relevant', 'sourcing_status'];
+
+        // Check if candidate status is 'Screened', then add candidate_phone and candidate_email to required fields
+        if (candidate_status === 'Screened') {
+            requiredFields = requiredFields.concat(['candidate_phone', 'candidate_alt_phone', 'candidate_email', 'candidate_location', 'candidate_qualification', 'candidate_experience', 'candidate_current_ctc', 'candidate_expected_ctc', 'candidate_last_organization', 'candidate_last_designation', 'candidate_notice_period', 'candidate_gender', 'candidate_remarks']);
+        }
 
         // Validate each report object
         for (let report of reportsData) {
