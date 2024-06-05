@@ -1,0 +1,100 @@
+const db = require('../Models/db');
+const Jobs = require('../Models/jobDetails');
+const Positions = require('../Models/allPositions');
+const Company = require('../Models/companyDetails');
+
+const excel = require('exceljs');
+
+Company.hasMany(Positions, { foreignKey: 'company_id' });
+Positions.belongsTo(Company, { foreignKey: 'company_id' });
+
+exports.exportJobs = async (req, res) => {
+    try {
+    //   const page = parseInt(req.query.page) || 1;
+    //   const limit = parseInt(req.query.limit) || 10;
+    //   const offset = (page - 1) * limit; 
+  
+      const filter = req.query.filter ? JSON.parse(req.query.filter):"";
+  
+      const {position, company, location, gender, qualification, recruiterId, notAssigned, fromDate, toDate}= filter;
+
+      const companyFilters = {};
+      if (company) {
+        companyFilters.company_name = { [Op.like]: `%${company}%` };
+      }
+   
+      const whereClause = {};
+      if (position) whereClause.position = { [Op.like]: `%${position}%` };
+      if (location) whereClause.location = { [Op.like]: `%${location}%` };
+      if (gender) whereClause.gender_pref = { [Op.like]: `%${gender}%` };
+      if (qualification) whereClause.qualification = { [Op.like]: `%${qualification}%` };
+      if (recruiterId) whereClause.recruiter_assign = { [Op.like]: `%${recruiterId}%` };
+      if (fromDate) whereClause.upload_date = { [Op.gte]: `%${fromDate}%` };
+      if (notAssigned === "Not assigned") whereClause.recruiter_assign = null;
+  
+      if (fromDate && toDate) {
+        let theDate = parseInt(toDate.split('-')[2]) + 1;
+        let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, '0');
+        whereClause.upload_date = {
+          [Op.between]: [fromDate, newDate],
+        };
+      } else if (fromDate) { 
+        whereClause.upload_date = {
+          [Op.gte]:  fromDate,
+        };
+      } else if (toDate) {
+        whereClause.upload_date = {
+          [Op.lte]:  toDate,
+        };
+      }
+
+
+     const job = await Positions.findAll({
+        include: [
+          {
+            model: Company,
+            required: true,
+            where: companyFilters,
+          },
+        ],
+        where:whereClause,
+      });
+        
+    // Create Excel workbook and worksheet
+    const workbook = new excel.Workbook();
+    const worksheet = workbook.addWorksheet('Jobs');
+
+    // Add headers to the worksheet
+    worksheet.addRow(['Position', 'Company', 'Location', 'Gender', 'Qualification', 'Recruiter Assign', 'Upload Date']);
+
+    // Add data rows to the worksheet
+    job.forEach(job => {
+        worksheet.addRow([
+            job.position,
+            job.Company.company_name,
+            job.location,
+            job.gender_pref,
+            job.qualification,
+            job.recruiter_assign,
+            job.upload_date,
+        ]);
+    });
+
+    // Generate a unique filename for the Excel file
+     
+    const filename = `exported_jobs.xlsx`;
+
+    // Save the workbook to a buffer
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    // Send the Excel file as a response
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.status(200).send(buffer);
+        
+    } catch (error) {
+      console.error("Error:", error);
+      res.status(500).send("500 server error");
+    }
+  };
+  

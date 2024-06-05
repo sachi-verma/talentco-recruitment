@@ -35,7 +35,7 @@ exports.getSourcingReportByDate = async (req, res) => {
         
             
         const whereClause = {
-            status_date: dateFromParams,
+            sourcing_date: dateFromParams,
         };
         
         // [Op.and]: [
@@ -55,7 +55,7 @@ exports.getSourcingReportByDate = async (req, res) => {
 
         const [report, totalRecords] = await Promise.all([
             await Candidate.findAll({
-                attributes: ['id', 'candidate', 'position', 'cv_sourced_from', 'relevant', 'sourcing_status','status_date', 'remarks', 'created_at', 'updated_at'],
+                attributes: ['id', 'candidate', 'position', 'cv_sourced_from', 'relevant', 'sourcing_date','sourcing_date', 'remarks', 'created_at', 'updated_at'],
                 include: [{
                     model: Position,
                     required: true,

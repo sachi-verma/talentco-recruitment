@@ -3,8 +3,7 @@ const Jobs = require("../Models/jobDetails");
 const Positions = require("../Models/allPositions");
 const Company = require("../Models/companyDetails");
 const { Op } = require("sequelize");
-const { join } = require("path");
-const { connect } = require("http2");
+ 
 
 exports.getJobByPage = async (req, res) => {
   try {
@@ -102,9 +101,10 @@ exports.getJobByPage = async (req, res) => {
           logging: console.log, // Enable logging
         })
       ]);
-  
-      const pages = Math.ceil(totalRecords / limit);
-      res.status(200).json({ totalRecords: totalRecords, pages: pages, data: [...job] });
+      let records = job.length;
+      
+      const pages = Math.ceil(filter? records: totalRecords / limit);
+      res.status(200).json({ totalRecords: totalRecords, FilteredRecords: filter? records:0, pages: pages, data: [...job] });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");

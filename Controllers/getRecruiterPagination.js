@@ -10,9 +10,9 @@ exports.getRecruiterByPage = async (req, res) => {
       const filter = req.query.filter ? JSON.parse(req.query.filter):"";
 
     const { name, designation, email, phone, fromDate, toDate}= filter;
-const whereClause={
-  role_id:"17",
-};
+    const whereClause={
+       role_id:"17",
+      };
 
 if (name) whereClause.name = { [Op.like]: `%${name}%` };
 if (designation) whereClause.designation = { [Op.like]: `%${designation}%` };

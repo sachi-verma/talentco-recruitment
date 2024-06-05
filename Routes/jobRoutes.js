@@ -6,6 +6,8 @@ const path = require('path');
 
 const getJobPagination = require('../Controllers/getJobPagination');
 
+const exportJobsController = require('../Controllers/exportJobsController');
+
 // Multer storage configuration for file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -28,4 +30,6 @@ router.delete('/deletejob/:id', jobController.deleteJob);
 
 //new route
 router.get('/getjobBypage',getJobPagination.getJobByPage);
+
+router.get('/exportJobs', exportJobsController.exportJobs);
 module.exports = router;
