@@ -2,26 +2,30 @@ const Candidate = require('../Models/allCandidates');
 const Position = require('../Models/allPositions');
 const Company = require('../Models/companyDetails');
 const db = require('../Models/db');
-const { Op} = require('sequelize');
+const { Op, fn, col, where } = require('sequelize');
+
 
 exports.getSourcingReportByDate = async (req, res) => {
     try {
-        const dateFromPrams = req.query.date;
+        const dateFromParams = req.query.date;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const offset = (page - 1) * limit; 
 
-
+ 
         const filter = req.query.filter ? JSON.parse(req.query.filter):"";
 
-        const {position, company, candidate,cvSourcedFrom, relevent, status}= filter;
+        const {position, company, candidate,cvSourcedFrom, relevant, status, location}= filter;
 
-        console.log(position, company, candidate, cvSourcedFrom, relevent,status);
+        console.log(position, company, candidate, cvSourcedFrom, relevant,status, location);
 
         const companyFilters = {};
        if (company) {
           companyFilters.company_name = { [Op.like]: `%${company}%` };
         }  
+        if (location){
+            companyFilters.location = { [Op.like]: `%${location}%`};
+        }
 
         const positionFilter ={};
             if(position){
@@ -29,20 +33,29 @@ exports.getSourcingReportByDate = async (req, res) => {
 
             }
         
-
+            
         const whereClause = {
-            created_at:dateFromPrams,
+            status_date: dateFromParams,
         };
-       
+        
+        // [Op.and]: [
+        //     where(fn('DATE', col('Candidates.created_at')), dateFromParams)
+        // ]
+        // if (candidate) whereClause[Op.and].push({ candidate: { [Op.like]: `%${candidate}%` } });
+        // if (cvSourcedFrom) whereClause[Op.and].push({ cv_sourced_from: { [Op.like]: `%${cvSourcedFrom}%` } });
+        // if (relevant) whereClause[Op.and].push({ relevant: { [Op.like]: `%${relevant}%` } });
+        // if (status) whereClause[Op.and].push({ sourcing_status: { [Op.like]: `%${status}%` } });
+
+
         if (candidate) whereClause.candidate = { [Op.like]: `%${candidate}%` };
         if (cvSourcedFrom) whereClause.cv_sourced_from = { [Op.like]: `%${cvSourcedFrom}%` };
-        if (relevent) whereClause.relevant = { [Op.like]: `%${relevent}%` };
+        if (relevant) whereClause.relevant = { [Op.like]: `%${relevant}%` };
         if (status) whereClause.sourcing_status = { [Op.like]: `%${status}%` };
-        
+     
 
         const [report, totalRecords] = await Promise.all([
             await Candidate.findAll({
-                attributes: ['id', 'candidate', 'position', 'cv_sourced_from', 'relevant', 'sourcing_status', 'remarks', 'created_at', 'updated_at'],
+                attributes: ['id', 'candidate', 'position', 'cv_sourced_from', 'relevant', 'sourcing_status','status_date', 'remarks', 'created_at', 'updated_at'],
                 include: [{
                     model: Position,
                     required: true,

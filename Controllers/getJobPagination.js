@@ -17,7 +17,7 @@ exports.getJobByPage = async (req, res) => {
     console.log(filter);  
 
 
-    const {position, company, location, gender, qualification, recruiterId, fromDate, toDate}= filter;
+    const {position, company, location, gender, qualification, recruiterId, notAssigned, fromDate, toDate}= filter;
 
     // const position = req.query.position;
     // const companyName = req.query.companyName;
@@ -25,7 +25,7 @@ exports.getJobByPage = async (req, res) => {
     // const industryName = req.query.industryName;
     //const assignRecruiter = req.query.assignRecruiter;
 
-    console.log(position, company, location, gender, qualification, recruiterId,fromDate, toDate);
+    console.log(position, company, location, gender, qualification, recruiterId, notAssigned, fromDate, toDate);
  
     const companyFilters = {};
     if (company) {
@@ -54,6 +54,7 @@ exports.getJobByPage = async (req, res) => {
     if (qualification) whereClause.qualification = { [Op.like]: `%${qualification}%` };
     if (recruiterId) whereClause.recruiter_assign = { [Op.like]: `%${recruiterId}%` };
     if (fromDate) whereClause.upload_date = { [Op.gte]: `%${fromDate}%` };
+    if (notAssigned === "Not assigned") whereClause.recruiter_assign = null;
 
     if (fromDate && toDate) {
       let theDate = parseInt(toDate.split('-')[2]) + 1;

@@ -13,35 +13,49 @@ exports.getAtsPipelinePagination = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
     const offset = (page - 1) * limit; // Calculate offset based on page number
     
-    //console.log(page, limit, offset);
+    // const candidateName = req.query.candidateName;
+    // const companyName = req.query.companyName;
+    // //const position = req.query.position;
+    // const startDate = req.query.startDate;
+    // const endDate = req.query.endDate;
 
-    const candidateName = req.query.candidateName;
-    const companyName = req.query.companyName;
-    const position = req.query.position;
-    const startDate = req.query.startDate;
-    const endDate = req.query.endDate;
+    const filter = req.query.filter ? JSON.parse(req.query.filter):"";
 
-    //console.log(candidateName, companyName, position);
+    console.log(filter);  
 
-    // Define the filters
-    const candidateNameFilter = candidateName
-      ? { candidate: { [Op.like]: `%${candidateName}%` } }
-      : {};
-    const companyNameFilter = companyName
-      ? { "$Position.Company.company_name$": { [Op.like]: `%${companyName}%` } }
-      : {};
-    const positionFilter = position
-      ? { "$Position.Position$": { [Op.like]: `%${position}%` } }
-      : {};
 
-    console.log(startDate, endDate);
-    // Date filter
-    const dateFilter = {};
-    if (startDate) {
-      dateFilter[Op.gte] = new Date(startDate).setHours(0, 0, 0, 0);
-    }
-    if (endDate) {
-      dateFilter[Op.lte] = new Date(endDate);
+    const {candidate, candidateEmail, candidateNumber, status, position, company, location, fromDate, toDate}= filter;
+
+    const whereClause = {
+      sourcing_status: "Sent To Client",
+    };
+    if (candidate) whereClause.candidate = { [Op.like]: `%${candidate}%` };
+    if (candidateEmail) whereClause.candidate_email = { [Op.like]: `%${candidateEmail}%` };
+    if (candidateNumber) whereClause.candidate_phone = { [Op.like]: `%${candidateNumber}%` };
+    if (position) whereClause.position = { [Op.like]: `%${position}%` };
+    if (location) whereClause.candidate_location = { [Op.like]: `%${location}%` };
+    if (status) whereClause.candidate_status = { [Op.like]: `%${status}%` };
+    
+    if (fromDate) whereClause.upload_date = { [Op.gte]: `%${fromDate}%` };
+
+    const companyFilters={};
+    if (company) companyFilters.company_name = { [Op.like]: `%${company}%` };
+    
+
+    if (fromDate && toDate) {
+      let theDate = parseInt(toDate.split('-')[2]) + 1;
+      let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, '0');
+      whereClause.status_date = {
+        [Op.between]: [fromDate, newDate],
+      };
+    } else if (fromDate) { 
+      whereClause.status_date = {
+        [Op.gte]:  fromDate,
+      };
+    } else if (toDate) {
+      whereClause.status_date = {
+        [Op.lte]:  toDate,
+      };
     }
 
     const [report, totalRecords] = await Promise.all([
@@ -82,17 +96,12 @@ exports.getAtsPipelinePagination = async (req, res) => {
                 model: Company,
                 required: true,
                 attributes: ["company_name"],
+                where: companyFilters,
               },
             ],
           },
         ],
-        where: {
-          sourcing_status: "Sent To Client",
-          ...candidateNameFilter,
-          ...companyNameFilter,
-          ...positionFilter,
-          ...(startDate || endDate ? { created_at: dateFilter } : {}),
-        },
+        where: whereClause,
         // parameters
   
         limit,
@@ -135,17 +144,12 @@ exports.getAtsPipelinePagination = async (req, res) => {
                 model: Company,
                 required: true,
                 attributes: ["company_name"],
+                where: companyFilters,
               },
             ],
           },
         ],
-        where: {
-          sourcing_status: "Sent To Client",
-          ...candidateNameFilter,
-          ...companyNameFilter,
-          ...positionFilter,
-          ...(startDate || endDate ? { created_at: dateFilter } : {}),
-        },
+        where:  whereClause,
         // parameters
   
        

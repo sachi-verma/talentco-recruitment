@@ -18,19 +18,28 @@ exports.getSourcingReportByPage = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
     const offset = (page - 1) * limit; // Calculate offset based on page number
 
-    const candidateName = req.query.candidateName;
-    const cv_sourced_from = req.query.cvFrom;
-    const sourcing_status = req.query.sourcingStatus;
-    const position = req.query.position;
+    const filter = req.query.filter ? JSON.parse(req.query.filter):"";
+
+    console.log(filter);  
+
+
+    const {position, candidate, cvSourcedFrom, sourcingStatus, fromDate, toDate}= filter;
+
+
+    // const candidateName = req.query.candidateName;
+    // const cv_sourced_from = req.query.cvFrom;
+    // const sourcing_status = req.query.sourcingStatus;
+    // const position = req.query.position;
+
     const filters = {};
-    if (candidateName) {
-      filters.candidate = { [Op.like]: `%${candidateName}%` };
+    if (candidate) {
+      filters.candidate = { [Op.like]: `%${candidate}%` };
     }
-    if (cv_sourced_from) {
-      filters.cv_sourced_from = { [Op.like]: `%${cv_sourced_from}%` };
+    if (cvSourcedFrom) {
+      filters.cv_sourced_from = { [Op.like]: `%${cvSourcedFrom}%` };
     }
-    if (sourcing_status) {
-      filters.sourcing_status = { [Op.like]: `%${sourcing_status}%` };
+    if (sourcingStatus) {
+      filters.sourcing_status = { [Op.like]: `%${sourcingStatus}%` };
     }
 
     const companyFilters = {};
@@ -174,12 +183,41 @@ exports.getSourcingReportByPage = async (req, res) => {
 
 exports.getFilteredUpdateByPage = async (req, res) => {
   try {
+    //date filter
+    const filter = req.query.filter ? JSON.parse(req.query.filter):"";
+
+    console.log(filter);  
+
+    const {fromDate, toDate}= filter;
+
+    const whereClause = {};
+
+    if (fromDate && toDate) {
+      let theDate = parseInt(toDate.split('-')[2]) + 1;
+      let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, '0');
+      whereClause.update_date = {
+        [Op.between]: [fromDate, newDate],
+      };
+    } else if (fromDate) { 
+      whereClause.update_date = {
+        [Op.gte]:  fromDate,
+      };
+    } else if (toDate) {
+      whereClause.update_date = {
+        [Op.lte]:  toDate,
+      };
+    }
+
     const page = parseInt(req.query.page) || 1; // Current page, default to 1
     const limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
     const offset = (page - 1) * limit; // Calculate offset based on page number
-
-    const update = await Update.findAll({ limit, offset });
-    res.status(200).json(update);
+   const [report, totalRecords] = await Promise.all([
+     await Update.findAll({ where: whereClause, limit, offset }),
+     await Update.count({ limit, offset})
+    ]);
+     
+    const pages = Math.ceil(totalRecords/limit);
+    res.status(200).json({totalRecords: totalRecords, pages:pages, update:[...report]});
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");
@@ -192,26 +230,33 @@ exports.getAdminReportByPage = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
     const offset = (page - 1) * limit; // Calculate offset based on page number
 
-    const startDate = req.query.startDate
-      ? new Date(req.query.startDate)
-      : null;
-    const endDate = req.query.endDate ? new Date(req.query.endDate) : null;
+    // const startDate = req.query.startDate
+    //   ? new Date(req.query.startDate)
+    //   : null;
+    // const endDate = req.query.endDate ? new Date(req.query.endDate) : null;
     // Build the where clause with the date filter
+    const filter = req.query.filter ? JSON.parse(req.query.filter):"";
+
+    const {fromDate, toDate}= filter;
+    
+
     const whereClause = {
       sourcing_status: "Sent To Client",
     };
 
-    if (startDate && endDate) {
-      whereClause.sourcing_date = {
-        [Op.between]: [new Date(startDate), new Date(endDate)],
+    if (fromDate && toDate) {
+      let theDate = parseInt(toDate.split('-')[2]) + 1;
+      let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, '0');
+      whereClause.date = {
+        [Op.between]: [fromDate, newDate],
       };
-    } else if (startDate) {
-      whereClause.sourcing_date = {
-        [Op.gte]: new Date(startDate),
+    } else if (fromDate) { 
+      whereClause.date = {
+        [Op.gte]:  fromDate,
       };
-    } else if (endDate) {
-      whereClause.sourcing_date = {
-        [Op.lte]: new Date(endDate),
+    } else if (toDate) {
+      whereClause.date = {
+        [Op.lte]:  toDate,
       };
     }
 
@@ -234,7 +279,7 @@ exports.getAdminReportByPage = async (req, res) => {
       ],
     });
 
-    const totalCount = totalCountResult.length;
+    const totalRecords = totalCountResult.length;
 
     // Step 2: Get the paginated data
     const report = await Candidate.findAll({
@@ -287,9 +332,12 @@ exports.getAdminReportByPage = async (req, res) => {
       offset,
     });
 
+    const pages = Math.ceil(totalRecords / limit);
+
     res.status(200).json({
       message: "Report fetched successfully",
-      totalCount: totalCount,
+      totalRecords:totalRecords,
+      pages:pages,
       Candidates: report,
     });
   } catch (error) {

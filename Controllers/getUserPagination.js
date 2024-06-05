@@ -8,16 +8,21 @@ exports.getUserByPage = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
     const offset = (page - 1) * limit; // Calculate offset based on page number
 
-    const name = req.query.name;
-    const designation = req.query.designation;
-    const nameFilter = name ? { name: { [Op.like]: `%${name}%` } } : {};
-    const designationFilter = designation
-      ? { designation: { [Op.like]: `%${designation}%` } }
-      : {};
+  
+    const filter = req.query.filter ? JSON.parse(req.query.filter):"";
+
+    const { name, designation, email, phone, fromDate, toDate}= filter;
+    const whereClause={};
+    
+    if (name) whereClause.name = { [Op.like]: `%${name}%` };
+    if (designation) whereClause.designation = { [Op.like]: `%${designation}%` };
+    if (email) whereClause.email = { [Op.like]: `%${email}%` };
+    if (phone) whereClause.phone = { [Op.like]: `%${phone}%` };
+    
+ const [user, totalRecords] = await Promise.all([]);
 
     const users = await Users.findAll({
-      where: { ...nameFilter, ...designationFilter },
-
+      where:  whereClause,
       limit,
       offset,
     });
