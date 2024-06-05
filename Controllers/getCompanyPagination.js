@@ -43,8 +43,11 @@ const [companys, totalRecords] = await Promise.all([
     //   offset,
     // });
 
-    const pages = Math.ceil(totalRecords/limit);
-    res.status(200).json({totalRecords:totalRecords, pages:pages, data:[...companys]});
+    let records = companys.length;
+
+    const pages = Math.ceil(filter? records/ limit: totalRecords / limit);
+
+    res.status(200).json({totalRecords: filter? records: totalRecords, pages:pages, data:[...companys]});
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");

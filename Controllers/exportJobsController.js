@@ -2,6 +2,7 @@ const db = require('../Models/db');
 const Jobs = require('../Models/jobDetails');
 const Positions = require('../Models/allPositions');
 const Company = require('../Models/companyDetails');
+const {Op} = require("sequelize");
 
 const excel = require('exceljs');
 

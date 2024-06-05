@@ -171,10 +171,13 @@ exports.getSourcingReportByPage = async (req, res) => {
     //   offset,
     // });
 
-    const pages = Math.ceil(totalRecords/limit);
+
+   let records = report.length;
+
+  const pages = Math.ceil(filter? records/ limit: totalRecords / limit);
     res
       .status(200)
-      .json({ message: "Candidates fetched successfully",totalRecords:totalRecords,pages:pages, Candidates: report });
+      .json({ message: "Candidates fetched successfully",totalRecords: filter? records: totalRecords, pages:pages, Candidates: report });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");
@@ -216,8 +219,10 @@ exports.getFilteredUpdateByPage = async (req, res) => {
      await Update.count({ limit, offset})
     ]);
      
-    const pages = Math.ceil(totalRecords/limit);
-    res.status(200).json({totalRecords: totalRecords, pages:pages, update:[...report]});
+    let records = report.length;
+
+    const pages = Math.ceil(filter? records/ limit: totalRecords / limit);
+    res.status(200).json({totalRecords: filter? records: totalRecords, pages:pages, update:[...report]});
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");
@@ -332,11 +337,13 @@ exports.getAdminReportByPage = async (req, res) => {
       offset,
     });
 
-    const pages = Math.ceil(totalRecords / limit);
+    let records = report.length;
+
+    const pages = Math.ceil(filter? records/ limit: totalRecords / limit);
 
     res.status(200).json({
       message: "Report fetched successfully",
-      totalRecords:totalRecords,
+      totalRecords:filter? records: totalRecords,
       pages:pages,
       Candidates: report,
     });

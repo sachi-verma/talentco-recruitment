@@ -31,5 +31,5 @@ router.delete('/deletejob/:id', jobController.deleteJob);
 //new route
 router.get('/getjobBypage',getJobPagination.getJobByPage);
 
-router.get('/exportJobs', exportJobsController.exportJobs);
+router.get('/exportAssignRecruiter', exportJobsController.exportJobs);
 module.exports = router;

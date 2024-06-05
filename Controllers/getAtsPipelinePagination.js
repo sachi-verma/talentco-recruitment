@@ -24,15 +24,14 @@ exports.getAtsPipelinePagination = async (req, res) => {
     console.log(filter);  
 
 
-    const {candidate, candidateEmail, candidateNumber, status, position, company, location, fromDate, toDate}= filter;
+    const {candidate, email, mobile, status, position, company, location, fromDate, toDate}= filter;
 
     const whereClause = {
       sourcing_status: "Sent To Client",
     };
     if (candidate) whereClause.candidate = { [Op.like]: `%${candidate}%` };
-    if (candidateEmail) whereClause.candidate_email = { [Op.like]: `%${candidateEmail}%` };
-    if (candidateNumber) whereClause.candidate_phone = { [Op.like]: `%${candidateNumber}%` };
-    if (position) whereClause.position = { [Op.like]: `%${position}%` };
+    if (email) whereClause.candidate_email = { [Op.like]: `%${candidateEmail}%` };
+    if (mobile) whereClause.candidate_phone = { [Op.like]: `%${candidateNumber}%` };
     if (location) whereClause.candidate_location = { [Op.like]: `%${location}%` };
     if (status) whereClause.candidate_status = { [Op.like]: `%${status}%` };
     
@@ -40,20 +39,22 @@ exports.getAtsPipelinePagination = async (req, res) => {
 
     const companyFilters={};
     if (company) companyFilters.company_name = { [Op.like]: `%${company}%` };
+    const positionFilters={};
+    if (position) positionFilters.position = { [Op.like]: `%${position}%` };
     
 
     if (fromDate && toDate) {
       let theDate = parseInt(toDate.split('-')[2]) + 1;
       let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, '0');
-      whereClause.status_date = {
+      whereClause.sourcing_date = {
         [Op.between]: [fromDate, newDate],
       };
     } else if (fromDate) { 
-      whereClause.status_date = {
+      whereClause.sourcing_date = {
         [Op.gte]:  fromDate,
       };
     } else if (toDate) {
-      whereClause.status_date = {
+      whereClause.sourcing_date = {
         [Op.lte]:  toDate,
       };
     }
@@ -80,8 +81,9 @@ exports.getAtsPipelinePagination = async (req, res) => {
         ],
         include: [
           {
-            model: Position,
+            model: Position, 
             required: true,
+            where:positionFilters,
             attributes: [
               "id",
               "company_id",
@@ -211,11 +213,12 @@ exports.getAtsPipelinePagination = async (req, res) => {
     //   offset,
     // });
    
-    const pages = Math.ceil(totalRecords/limit);
-    console.log(totalRecords,pages);
+    let records = report.length;
+
+    const pages = Math.ceil(filter? records/ limit: totalRecords / limit);
     res.status(200).json({
       message: "candidates fetched successfully",
-      totalRecords: totalRecords,
+      totalRecords: filter? records: totalRecords,
       pages: pages,
       Candidates: report,
 

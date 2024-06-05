@@ -19,14 +19,21 @@ exports.getUserByPage = async (req, res) => {
     if (email) whereClause.email = { [Op.like]: `%${email}%` };
     if (phone) whereClause.phone = { [Op.like]: `%${phone}%` };
     
- const [user, totalRecords] = await Promise.all([]);
+ const [user, totalRecords] = await Promise.all([
+  await Users.findAll({
+    where:  whereClause,
+    limit,
+    offset,
+  }),
 
-    const users = await Users.findAll({
-      where:  whereClause,
-      limit,
-      offset,
-    });
-    res.status(200).json(users);
+  await Users.count( )
+
+ ]);
+  let records = user.length;
+
+  const pages = Math.ceil(filter? records/ limit: totalRecords / limit);
+ 
+    res.status(200).json({ totalRecords: filter? records : totalRecords, pages: pages, user: user});
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");

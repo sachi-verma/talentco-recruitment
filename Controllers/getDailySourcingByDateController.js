@@ -55,7 +55,7 @@ exports.getSourcingReportByDate = async (req, res) => {
 
         const [report, totalRecords] = await Promise.all([
             await Candidate.findAll({
-                attributes: ['id', 'candidate', 'position', 'cv_sourced_from', 'relevant', 'sourcing_date','sourcing_date', 'remarks', 'created_at', 'updated_at'],
+                attributes: ['id', 'candidate', 'position', 'cv_sourced_from', 'relevant', 'sourcing_date','sourcing_status', 'remarks', 'created_at', 'updated_at'],
                 include: [{
                     model: Position,
                     required: true,
@@ -91,8 +91,10 @@ exports.getSourcingReportByDate = async (req, res) => {
             
         ]);
 
-        const pages = Math.ceil(totalRecords / limit);
-        res.status(200).json({ message: 'Candidates fetched successfully', totalRecords: totalRecords, pages: pages, Candidates: report });
+        let records = report.length;
+
+        const pages = Math.ceil(filter? records/ limit: totalRecords / limit);
+        res.status(200).json({ message: 'Candidates fetched successfully', totalRecords: filter? records: totalRecords, pages: pages, Candidates: report });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).send('500 server error');

@@ -83,6 +83,7 @@ exports.getJobByPage = async (req, res) => {
               required: true,
               where: companyFilters,
             },
+            
           ],
           where:whereClause,
           limit,
@@ -102,9 +103,9 @@ exports.getJobByPage = async (req, res) => {
         })
       ]);
       let records = job.length;
-      
-      const pages = Math.ceil(filter? records: totalRecords / limit);
-      res.status(200).json({ totalRecords: totalRecords, FilteredRecords: filter? records:0, pages: pages, data: [...job] });
+
+      const pages = Math.ceil(filter? records/ limit: totalRecords / limit);
+      res.status(200).json({ totalRecords: filter?records:totalRecords, pages: pages, data: [...job] });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");
