@@ -58,13 +58,13 @@ exports.createSourcingReport = async (req, res) => {
 //USING THE all_candidates DATABASE
 exports.addSourcingReport = async (req, res) => {
     try {
-        const { id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date } = req.body;
+        const { id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date,  candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks, candidate_resume } = req.body;
 
         // Define the required fields for validation
         let requiredFields = ['candidate', 'position', 'cv_sourced_from', 'relevant', 'sourcing_status'];
 
         // Check if candidate status is 'Screened', then add candidate_phone and candidate_email to required fields
-        if (candidate_status === 'Screened') {
+        if (sourcing_status === 'Screened') {
             requiredFields = requiredFields.concat(['candidate_phone', 'candidate_alt_phone', 'candidate_email', 'candidate_location', 'candidate_qualification', 'candidate_experience', 'candidate_current_ctc', 'candidate_expected_ctc', 'candidate_organization', 'candidate_designation', 'candidate_notice_period', 'candidate_gender', 'candidate_remarks']);
         }
 
@@ -75,9 +75,14 @@ exports.addSourcingReport = async (req, res) => {
                 return res.status(400).json({ error: `Missing or empty fields detected` });
             }
         }
+        let report;
+        if(sourcing_status === 'Screened'){
+             report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date, candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks, candidate_resume });
+        }
+        else{
+             report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date});
 
-
-        const report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date });
+        }
 
         const alldata = await FilteredUpdate();
         const admindata = await DailyAdminUpdate();

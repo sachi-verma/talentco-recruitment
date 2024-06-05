@@ -9,12 +9,12 @@ exports.getAtsPipeline = async (req, res) => {
     try {
         const report = await Candidate.findAll({
             attributes: ['id', 'candidate', 'position', 'candidate_phone', 'candidate_email', 'candidate_location', 'candidate_experience', 'candidate_ctc', 'candidate_qualification', 'candidate_gender', 'cv_sourced_from', 'relevant', 'candidate_status', 'remarks', 'created_at', 'updated_at'],
-            include: [{ 
+            include: [{
                 model: Position,
                 required: true,
                 attributes: ['id', 'company_id', 'position', 'location', 'experience', 'min_ctc', 'max_ctc'],
-                include: [{ 
-                    model:Company,
+                include: [{
+                    model: Company,
                     required: true,
                     attributes: ['company_name']
                 }]
@@ -31,26 +31,26 @@ exports.getAtsPipeline = async (req, res) => {
             //       [Op.or]: ['Sent To Client', 'Shortlisted', 'Interview Done', 'Selected', 'Not Selected', 'Backout']
             //     }
             //   }
-        }); 
-        res.status(200).json({message: 'candidates fetched successfully', Candidates: report}); 
+        });
+        res.status(200).json({ message: 'candidates fetched successfully', Candidates: report });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).send('500 server error');
     }
 }
 
-exports.editAtsPipeline = async (req,res) => {
+exports.editAtsPipeline = async (req, res) => {
     try {
         const id = req.params.id;
-        const { candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_ctc, candidate_qualification, candidate_gender } = req.body;
-        await Candidate.update({ candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_ctc, candidate_qualification, candidate_gender }, {where: {id: id}});
-  
-        return res.status(200).json({ success: "candidate data updated sucessfully", candidate: {id, candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_ctc, candidate_qualification, candidate_gender} }); 
+        const { candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks, candidate_resume } = req.body;
+        await Candidate.update({ candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks, candidate_resume }, { where: { id: id } });
+
+        return res.status(200).json({ success: "candidate data updated sucessfully", candidate: { id, candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks, candidate_resume} });
 
     } catch (error) {
         console.error('Error updating candidate:', error);
         return res.status(500).json({ error: 'Internal server error' });
-      }
+    }
 }
 
 exports.editAtsStatus = async (req, res) => {
@@ -58,15 +58,15 @@ exports.editAtsStatus = async (req, res) => {
         const id = req.params.id;
         const { candidate_status, status_date } = req.body;
         //changing the status in all candidates table
-        const candidate = await Candidate.update({ candidate_status, status_date }, {where: {id: id}});
+        const candidate = await Candidate.update({ candidate_status, status_date }, { where: { id: id } });
         //creating a new status to add in status history
         const status = await Status.create({ candidate_id: id, candidate_status: candidate_status, status_date: status_date });
-        return res.status(200).json({ success: "candidate status updated sucessfully", candidate: {id, candidate_status, status_date}, status });
+        return res.status(200).json({ success: "candidate status updated sucessfully", candidate: { id, candidate_status, status_date }, status });
 
     } catch (error) {
         console.error('Error updating candidate status:', error);
         return res.status(500).json({ error: 'Internal server error' });
-      }
+    }
 }
 
 
@@ -75,7 +75,7 @@ exports.getStatusHistory = async (req, res) => {
         const id = req.params.id;
         const history = await Status.findAll({
             attributes: ['id', 'candidate_status', 'status_date'],
-            where: { candidate_id: id}
+            where: { candidate_id: id }
         });
         res.status(200).json({ message: 'Status history fetched successfully', history });
     } catch (error) {
@@ -83,4 +83,3 @@ exports.getStatusHistory = async (req, res) => {
         res.status(500).send('500 server error');
     }
 }
- 
