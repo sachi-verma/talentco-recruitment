@@ -6,12 +6,20 @@ const Candidate = require("../Models/allCandidates");
 const Position = require("../Models/allPositions");
 const Company = require("../Models/companyDetails");
 const Status = require("../Models/statusHistory");
+const excel = require('exceljs');
 
 exports.getAtsPipelinePagination = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1; // Current page, default to 1
-    const limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
-    const offset = (page - 1) * limit; // Calculate offset based on page number
+    let limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
+    let offset = (page - 1) * limit; // Calculate offset based on page number
+
+    const download =req.query.download ? true : false;
+
+    if(download) {
+      limit= null;
+      offset = null;
+    };    
     
     // const candidateName = req.query.candidateName;
     // const companyName = req.query.companyName;
@@ -213,7 +221,58 @@ exports.getAtsPipelinePagination = async (req, res) => {
     //   offset,
     // });
    
-    let records = report.length;
+    
+
+if(download){
+   // Create Excel workbook and worksheet
+    const workbook = new excel.Workbook();
+    const worksheet = workbook.addWorksheet('AtsPipeline');
+
+    // Add headers to the worksheet
+    worksheet.addRow(['Candidate','Position','Mobile Number','Email','Candidate Location',
+    'Candidate Experience','Current CTC','Candidate Qualification',
+     'Gender', 'Candidate Status',
+     'CV Sourced From','Relevent','Remarks', 
+     'Company', 'Location','Experience','Min CTC','Max CTC']);
+
+    // Add data rows to the worksheet
+    report.forEach(report => {
+        worksheet.addRow([
+          report.candidate,
+            report.Position.position,
+            report.candidate_phone,
+            report.candidate_email,
+            report.candidate_location,
+            report.candidate_experience,
+            report.candidate_current_ctc,
+            report.candidate_qualification,
+            report.candidate_gender,
+            report.candidate_status,
+            report.cv_sourced_from,
+            report.relevant,
+            report.remarks,
+            report.Position.Company.company_name,
+            report.Position.experience,
+            report.Position.min_ctc,
+            report.Position.max_ctc, 
+        ]);
+    });
+
+    // Generate a unique filename for the Excel file
+     
+    const filename = `Exported_atspipline.xlsx`;
+
+    // Save the workbook to a buffer
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    // Send the Excel file as a response
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.status(200).send(buffer);
+        
+}
+else{
+  let records = report.length;
 
     const pages = Math.ceil(filter? records/ limit: totalRecords / limit);
     res.status(200).json({
@@ -223,6 +282,8 @@ exports.getAtsPipelinePagination = async (req, res) => {
       Candidates: report,
 
     });
+}
+   
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");

@@ -3,6 +3,7 @@ const Jobs = require("../Models/jobDetails");
 const Positions = require("../Models/allPositions");
 const Company = require("../Models/companyDetails");
 const { Op } = require("sequelize");
+const Users = require("../Models/userDetails");
  
 
 exports.getJobByPage = async (req, res) => {
@@ -24,7 +25,7 @@ exports.getJobByPage = async (req, res) => {
     // const industryName = req.query.industryName;
     //const assignRecruiter = req.query.assignRecruiter;
 
-    console.log(position, company, location, gender, qualification, recruiterId, notAssigned, fromDate, toDate);
+    //console.log(position, company, location, gender, qualification, recruiterId, notAssigned, fromDate, toDate);
  
     const companyFilters = {};
     if (company) {
@@ -77,18 +78,24 @@ exports.getJobByPage = async (req, res) => {
 
       const [job, totalRecords] = await Promise.all([
         Positions.findAll({
+          attributes:{exclude:['recruiter_assign']},
           include: [
             {
               model: Company,
               required: true,
               where: companyFilters,
             },
+            {
+              model: Users,
+              required: true,
+              attributes:['name'],
+            }
             
           ],
           where:whereClause,
           limit,
           offset,
-          logging: console.log, // Enable logging
+           
         }),
         Positions.count({
           include: [
@@ -99,7 +106,7 @@ exports.getJobByPage = async (req, res) => {
             },
           ],
           where:whereClause,
-          logging: console.log, // Enable logging
+           
         })
       ]);
       let records = job.length;

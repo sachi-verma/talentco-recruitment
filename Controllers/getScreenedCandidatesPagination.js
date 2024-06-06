@@ -40,10 +40,12 @@ exports.getScreenedCandidatePagination = async (req, res) => {
 
            const companyFilters={};
 
-           if (position) whereClause.position = { [Op.like]: `%${position}%` };
            if (location) whereClause.location = { [Op.like]: `%${location}%` };
            if (company) companyFilters.company_name = { [Op.like]: `%${company}%` };
            if (candidate) whereClause.candidate = { [Op.like]: `%${candidate}%` };
+
+           const positionFilter={};
+           if (position) positionFilter.position = { [Op.like]: `%${position}%` };
             
            if (fromDate && toDate) {
             let theDate = parseInt(toDate.split('-')[2]) + 1;
@@ -67,10 +69,11 @@ exports.getScreenedCandidatePagination = async (req, res) => {
                     model: Position,
                     required: true,
                     attributes: ['company_id', 'position', 'location'],
+                    where:positionFilter,
                     include: [{ 
                         model:Company,
                         required: true,
-                        attributes: ['company_name'],
+                        attributes: {exclude: ['company_username','company_password','role_id']},
                         where: companyFilters
                     },
                     {

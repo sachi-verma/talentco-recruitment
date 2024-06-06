@@ -3,7 +3,7 @@ const Jobs = require('../Models/jobDetails');
 const Positions = require('../Models/allPositions');
 const Company = require('../Models/companyDetails');
 const {Op} = require("sequelize");
-
+const Users = require("../Models/userDetails");
 const excel = require('exceljs');
 
 Company.hasMany(Positions, { foreignKey: 'company_id' });
@@ -51,12 +51,18 @@ exports.exportJobs = async (req, res) => {
 
 
      const job = await Positions.findAll({
+      attributes:{exclude:['recruiter_assign']},
         include: [
           {
             model: Company,
             required: true,
             where: companyFilters,
           },
+          {
+            model: Users,
+            required: true,
+            attributes:['name'],
+          }
         ],
         where:whereClause,
       });
@@ -66,18 +72,25 @@ exports.exportJobs = async (req, res) => {
     const worksheet = workbook.addWorksheet('Jobs');
 
     // Add headers to the worksheet
-    worksheet.addRow(['Position', 'Company', 'Location', 'Gender', 'Qualification', 'Recruiter Assign', 'Upload Date']);
+    worksheet.addRow(['Upload Date','Position','Company', 'Location', 'Experience','Min CTC','Mx CTC', 'Number of Positions','JD','Position Status', 'Gender','Qualification', 'Recruiter Assign']);
 
     // Add data rows to the worksheet
     job.forEach(job => {
         worksheet.addRow([
+          job.upload_date,
             job.position,
             job.Company.company_name,
             job.location,
+            job.experience,
+            job.min_ctc,
+            job.max_ctc,
+            job.no_of_positions,
+            job.jd_upload,
+            job.position_status,
             job.gender_pref,
             job.qualification,
-            job.recruiter_assign,
-            job.upload_date,
+            job.User.name,
+            
         ]);
     });
 
