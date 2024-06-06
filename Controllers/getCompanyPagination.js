@@ -8,9 +8,6 @@ exports.getCompanyByPage = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
     const offset = (page - 1) * limit; // Calculate offset based on page number
 
-    const companyName = req.query.companyName;
-    const industryName = req.query.industryName;
-
     const filter = req.query.filter ? JSON.parse(req.query.filter):"";
 
     const { company, industry, fromDate, toDate}= filter;
@@ -18,10 +15,10 @@ exports.getCompanyByPage = async (req, res) => {
 
     const filters = {};
     if (company) {
-      filters.company_name = { [Op.like]: `%${companyName}%` };
+      filters.company_name = { [Op.like]: `%${company}%` };
     }
     if (industry) {
-      filters.industry = { [Op.like]: `%${industryName}%` };
+      filters.industry = { [Op.like]: `%${industry}%` };
     }
 
 const [companys, totalRecords] = await Promise.all([

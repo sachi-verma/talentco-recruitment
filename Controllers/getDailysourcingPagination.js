@@ -223,7 +223,7 @@ exports.getSourcingReportByPage = async (req, res) => {
 
       // Generate a unique filename for the Excel file
 
-      const filename = `Exported_atspipline.xlsx`;
+      const filename = `Exported_dailysourcing.xlsx`;
 
       // Save the workbook to a buffer
       const buffer = await workbook.xlsx.writeBuffer();
