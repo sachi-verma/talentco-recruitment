@@ -81,7 +81,8 @@ exports.loginAccess = async (req, res) => {
         res.json({
             name,
             token,
-            permissions
+            permissions,
+            id
         });
 
     } catch (error) {

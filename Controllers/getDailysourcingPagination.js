@@ -258,8 +258,18 @@ exports.getFilteredUpdateByPage = async (req, res) => {
   try {
     //date filter
     const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
+    const page = parseInt(req.query.page) || 1; // Current page, default to 1
+    let limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
+    let offset = (page - 1) * limit; // Calculate offset based on page number
 
     console.log(filter);
+
+    const download = req.query.download ? true : false;
+
+    if (download) {
+      limit = null;
+      offset = null;
+    }
 
     const { fromDate, toDate } = filter;
 
@@ -281,22 +291,89 @@ exports.getFilteredUpdateByPage = async (req, res) => {
       };
     }
 
-    const page = parseInt(req.query.page) || 1; // Current page, default to 1
-    const limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
-    const offset = (page - 1) * limit; // Calculate offset based on page number
+   
     const [report, totalRecords] = await Promise.all([
       await Update.findAll({ where: whereClause, limit, offset }),
       await Update.count({ limit, offset }),
     ]);
 
-    let records = report.length;
+    if (download){
+        // Create Excel workbook and worksheet
+        const workbook = new excel.Workbook();
+        const worksheet = workbook.addWorksheet("filtered Update");
+  
+        // Add headers to the worksheet
+  
+        worksheet.addRow([
+          "Sourcing Date",
+          "Candidate Status",
+          "company Name",
+          "Position Name",
+          "Recriuter Name",
+          "Candidate Name",
+          "Candidate Location",
+          "Contact Number",
+          "Current CTC",
+          "Expected CTC",
+          "Notice Period",
+          "Experience",
+          "Current Organization",
+          "Current Designation",
+          "Email",
+          "Remarks",
+        ]);
+  
+        // Add data rows to the worksheet
+        report.forEach((report) => {
+          worksheet.addRow([
+            report.sourcing_date,
+            report.candidate_status,
+            report.Position.Company.company_name,
+            report.Position.position,
+            report.Position.User.name,
+            report.candidate,
+            report.candidate_location,
+            report.candidate_phone,
+            report.candidate_current_ctc,
+            report.candidate_expected_ctc,
+            report.candidate_notice_period,
+            report.candidate_experience,
+            report.candidate_organization,
+            report.candidate_designation,
+            report.candidate_email,
+            report.remarks,
+          ]);
+        });
+  
+        // Generate a unique filename for the Excel file
+  
+        const filename = `Exported_atspipline.xlsx`;
+  
+        // Save the workbook to a buffer
+        const buffer = await workbook.xlsx.writeBuffer();
+  
+        // Send the Excel file as a response
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename="${filename}"`
+        );
+        res.setHeader(
+          "Content-Type",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+        res.status(200).send(buffer);
+    }else{
+      let records = report.length;
 
-    const pages = Math.ceil(filter ? records / limit : totalRecords / limit);
-    res.status(200).json({
-      totalRecords: filter ? records : totalRecords,
-      pages: pages,
-      update: [...report],
-    });
+      const pages = Math.ceil(filter ? records / limit : totalRecords / limit);
+      res.status(200).json({
+        totalRecords: filter ? records : totalRecords,
+        pages: pages,
+        update: [...report],
+      });
+    }
+
+   
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");
