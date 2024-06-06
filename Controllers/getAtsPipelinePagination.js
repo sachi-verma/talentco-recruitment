@@ -229,17 +229,18 @@ if(download){
     const worksheet = workbook.addWorksheet('AtsPipeline');
 
     // Add headers to the worksheet
-    worksheet.addRow(['Candidate','Position','Mobile Number','Email','Candidate Location',
+    worksheet.addRow(['Company','Position','Candidate','Mobile Number','Email','Candidate Location',
     'Candidate Experience','Current CTC','Candidate Qualification',
      'Gender', 'Candidate Status',
      'CV Sourced From','Relevent','Remarks', 
-     'Company', 'Location','Experience','Min CTC','Max CTC']);
+      'Location','Experience','Min CTC','Max CTC']);
 
     // Add data rows to the worksheet
     report.forEach(report => {
         worksheet.addRow([
+          report.Position.Company.company_name,
+          report.Position.position,
           report.candidate,
-            report.Position.position,
             report.candidate_phone,
             report.candidate_email,
             report.candidate_location,
@@ -251,7 +252,7 @@ if(download){
             report.cv_sourced_from,
             report.relevant,
             report.remarks,
-            report.Position.Company.company_name,
+            report.Position.location,
             report.Position.experience,
             report.Position.min_ctc,
             report.Position.max_ctc, 
