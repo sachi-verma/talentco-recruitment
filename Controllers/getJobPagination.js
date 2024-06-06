@@ -78,7 +78,7 @@ exports.getJobByPage = async (req, res) => {
 
       const [job, totalRecords] = await Promise.all([
         Positions.findAll({
-          attributes:{exclude:['recruiter_assign']},
+           
           include: [
             {
               model: Company,

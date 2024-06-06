@@ -305,49 +305,29 @@ exports.getFilteredUpdateByPage = async (req, res) => {
         // Add headers to the worksheet
   
         worksheet.addRow([
-          "Sourcing Date",
-          "Candidate Status",
-          "company Name",
-          "Position Name",
-          "Recriuter Name",
-          "Candidate Name",
-          "Candidate Location",
-          "Contact Number",
-          "Current CTC",
-          "Expected CTC",
-          "Notice Period",
-          "Experience",
-          "Current Organization",
-          "Current Designation",
-          "Email",
-          "Remarks",
+          "Date",
+          "Total CV Sourced",
+          "Total CV Relevent",
+          "Total Cnfirmation Pending",
+          "Total Sent to client",
+          
         ]);
   
         // Add data rows to the worksheet
         report.forEach((report) => {
           worksheet.addRow([
-            report.sourcing_date,
-            report.candidate_status,
-            report.Position.Company.company_name,
-            report.Position.position,
-            report.Position.User.name,
-            report.candidate,
-            report.candidate_location,
-            report.candidate_phone,
-            report.candidate_current_ctc,
-            report.candidate_expected_ctc,
-            report.candidate_notice_period,
-            report.candidate_experience,
-            report.candidate_organization,
-            report.candidate_designation,
-            report.candidate_email,
-            report.remarks,
+            report.update_date,
+            report.total_cv_sourced,
+            report.total_cv_relevant,
+            report.total_confirmation_pending,
+            report.total_sent_to_client
+             
           ]);
         });
   
         // Generate a unique filename for the Excel file
   
-        const filename = `Exported_atspipline.xlsx`;
+        const filename = `Exported_filteredUpdate.xlsx`;
   
         // Save the workbook to a buffer
         const buffer = await workbook.xlsx.writeBuffer();
@@ -383,9 +363,14 @@ exports.getFilteredUpdateByPage = async (req, res) => {
 exports.getAdminReportByPage = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1; // Current page, default to 1
-    const limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
-    const offset = (page - 1) * limit; // Calculate offset based on page number
+    let limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
+    let offset = (page - 1) * limit; // Calculate offset based on page number
+    const download = req.query.download ? true : false;
 
+    if (download) {
+      limit = null;
+      offset = null;
+    }
     // const startDate = req.query.startDate
     //   ? new Date(req.query.startDate)
     //   : null;
@@ -487,16 +472,80 @@ exports.getAdminReportByPage = async (req, res) => {
       offset,
     });
 
-    let records = report.length;
+    if(download){
+         // Create Excel workbook and worksheet
+         const workbook = new excel.Workbook();
+         const worksheet = workbook.addWorksheet("Admin report");
+   
+         // Add headers to the worksheet
+         worksheet.addRow([
+           "Date",
+           "Position",
+           "Candidate", 
+           "Sourcing Status",
+           "CV Sourced From",
+           "Relevent",
+           "Remarks",
+           "Location",
+           "Experience",
+           "Min CTC",
+           "Max CTC",
+         ]);
+   
+         // Add data rows to the worksheet
+         report.forEach((report) => {
+           worksheet.addRow([
+             report.Position.Company.company_name,
+             report.Position.position,
+             report.candidate,
+             report.candidate_phone,
+             report.candidate_email,
+             report.candidate_location,
+             report.candidate_experience,
+             report.candidate_current_ctc,
+             report.candidate_qualification,
+             report.candidate_gender,
+             report.candidate_status,
+             report.cv_sourced_from,
+             report.relevant,
+             report.remarks,
+             report.Position.location,
+             report.Position.experience,
+             report.Position.min_ctc,
+             report.Position.max_ctc,
+           ]);
+         });
+   
+         // Generate a unique filename for the Excel file
+   
+         const filename = `Exported_dailysourcing.xlsx`;
+   
+         // Save the workbook to a buffer
+         const buffer = await workbook.xlsx.writeBuffer();
+   
+         // Send the Excel file as a response
+         res.setHeader(
+           "Content-Disposition",
+           `attachment; filename="${filename}"`
+         );
+         res.setHeader(
+           "Content-Type",
+           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+         );
+         res.status(200).send(buffer);
+    }else{ 
+      let records = report.length;
 
-    const pages = Math.ceil(filter ? records / limit : totalRecords / limit);
+      const pages = Math.ceil(filter ? records / limit : totalRecords / limit);
+  
+      res.status(200).json({
+        message: "Report fetched successfully",
+        totalRecords: filter ? records : totalRecords,
+        pages: pages,
+        Candidates: report,
+      });}
 
-    res.status(200).json({
-      message: "Report fetched successfully",
-      totalRecords: filter ? records : totalRecords,
-      pages: pages,
-      Candidates: report,
-    });
+   
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");
