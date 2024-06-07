@@ -59,34 +59,44 @@ const Positions = sequelize.define('Positions',{
         }
     },
     cv_sent: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
+        defaultValue:0,
     },
     cv_shortlisted: {
-        type: DataTypes.STRING,
+         type: DataTypes.INTEGER,
+        defaultValue:0,
     },
     cv_rejected: {
-        type: DataTypes.STRING,
+         type: DataTypes.INTEGER,
+        defaultValue:0,
     },
     cv_backout: {
-        type: DataTypes.STRING,
+         type: DataTypes.INTEGER,
+        defaultValue:0,
     },
     cv_interviewed: {
-        type: DataTypes.STRING,
+         type: DataTypes.INTEGER,
+        defaultValue:0,
     },
     cv_rejected_post_interview: {
-        type: DataTypes.STRING,
+         type: DataTypes.INTEGER,
+        defaultValue:0,
     },
     cv_feedback_pending: {
-        type: DataTypes.STRING,
+         type: DataTypes.INTEGER,
+        defaultValue:0,
     },
     cv_final_selection: {
-        type: DataTypes.STRING,
+         type: DataTypes.INTEGER,
+        defaultValue:0,
     },
     cv_offer_letter_sent: {
-        type: DataTypes.STRING,
+         type: DataTypes.INTEGER,
+        defaultValue:0,
     },
     cv_final_join: {
-        type: DataTypes.STRING,
+         type: DataTypes.INTEGER,
+        defaultValue:0,
     },
     remarks: {
         type: DataTypes.STRING,
@@ -104,6 +114,14 @@ const Positions = sequelize.define('Positions',{
     },
     updated_by: {
         type: DataTypes.STRING,
+    },
+    cv_confirmation_pending :{
+        type: DataTypes.INTEGER,
+        defaultValue:0
+    },
+    cv_screened :{
+        type: DataTypes.INTEGER,
+        defaultValue:0
     }
 },
 {

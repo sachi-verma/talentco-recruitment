@@ -21,6 +21,8 @@ const authRoutes = require('./Routes/authRoutes');
 const protectedRoutes = require('./Routes/protectedRoutes');
 const userRoutes = require('./Routes/userRoutes');
 
+const dashboardRoutes = require('./Routes/dashboardRoutes');
+
 
 const app = express();
 
@@ -41,6 +43,7 @@ app.use(emailRoutes);
 app.use(interviewRoutes);
 app.use(screenedCandidateRoutes);
 app.use(authRoutes);
+app.use(dashboardRoutes);
 
 
 // app.use("/protected_routes", protectedRoutes);

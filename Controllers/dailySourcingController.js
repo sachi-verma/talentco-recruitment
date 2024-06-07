@@ -7,6 +7,7 @@ const Position = require('../Models/allPositions');
 const Company = require('../Models/companyDetails');
 const AdminUpdate = require('../Models/dailyAdminUpdate');
 const User = require('../Models/userDetails');
+const { connect } = require('tedious');
 
 
 Position.hasMany(Candidate, { foreignKey: 'position' });
@@ -363,11 +364,54 @@ exports.getFilteredUpdate = async (req, res) => {
 }
 
 exports.statusChange = async (req, res) => {
+    
     try {
         const id = req.params.id;
         const { sourcing_status } = req.body;
 
         await Candidate.update({ sourcing_status }, {where: {id: id}});
+
+        //changes
+
+       const candidate= await Candidate.findByPk(id);
+       console.log(candidate.position);
+
+       const position= candidate.position;
+
+       let incrementUpdate ;
+
+       if(sourcing_status === 'Rejected'){
+
+        incrementUpdate = await Position.increment(
+            { cv_rejected: 1 },
+            { where: { id: position } }
+        );
+
+       } else if(sourcing_status === 'Confirmation Pending'){
+        incrementUpdate = await Position.increment(
+            { cv_confirmation_pending: 1 },
+            { where: { id: position}  }
+        );
+       }
+       else if(sourcing_status === 'Screened'){
+
+        incrementUpdate = await Position.increment(
+            { cv_screened: 1 },
+            { where: { id: position } }
+        );
+
+       } else if(sourcing_status ==='Sent To Client'){
+
+        incrementUpdate = await Position.increment(
+            { cv_sent: 1 },
+            { where: { id: position } }
+        );
+       }
+
+       if(incrementUpdate){
+        console.log('Increment updateed position table' , incrementUpdate);
+       }
+      
 
         const alldata = await FilteredUpdate();
   
