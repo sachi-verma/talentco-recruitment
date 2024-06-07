@@ -12,7 +12,7 @@ exports.getDashBoradReport = async (req, res) => {
 
         const result = await Position.findAll({
             attributes: [
-                [Sequelize.fn('SUM', Sequelize.col('id')), 'total_open_positions' ],
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'total_open_positions' ],
                 [Sequelize.fn('SUM', Sequelize.col('cv_sent')), 'total_cv_sent'],
                 [Sequelize.fn('SUM', Sequelize.col('cv_shortlisted')), 'total_cv_shortlisted'],
                 [Sequelize.fn('SUM', Sequelize.col('cv_backout')), 'total_cv_backout'],
