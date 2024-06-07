@@ -57,10 +57,54 @@ exports.editAtsStatus = async (req, res) => {
     try {
         const id = req.params.id;
         const { candidate_status, status_date } = req.body;
+        
         //changing the status in all candidates table
         const candidate = await Candidate.update({ candidate_status, status_date }, { where: { id: id } });
         //creating a new status to add in status history
         const status = await Status.create({ candidate_id: id, candidate_status: candidate_status, status_date: status_date });
+
+    // changes
+
+        const candidateinfo= await Candidate.findByPk(id);
+        console.log(candidateinfo.position);
+
+        const position= candidate.position;
+
+        let incrementUpdate ;
+
+        if(candidate_status === 'Rejected'){
+ 
+         incrementUpdate = await Position.increment(
+             { cv_rejected: 1 },
+             { where: { id: position } }
+         );
+ 
+        } else if(candidate_status === 'Shortlisted'){
+         incrementUpdate = await Position.increment(
+             { cv_shortlisted: 1 },
+             { where: { id: position}  }
+         );
+        }
+        else if(candidate_status === 'Backout'){
+ 
+         incrementUpdate = await Position.increment(
+             { cv_backout: 1 },
+             { where: { id: position } }
+         );
+ 
+        } else if(candidate_status ==='Interview Done'){
+ 
+         incrementUpdate = await Position.increment(
+             { cv_interviewed: 1 },
+             { where: { id: position } }
+         );
+        }
+ 
+        if(incrementUpdate){
+         console.log('Increment updateed position table' , incrementUpdate);
+        }
+       
+
         return res.status(200).json({ success: "candidate status updated sucessfully", candidate: { id, candidate_status, status_date }, status });
 
     } catch (error) {
