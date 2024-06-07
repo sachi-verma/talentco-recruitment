@@ -32,4 +32,7 @@ router.delete('/deletejob/:id', jobController.deleteJob);
 router.get('/getjobBypage',getJobPagination.getJobByPage);
 
 router.get('/exportAssignRecruiter', exportJobsController.exportJobs);
+
+router.patch('/updatePositionStatus/:id', getJobPagination.updatePositionStatus);
+
 module.exports = router;

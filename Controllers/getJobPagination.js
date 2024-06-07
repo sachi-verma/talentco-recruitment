@@ -4,22 +4,32 @@ const Positions = require("../Models/allPositions");
 const Company = require("../Models/companyDetails");
 const { Op } = require("sequelize");
 const Users = require("../Models/userDetails");
- 
-Company.hasMany(Positions, { foreignKey: 'company_id' });
-Positions.belongsTo(Company, { foreignKey: 'company_id' });
+
+Company.hasMany(Positions, { foreignKey: "company_id" });
+Positions.belongsTo(Company, { foreignKey: "company_id" });
 
 exports.getJobByPage = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const offset = (page - 1) * limit; 
+    const offset = (page - 1) * limit;
 
-    const filter = req.query.filter ? JSON.parse(req.query.filter):"";
+    const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
 
-    console.log(filter);  
+    console.log(filter);
 
-
-    const {position, company, location, gender, qualification, recruiterId, notAssigned, fromDate, toDate}= filter;
+    const {
+      position,
+      company,
+      location,
+      gender,
+      qualification,
+      recruiterId,
+      notAssigned,
+      positionStatus,
+      fromDate,
+      toDate,
+    } = filter;
 
     // const position = req.query.position;
     // const companyName = req.query.companyName;
@@ -28,7 +38,7 @@ exports.getJobByPage = async (req, res) => {
     //const assignRecruiter = req.query.assignRecruiter;
 
     //console.log(position, company, location, gender, qualification, recruiterId, notAssigned, fromDate, toDate);
- 
+
     const companyFilters = {};
     if (company) {
       companyFilters.company_name = { [Op.like]: `%${company}%` };
@@ -36,7 +46,7 @@ exports.getJobByPage = async (req, res) => {
     // if (industryName) {
     //   companyFilters.industry = { [Op.like]: `%${industryName}%` };
     // }
- 
+
     // const positionFilter = position
     //   ? { position: { [Op.like]: `%${position}%` } }
     //   : {};
@@ -53,73 +63,100 @@ exports.getJobByPage = async (req, res) => {
     if (position) whereClause.position = { [Op.like]: `%${position}%` };
     if (location) whereClause.location = { [Op.like]: `%${location}%` };
     if (gender) whereClause.gender_pref = { [Op.like]: `%${gender}%` };
-    if (qualification) whereClause.qualification = { [Op.like]: `%${qualification}%` };
-    if (recruiterId) whereClause.recruiter_assign = { [Op.like]: `%${recruiterId}%` };
+    if (qualification)
+      whereClause.qualification = { [Op.like]: `%${qualification}%` };
+    if (recruiterId)
+      whereClause.recruiter_assign = { [Op.like]: `%${recruiterId}%` };
     if (fromDate) whereClause.upload_date = { [Op.gte]: `%${fromDate}%` };
     if (notAssigned === "Not assigned") whereClause.recruiter_assign = null;
+    // if (positionStatus)
+    //   whereClause.position_status = { [Op.like]: `%${positionStatus}` };
+    if (positionStatus) {
+      whereClause.position_status = { [Op.like]: `%${positionStatus}%` };
+    } else {
+      whereClause.position_status = "Open";
+    }
 
     if (fromDate && toDate) {
-      let theDate = parseInt(toDate.split('-')[2]) + 1;
-      let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, '0');
+      let theDate = parseInt(toDate.split("-")[2]) + 1;
+      let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, "0");
       whereClause.upload_date = {
         [Op.between]: [fromDate, newDate],
       };
-    } else if (fromDate) { 
+    } else if (fromDate) {
       whereClause.upload_date = {
-        [Op.gte]:  fromDate,
+        [Op.gte]: fromDate,
       };
     } else if (toDate) {
       whereClause.upload_date = {
-        [Op.lte]:  toDate,
+        [Op.lte]: toDate,
       };
     }
-  
-    console.log('Where clause:', whereClause);
-    console.log('Company filters:', companyFilters);
 
+    console.log("Where clause:", whereClause);
+    console.log("Company filters:", companyFilters);
 
-      const [job, totalRecords] = await Promise.all([
-        Positions.findAll({
-           
-          include: [
-            {
-              model: Company,
-              required: true,
-              where: companyFilters,
-            },
-            {
-              model: Users,
-              
-              attributes:['name'],
-            }
-            
-          ],
-          where:whereClause,
-          limit,
-          offset,
-           
-        }),
-        Positions.count({
-          include: [
-            {
-              model: Company,
-              required: true,
-              where: companyFilters,
-            },
-            {
-              model: Users,
-              
-              attributes:['name'],
-            }
-          ],
-          where:whereClause,
-           
-        })
-      ]);
-      let records = job.length;
+    const [job, totalRecords] = await Promise.all([
+      Positions.findAll({
+        include: [
+          {
+            model: Company,
+            required: true,
+            where: companyFilters,
+          },
+          {
+            model: Users,
 
-      const pages = Math.ceil(filter? records/ limit: totalRecords / limit);
-      res.status(200).json({ totalRecords: filter?records:totalRecords, pages: pages, data: [...job] });
+            attributes: ["name"],
+          },
+        ],
+        where: whereClause,
+        limit,
+        offset,
+      }),
+      Positions.count({
+        include: [
+          {
+            model: Company,
+            required: true,
+            where: companyFilters,
+          },
+          {
+            model: Users,
+
+            attributes: ["name"],
+          },
+        ],
+        where: whereClause,
+      }),
+    ]);
+    let records = job.length;
+
+    const pages = Math.ceil(filter ? records / limit : totalRecords / limit);
+    res.status(200).json({
+      totalRecords: filter ? records : totalRecords,
+      pages: pages,
+      data: [...job],
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).send("500 server error");
+  }
+};
+
+exports.updatePositionStatus = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { position_status } = req.body;
+
+    await Positions.update({ position_status }, { where: { id: id } });
+
+    return res
+      .status(200)
+      .json({
+        success: "Position status changed sucessfully",
+        Position: { id, position_status },
+      });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");

@@ -23,7 +23,9 @@ exports.getDashBoradReport = async (req, res) => {
                 [Sequelize.fn('SUM', Sequelize.col('cv_offer_letter_sent')), 'total_cv_offer_letter_sent'],
                 [Sequelize.fn('SUM', Sequelize.col('cv_final_join')), 'total_cv_final_join'],
                 [Sequelize.fn('SUM', Sequelize.col('cv_confirmation_pending')), 'total_cv_confirmation_pending'],
-                [Sequelize.fn('SUM', Sequelize.col('cv_screened')), 'total_cv_screened']
+                [Sequelize.fn('SUM', Sequelize.col('cv_screened')), 'total_cv_screened'],
+                [Sequelize.fn('SUM', Sequelize.col('cv_rejected')), 'total_cv_rejected'],
+                [Sequelize.fn('SUM', Sequelize.col('cv_interview_scheduled')), 'total_cv_interview_scheduled']
             ],
             where: whereClause,
         });

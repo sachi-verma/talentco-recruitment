@@ -122,6 +122,10 @@ const Positions = sequelize.define('Positions',{
     cv_screened :{
         type: DataTypes.INTEGER,
         defaultValue:0
+    },
+    cv_interview_scheduled:{
+        type: DataTypes.INTEGER,
+        defaultValue:0
     }
 },
 {
