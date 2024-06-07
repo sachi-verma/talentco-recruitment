@@ -51,7 +51,7 @@ exports.exportJobs = async (req, res) => {
 
 
      const job = await Positions.findAll({
-      attributes:{exclude:['recruiter_assign']},
+     // attributes:{exclude:['recruiter_assign']},
         include: [
           {
             model: Company,
@@ -60,7 +60,7 @@ exports.exportJobs = async (req, res) => {
           },
           {
             model: Users,
-            required: true,
+           
             attributes:['name'],
           }
         ],
@@ -89,7 +89,7 @@ exports.exportJobs = async (req, res) => {
             job.position_status,
             job.gender_pref,
             job.qualification,
-            job.User.name,
+            job.User?.name,
             
         ]);
     });

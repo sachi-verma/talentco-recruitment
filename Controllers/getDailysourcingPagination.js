@@ -203,14 +203,7 @@ exports.getSourcingReportByPage = async (req, res) => {
           report.Position.Company.company_name,
           report.Position.position,
           report.candidate,
-          report.candidate_phone,
-          report.candidate_email,
-          report.candidate_location,
-          report.candidate_experience,
-          report.candidate_current_ctc,
-          report.candidate_qualification,
-          report.candidate_gender,
-          report.candidate_status,
+          report.sourcing_status,
           report.cv_sourced_from,
           report.relevant,
           report.remarks,
@@ -308,7 +301,7 @@ exports.getFilteredUpdateByPage = async (req, res) => {
           "Date",
           "Total CV Sourced",
           "Total CV Relevent",
-          "Total Cnfirmation Pending",
+          "Total Confirmation Pending",
           "Total Sent to client",
           
         ]);
@@ -451,7 +444,7 @@ exports.getAdminReportByPage = async (req, res) => {
             },
             {
               model: User,
-              required: true,
+             // required: true,
               attributes: ["name"],
             },
           ],
@@ -481,38 +474,19 @@ exports.getAdminReportByPage = async (req, res) => {
          worksheet.addRow([
            "Date",
            "Position",
-           "Candidate", 
-           "Sourcing Status",
-           "CV Sourced From",
-           "Relevent",
-           "Remarks",
-           "Location",
-           "Experience",
-           "Min CTC",
-           "Max CTC",
+           "Recruiter Name",
+           "Total CV Sent ",
+           "Company Name",
          ]);
    
          // Add data rows to the worksheet
-         report.forEach((report) => {
+         report.forEach((reportItem) => {
            worksheet.addRow([
-             report.Position.Company.company_name,
-             report.Position.position,
-             report.candidate,
-             report.candidate_phone,
-             report.candidate_email,
-             report.candidate_location,
-             report.candidate_experience,
-             report.candidate_current_ctc,
-             report.candidate_qualification,
-             report.candidate_gender,
-             report.candidate_status,
-             report.cv_sourced_from,
-             report.relevant,
-             report.remarks,
-             report.Position.location,
-             report.Position.experience,
-             report.Position.min_ctc,
-             report.Position.max_ctc,
+             reportItem.dataValues.date,
+             reportItem.Position.position,
+             reportItem.Position.User?.name,
+             reportItem.dataValues.sentToClientCount,
+             reportItem.Position.Company.company_name
            ]);
          });
    

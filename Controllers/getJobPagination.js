@@ -5,6 +5,8 @@ const Company = require("../Models/companyDetails");
 const { Op } = require("sequelize");
 const Users = require("../Models/userDetails");
  
+Company.hasMany(Positions, { foreignKey: 'company_id' });
+Positions.belongsTo(Company, { foreignKey: 'company_id' });
 
 exports.getJobByPage = async (req, res) => {
   try {
@@ -87,7 +89,7 @@ exports.getJobByPage = async (req, res) => {
             },
             {
               model: Users,
-              required: true,
+              
               attributes:['name'],
             }
             
@@ -104,6 +106,11 @@ exports.getJobByPage = async (req, res) => {
               required: true,
               where: companyFilters,
             },
+            {
+              model: Users,
+              
+              attributes:['name'],
+            }
           ],
           where:whereClause,
            
