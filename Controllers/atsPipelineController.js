@@ -68,7 +68,7 @@ exports.editAtsStatus = async (req, res) => {
         const candidateinfo= await Candidate.findByPk(id);
         console.log(candidateinfo.position);
 
-        const position= candidate.position;
+        const position= candidateinfo.position;
 
         let incrementUpdate ;
 

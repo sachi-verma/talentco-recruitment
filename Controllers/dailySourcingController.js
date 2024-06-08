@@ -328,7 +328,17 @@ exports.createBulkSourcingReport = async (req, res) => {
         return res.status(400).json({ error: "No reports data provided" });
       }
   
-      // Define the required fields for validation
+      let screenedCandidatePresent = false;
+  
+      // Check if any candidate has sourcing_status as 'Screened'
+      for (let report of reportsData) {
+        if (report.sourcing_status === "Screened") {
+          screenedCandidatePresent = true;
+          break;
+        }
+      }
+  
+      // Define the required fields based on the presence of screened candidates
       let requiredFields = [
         "candidate",
         "company",
@@ -341,12 +351,31 @@ exports.createBulkSourcingReport = async (req, res) => {
         "sourcing_status",
       ];
   
-      let screenedCandidatePresent = false;
+      // If there are screened candidates, add additional fields to requiredFields
+      if (screenedCandidatePresent) {
+        requiredFields = requiredFields.concat([
+          "candidate_phone",
+          "candidate_alt_phone",
+          "candidate_email",
+          "candidate_location",
+          "candidate_qualification",
+          "candidate_experience",
+          "candidate_current_ctc",
+          "candidate_expected_ctc",
+          "candidate_organization",
+          "candidate_designation",
+          "candidate_notice_period",
+          "candidate_gender",
+          "candidate_remarks",
+        ]);
+      }
   
+      // Validate each report object
       for (let report of reportsData) {
-        // Check if candidate status is 'Screened', then add candidate_phone and candidate_email to required fields
-        if (report.sourcing_status === "Screened") {
-          requiredFields = requiredFields.concat([
+        // Check if the report has sourcing status "Screened" to determine required fields
+        let fieldsToCheck = requiredFields;
+        if (report.sourcing_status !== "Screened") {
+          fieldsToCheck = requiredFields.filter(field => ![
             "candidate_phone",
             "candidate_alt_phone",
             "candidate_email",
@@ -360,12 +389,10 @@ exports.createBulkSourcingReport = async (req, res) => {
             "candidate_notice_period",
             "candidate_gender",
             "candidate_remarks",
-          ]);
-          screenedCandidatePresent = true;
+          ].includes(field));
         }
-  
-        // Validate each report object
-        for (let field of requiredFields) {
+        
+        for (let field of fieldsToCheck) {
           if (
             !report.hasOwnProperty(field) ||
             report[field] === null ||
@@ -385,7 +412,11 @@ exports.createBulkSourcingReport = async (req, res) => {
       let createdReports;
   
       if (screenedCandidatePresent) {
-        createdReports = await Candidate.bulkCreate(reportsData);
+        if (reportsData.length > 1) {
+          createdReports = await Candidate.bulkCreate(reportsData);
+        } else {
+          createdReports = await Candidate.create(reportsData);
+        }
       } else {
         createdReports = await Candidate.bulkCreate(reportsData);
       }
@@ -409,6 +440,7 @@ exports.createBulkSourcingReport = async (req, res) => {
       res.status(500).json({ error: "Internal Server Error" });
     }
   };
+  
   
 
 // FROM all_candidates table
