@@ -366,7 +366,7 @@ exports.createBulkSourcingReport = async (req, res) => {
           "candidate_designation",
           "candidate_notice_period",
           "candidate_gender",
-          "candidate_remarks",
+           
         ]);
       }
   
@@ -388,7 +388,7 @@ exports.createBulkSourcingReport = async (req, res) => {
             "candidate_designation",
             "candidate_notice_period",
             "candidate_gender",
-            "candidate_remarks",
+             
           ].includes(field));
         }
         
@@ -420,7 +420,7 @@ exports.createBulkSourcingReport = async (req, res) => {
       } else {
         createdReports = await Candidate.bulkCreate(reportsData);
       }
-  
+    
       const alldata = await FilteredUpdate();
       const admindata = await DailyAdminUpdate();
   
