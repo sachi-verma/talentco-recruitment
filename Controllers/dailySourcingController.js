@@ -274,50 +274,142 @@ async function DailyAdminUpdate() {
     }
 }
 
+// exports.createBulkSourcingReport = async (req, res) => {
+//     try {
+//         const reportsData = req.body; // Assuming the frontend sends an array of report objects
+//         console.log("=====>>>>>")
+//         if (!Array.isArray(reportsData) || reportsData.length === 0) {
+//             console.error('No reports data provided');
+//             return res.status(400).json({ error: 'No reports data provided' });
+//         }
+
+//         // Define the required fields for validation
+//         let requiredFields = ['candidate', 'company', 'position', 'location', 'min_ctc', 'max_ctc', 'cv_sourced_from', 'relevant', 'sourcing_status'];
+
+//         // Check if candidate status is 'Screened', then add candidate_phone and candidate_email to required fields
+//         if (candidate_status === 'Screened') {
+//             requiredFields = requiredFields.concat(['candidate_phone', 'candidate_alt_phone', 'candidate_email', 'candidate_location', 'candidate_qualification', 'candidate_experience', 'candidate_current_ctc', 'candidate_expected_ctc', 'candidate_organization', 'candidate_designation', 'candidate_notice_period', 'candidate_gender', 'candidate_remarks']);
+//         }
+
+//         // Validate each report object
+//         for (let report of reportsData) {
+//             for (let field of requiredFields) {
+//                 if (!report.hasOwnProperty(field) || report[field] === null || report[field] === '') {
+//                     console.error(`Missing or empty field: ${field} in report:`, report);
+//                     return res.status(400).json({ error: `Missing or empty fields detected` });
+//                 }
+//             }
+//         }
+        
+//         const createdReports = await Candidate.bulkCreate(reportsData);
+
+//         const alldata = await FilteredUpdate();
+
+//         const admindata = await DailyAdminUpdate();
+
+//         if (!createdReports || createdReports.length === 0) {
+//             console.error('No reports created');
+//             return res.status(400).json({ error: 'No reports created' });
+//         }
+
+//         res.status(200).json({ message: 'Reports created successfully', reports: createdReports, alldata: alldata, admindata: admindata });
+//     } catch (error) {
+//         console.error('Error creating Reports:', error);
+//         res.status(500).json({ error: 'Internal Server Error' });
+//     }
+// };
+
 exports.createBulkSourcingReport = async (req, res) => {
     try {
-        const reportsData = req.body; // Assuming the frontend sends an array of report objects
-        console.log("=====>>>>>")
-        if (!Array.isArray(reportsData) || reportsData.length === 0) {
-            console.error('No reports data provided');
-            return res.status(400).json({ error: 'No reports data provided' });
-        }
-
-        // Define the required fields for validation
-        let requiredFields = ['candidate', 'company', 'position', 'location', 'min_ctc', 'max_ctc', 'cv_sourced_from', 'relevant', 'sourcing_status'];
-
+      const reportsData = req.body; // Assuming the frontend sends an array of report objects
+      console.log("=====>>>>>");
+      if (!Array.isArray(reportsData) || reportsData.length === 0) {
+        console.error("No reports data provided");
+        return res.status(400).json({ error: "No reports data provided" });
+      }
+  
+      // Define the required fields for validation
+      let requiredFields = [
+        "candidate",
+        "company",
+        "position",
+        "location",
+        "min_ctc",
+        "max_ctc",
+        "cv_sourced_from",
+        "relevant",
+        "sourcing_status",
+      ];
+  
+      let screenedCandidatePresent = false;
+  
+      for (let report of reportsData) {
         // Check if candidate status is 'Screened', then add candidate_phone and candidate_email to required fields
-        if (candidate_status === 'Screened') {
-            requiredFields = requiredFields.concat(['candidate_phone', 'candidate_alt_phone', 'candidate_email', 'candidate_location', 'candidate_qualification', 'candidate_experience', 'candidate_current_ctc', 'candidate_expected_ctc', 'candidate_organization', 'candidate_designation', 'candidate_notice_period', 'candidate_gender', 'candidate_remarks']);
+        if (report.sourcing_status === "Screened") {
+          requiredFields = requiredFields.concat([
+            "candidate_phone",
+            "candidate_alt_phone",
+            "candidate_email",
+            "candidate_location",
+            "candidate_qualification",
+            "candidate_experience",
+            "candidate_current_ctc",
+            "candidate_expected_ctc",
+            "candidate_organization",
+            "candidate_designation",
+            "candidate_notice_period",
+            "candidate_gender",
+            "candidate_remarks",
+          ]);
+          screenedCandidatePresent = true;
         }
-
+  
         // Validate each report object
-        for (let report of reportsData) {
-            for (let field of requiredFields) {
-                if (!report.hasOwnProperty(field) || report[field] === null || report[field] === '') {
-                    console.error(`Missing or empty field: ${field} in report:`, report);
-                    return res.status(400).json({ error: `Missing or empty fields detected` });
-                }
-            }
+        for (let field of requiredFields) {
+          if (
+            !report.hasOwnProperty(field) ||
+            report[field] === null ||
+            report[field] === ""
+          ) {
+            console.error(
+              `Missing or empty field: ${field} in report:`,
+              report
+            );
+            return res
+              .status(400)
+              .json({ error: `Missing or empty fields detected ${field}` });
+          }
         }
-        
-        const createdReports = await Candidate.bulkCreate(reportsData);
-
-        const alldata = await FilteredUpdate();
-
-        const admindata = await DailyAdminUpdate();
-
-        if (!createdReports || createdReports.length === 0) {
-            console.error('No reports created');
-            return res.status(400).json({ error: 'No reports created' });
-        }
-
-        res.status(200).json({ message: 'Reports created successfully', reports: createdReports, alldata: alldata, admindata: admindata });
+      }
+  
+      let createdReports;
+  
+      if (screenedCandidatePresent) {
+        createdReports = await Candidate.bulkCreate(reportsData);
+      } else {
+        createdReports = await Candidate.bulkCreate(reportsData);
+      }
+  
+      const alldata = await FilteredUpdate();
+      const admindata = await DailyAdminUpdate();
+  
+      if (!createdReports || createdReports.length === 0) {
+        console.error("No reports created");
+        return res.status(400).json({ error: "No reports created" });
+      }
+  
+      res.status(200).json({
+        message: "Reports created successfully",
+        reports: createdReports,
+        alldata: alldata,
+        admindata: admindata,
+      });
     } catch (error) {
-        console.error('Error creating Reports:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+      console.error("Error creating Reports:", error);
+      res.status(500).json({ error: "Internal Server Error" });
     }
-};
+  };
+  
 
 // FROM all_candidates table
 exports.getSourcingReport = async (req, res) => {
