@@ -214,7 +214,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
               },
               {
                 model: assignRecruiter,
-                required: role.role_name ==="HR"? true: false, // Set to false if a position can have no recruiters assigned
+                required: role.role_name ==="Recruiter"? true: false, // Set to false if a position can have no recruiters assigned
                 attributes: ["recruiter_id"],
                 where: recruiterFilter,
                 include: [
