@@ -4,6 +4,12 @@ const Company = require("../Models/companyDetails");
 const db = require("../Models/db");
 const { Op, fn, col, where } = require("sequelize");
 const excel = require("exceljs");
+const Roles = require("../Models/roles");
+const Users = require("../Models/userDetails");
+const assignRecruiter = require("../Models/assignRecruiter");
+
+assignRecruiter.belongsTo(Users, { foreignKey: "recruiter_id" });
+Users.hasMany(assignRecruiter, { foreignKey: "recruiter_id" });
 
 exports.getSourcingReportByDate = async (req, res) => {
   try {
@@ -11,6 +17,8 @@ exports.getSourcingReportByDate = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     let limit = parseInt(req.query.limit) || 10;
     let offset = (page - 1) * limit;
+
+    const userId = req.query.id; 
 
     const download = req.query.download ? true : false;
 
@@ -72,6 +80,21 @@ exports.getSourcingReportByDate = async (req, res) => {
     if (relevant) whereClause.relevant = { [Op.like]: `%${relevant}%` };
     if (status) whereClause.sourcing_status = { [Op.like]: `%${status}%` };
 
+    const user = await Users.findByPk(userId);
+
+    const role_id = user.role_id;
+    
+    const role = await Roles.findOne({where: {id: role_id}});
+    console.log(role.role_name);
+
+    const recruiterFilter={};
+
+    if (role.role_name ==="Recruiter"){
+
+      recruiterFilter.recruiter_id=userId;
+
+    }
+
     const [report, totalRecords] = await Promise.all([
       await Candidate.findAll({
         attributes: [
@@ -105,6 +128,18 @@ exports.getSourcingReportByDate = async (req, res) => {
                 required: true,
                 attributes: ["company_name"],
                 where: companyFilters,
+              },
+              {
+                model: assignRecruiter,
+                required: role.role_name ==="Recruiter"? true: false, // Set to false if a position can have no recruiters assigned
+                attributes: ["recruiter_id"],
+                where: recruiterFilter,
+                include: [
+                  {
+                    model: Users,
+                    attributes: ["name"], // Fetch recruiter names
+                  },
+                ],
               },
             ],
             where: positionFilter,
@@ -145,6 +180,18 @@ exports.getSourcingReportByDate = async (req, res) => {
                 model: Company,
                 required: true,
                 attributes: ["company_name"],
+              },
+              {
+                model: assignRecruiter,
+                required: role.role_name ==="Recruiter"? true: false, // Set to false if a position can have no recruiters assigned
+                attributes: ["recruiter_id"],
+                where: recruiterFilter,
+                include: [
+                  {
+                    model: Users,
+                    attributes: ["name"], // Fetch recruiter names
+                  },
+                ],
               },
             ],
           },
