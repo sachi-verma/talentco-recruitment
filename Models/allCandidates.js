@@ -96,6 +96,10 @@ const Candidates = sequelize.define('Candidates',{
     },
     updated_by: {
         type: DataTypes.STRING,
+    },
+    sent_to_client_date: {
+        type: DataTypes.DATE
+        
     }
 },
 {

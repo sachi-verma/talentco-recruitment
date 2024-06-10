@@ -8,12 +8,15 @@ const Company = require("../Models/companyDetails");
 const Status = require("../Models/statusHistory");
 const Users = require("../Models/userDetails");
 const excel = require("exceljs");
+const Roles = require("../Models/roles");
 
 exports.getAtsPipelinePagination = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1; // Current page, default to 1
     let limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
     let offset = (page - 1) * limit; // Calculate offset based on page number
+
+    const userId = req.query.id; 
 
     const download = req.query.download ? true : false;
 
@@ -66,18 +69,27 @@ exports.getAtsPipelinePagination = async (req, res) => {
     if (fromDate && toDate) {
       let theDate = parseInt(toDate.split("-")[2]) + 1;
       let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, "0");
-      whereClause.sourcing_date = {
+      whereClause.sent_to_client_date = {
         [Op.between]: [fromDate, newDate],
       };
     } else if (fromDate) {
-      whereClause.sourcing_date = {
+      whereClause.sent_to_client_date = {
         [Op.gte]: fromDate,
       };
     } else if (toDate) {
-      whereClause.sourcing_date = {
+      whereClause.sent_to_client_date = {
         [Op.lte]: toDate,
       };
     }
+
+    const user = await Users.findByPk(userId);
+
+    const role_id = user.role_id;
+    
+    const role = await Roles.findOne({where: {id: role_id}});
+    console.log(role.role_name);
+
+    if (role.role_name ==="HR"){}
 
     const [report, totalRecords] = await Promise.all([
       Candidate.findAll({
@@ -103,6 +115,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
           "remarks",
           "created_at",
           "updated_at",
+          "sent_to_client_date"
         ],
         include: [
           {
@@ -128,7 +141,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
               },
               {
                 model: Users,
-                required: true,
+                //required: true,
                 attributes: ["name"],
               },
             ],
@@ -159,6 +172,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
           "remarks",
           "created_at",
           "updated_at",
+          "sent_to_client_date"
         ],
         include: [
           {

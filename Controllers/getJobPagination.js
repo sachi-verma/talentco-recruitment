@@ -4,12 +4,12 @@ const Positions = require("../Models/allPositions");
 const Company = require("../Models/companyDetails");
 const { Op } = require("sequelize");
 const Users = require("../Models/userDetails");
-const assignRecruiter = require('../Models/assignRecruiter');
+const assignRecruiter = require("../Models/assignRecruiter");
 
 Company.hasMany(Positions, { foreignKey: "company_id" });
 Positions.belongsTo(Company, { foreignKey: "company_id" });
-Positions.hasMany(assignRecruiter, { foreignKey: "position_id" });   
-assignRecruiter.belongsTo(Positions, { foreignKey: "position_id" }); 
+Positions.hasMany(assignRecruiter, { foreignKey: "position_id" });
+assignRecruiter.belongsTo(Positions, { foreignKey: "position_id" });
 
 assignRecruiter.belongsTo(Users, { foreignKey: "recruiter_id" });
 Users.hasMany(assignRecruiter, { foreignKey: "recruiter_id" });
@@ -71,14 +71,15 @@ exports.getJobByPage = async (req, res) => {
     if (gender) whereClause.gender_pref = { [Op.like]: `%${gender}%` };
     if (qualification)
       whereClause.qualification = { [Op.like]: `%${qualification}%` };
-    
+
     if (fromDate) whereClause.upload_date = { [Op.gte]: `%${fromDate}%` };
 
     const assignRecruiterFilters = {};
     if (recruiterId)
-      assignRecruiterFilters.recruiter_id = { [Op.like]: `%${recruiterId}%` };
+      assignRecruiterFilters.recruiter_id =  recruiterId;
 
-    if (notAssigned === "Not assigned") assignRecruiterFilters.recruiter_id = null;
+    if (notAssigned === "Not Assigned")
+      assignRecruiterFilters.recruiter_id = null;
     // if (positionStatus)
     //   whereClause.position_status = { [Op.like]: `%${positionStatus}` };
     if (positionStatus) {
@@ -116,15 +117,16 @@ exports.getJobByPage = async (req, res) => {
           },
           {
             model: assignRecruiter,
-            required: false, // Set to false if a position can have no recruiters assigned
-            attributes:["recruiter_id"],
+            required: recruiterId? true : false, // Set to false if a position can have no recruiters assigned
+            attributes: ["recruiter_id"],
+            where: assignRecruiterFilters,
             include: [
               {
                 model: Users,
                 attributes: ["name"], // Fetch recruiter names
-              }
-            ]
-          }
+              },
+            ],
+          },
         ],
         where: whereClause,
         limit,
@@ -154,7 +156,7 @@ exports.getJobByPage = async (req, res) => {
       pages: pages,
       data: [...job],
     });
-  } catch (error) { 
+  } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");
   }
@@ -167,12 +169,10 @@ exports.updatePositionStatus = async (req, res) => {
 
     await Positions.update({ position_status }, { where: { id: id } });
 
-    return res
-      .status(200)
-      .json({
-        success: "Position status changed sucessfully",
-        Position: { id, position_status },
-      });
+    return res.status(200).json({
+      success: "Position status changed sucessfully",
+      Position: { id, position_status },
+    });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");

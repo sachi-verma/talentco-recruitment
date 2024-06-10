@@ -497,15 +497,10 @@ exports.statusChange = async (req, res) => {
         const sent_to_client_date = thedate.toISOString().split('T')[0];
        // console.log(sent_to_client_date);
     
-        if (sourcing_status ==='Sent To Client'){
-            await Candidate.update({ sourcing_status, sent_to_client_date }, {where: {id: id}});
-        } else{
-            
-            await Candidate.update({ sourcing_status }, {where: {id: id}});
-
-        }
-
-
+       if (sourcing_status ==='Sent To Client') {
+        console.log(`Setting sent_to_client_date to: ${sent_to_client_date}`);
+        await Candidate.update({ sourcing_status, sent_to_client_date }, { where: { id } });
+      }  
         //changes
 
        const candidate= await Candidate.findByPk(id);

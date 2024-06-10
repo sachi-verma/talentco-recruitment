@@ -22,7 +22,7 @@ exports.assignRecruiter = async (req, res) => {
         const recruiterExist =await assignRecruiter.findOne({where: {position_id: position_id, recruiter_id: recruiter_id}});
 
         if(recruiterExist){
-          return res.status(404).json({error:"This recruiter already exist for this position", position_id: position_id, recruiter_id:recruiter_id});
+          return res.status(404).json({error:"This recruiter already assigned for this position", position_id: position_id, recruiter_id:recruiter_id});
         }
         else{
           await assignRecruiter.create({position_id, recruiter_id });
