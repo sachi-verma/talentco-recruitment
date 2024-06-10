@@ -9,6 +9,10 @@ const Status = require("../Models/statusHistory");
 const Users = require("../Models/userDetails");
 const excel = require("exceljs");
 const Roles = require("../Models/roles");
+const assignRecruiter = require("../Models/assignRecruiter");
+
+assignRecruiter.belongsTo(Users, { foreignKey: "recruiter_id" });
+Users.hasMany(assignRecruiter, { foreignKey: "recruiter_id" });
 
 exports.getAtsPipelinePagination = async (req, res) => {
   try {
@@ -89,7 +93,13 @@ exports.getAtsPipelinePagination = async (req, res) => {
     const role = await Roles.findOne({where: {id: role_id}});
     console.log(role.role_name);
 
-    if (role.role_name ==="HR"){}
+    const recruiterFilter={};
+
+    if (role.role_name ==="Recruiter"){
+
+      recruiterFilter.recruiter_id=userId;
+
+    }
 
     const [report, totalRecords] = await Promise.all([
       Candidate.findAll({
@@ -140,9 +150,16 @@ exports.getAtsPipelinePagination = async (req, res) => {
                 where: companyFilters,
               },
               {
-                model: Users,
-                //required: true,
-                attributes: ["name"],
+                model: assignRecruiter,
+                required: role.role_name ==="Recruiter"? true: false, // Set to false if a position can have no recruiters assigned
+                attributes: ["recruiter_id"],
+                where: recruiterFilter,
+                include: [
+                  {
+                    model: Users,
+                    attributes: ["name"], // Fetch recruiter names
+                  },
+                ],
               },
             ],
           },
@@ -194,6 +211,18 @@ exports.getAtsPipelinePagination = async (req, res) => {
                 required: true,
                 attributes: ["company_name"],
                 where: companyFilters,
+              },
+              {
+                model: assignRecruiter,
+                required: role.role_name ==="HR"? true: false, // Set to false if a position can have no recruiters assigned
+                attributes: ["recruiter_id"],
+                where: recruiterFilter,
+                include: [
+                  {
+                    model: Users,
+                    attributes: ["name"], // Fetch recruiter names
+                  },
+                ],
               },
             ],
           },
