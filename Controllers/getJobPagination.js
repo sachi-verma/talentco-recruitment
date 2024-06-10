@@ -4,9 +4,15 @@ const Positions = require("../Models/allPositions");
 const Company = require("../Models/companyDetails");
 const { Op } = require("sequelize");
 const Users = require("../Models/userDetails");
+const assignRecruiter = require('../Models/assignRecruiter');
 
 Company.hasMany(Positions, { foreignKey: "company_id" });
 Positions.belongsTo(Company, { foreignKey: "company_id" });
+Positions.hasMany(assignRecruiter, { foreignKey: "position_id" });   
+assignRecruiter.belongsTo(Positions, { foreignKey: "position_id" }); 
+
+assignRecruiter.belongsTo(Users, { foreignKey: "recruiter_id" });
+Users.hasMany(assignRecruiter, { foreignKey: "recruiter_id" });
 
 exports.getJobByPage = async (req, res) => {
   try {
@@ -65,10 +71,14 @@ exports.getJobByPage = async (req, res) => {
     if (gender) whereClause.gender_pref = { [Op.like]: `%${gender}%` };
     if (qualification)
       whereClause.qualification = { [Op.like]: `%${qualification}%` };
-    if (recruiterId)
-      whereClause.recruiter_assign = { [Op.like]: `%${recruiterId}%` };
+    
     if (fromDate) whereClause.upload_date = { [Op.gte]: `%${fromDate}%` };
-    if (notAssigned === "Not assigned") whereClause.recruiter_assign = null;
+
+    const assignRecruiterFilters = {};
+    if (recruiterId)
+      assignRecruiterFilters.recruiter_id = { [Op.like]: `%${recruiterId}%` };
+
+    if (notAssigned === "Not assigned") assignRecruiterFilters.recruiter_id = null;
     // if (positionStatus)
     //   whereClause.position_status = { [Op.like]: `%${positionStatus}` };
     if (positionStatus) {
@@ -105,10 +115,16 @@ exports.getJobByPage = async (req, res) => {
             where: companyFilters,
           },
           {
-            model: Users,
-
-            attributes: ["name"],
-          },
+            model: assignRecruiter,
+            required: false, // Set to false if a position can have no recruiters assigned
+            attributes:["recruiter_id"],
+            include: [
+              {
+                model: Users,
+                attributes: ["name"], // Fetch recruiter names
+              }
+            ]
+          }
         ],
         where: whereClause,
         limit,
@@ -138,7 +154,7 @@ exports.getJobByPage = async (req, res) => {
       pages: pages,
       data: [...job],
     });
-  } catch (error) {
+  } catch (error) { 
     console.error("Error:", error);
     res.status(500).send("500 server error");
   }

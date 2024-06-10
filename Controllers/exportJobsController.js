@@ -4,10 +4,17 @@ const Positions = require('../Models/allPositions');
 const Company = require('../Models/companyDetails');
 const {Op} = require("sequelize");
 const Users = require("../Models/userDetails");
+const assignRecruiter = require('../Models/assignRecruiter');
 const excel = require('exceljs');
 
-Company.hasMany(Positions, { foreignKey: 'company_id' });
-Positions.belongsTo(Company, { foreignKey: 'company_id' });
+Company.hasMany(Positions, { foreignKey: "company_id" });
+Positions.belongsTo(Company, { foreignKey: "company_id" });
+Positions.hasMany(assignRecruiter, { foreignKey: "position_id" });   
+assignRecruiter.belongsTo(Positions, { foreignKey: "position_id" }); 
+
+assignRecruiter.belongsTo(Users, { foreignKey: "recruiter_id" });
+Users.hasMany(assignRecruiter, { foreignKey: "recruiter_id" });
+
 
 exports.exportJobs = async (req, res) => {
     try {
@@ -29,9 +36,13 @@ exports.exportJobs = async (req, res) => {
       if (location) whereClause.location = { [Op.like]: `%${location}%` };
       if (gender) whereClause.gender_pref = { [Op.like]: `%${gender}%` };
       if (qualification) whereClause.qualification = { [Op.like]: `%${qualification}%` };
-      if (recruiterId) whereClause.recruiter_assign = { [Op.like]: `%${recruiterId}%` };
+     // if (recruiterId) whereClause.recruiter_assign = { [Op.like]: `%${recruiterId}%` };
       if (fromDate) whereClause.upload_date = { [Op.gte]: `%${fromDate}%` };
-      if (notAssigned === "Not assigned") whereClause.recruiter_assign = null;
+      const assignRecruiterFilters = {};
+      if (recruiterId)
+        assignRecruiterFilters.recruiter_id = { [Op.like]: `%${recruiterId}%` };
+  
+      if (notAssigned === "Not assigned") assignRecruiterFilters.recruiter_id = null;
   
       if (fromDate && toDate) {
         let theDate = parseInt(toDate.split('-')[2]) + 1;
@@ -59,9 +70,15 @@ exports.exportJobs = async (req, res) => {
             where: companyFilters,
           },
           {
-            model: Users,
-           
-            attributes:['name'],
+            model: assignRecruiter,
+            required: false, // Set to false if a position can have no recruiters assigned
+            attributes:["recruiter_id"],
+            include: [
+              {
+                model: Users,
+                attributes: ["name"], // Fetch recruiter names
+              }
+            ]
           }
         ],
         where:whereClause,
@@ -76,22 +93,26 @@ exports.exportJobs = async (req, res) => {
 
     // Add data rows to the worksheet
     job.forEach(job => {
-        worksheet.addRow([
+      // Concatenate recruiter names into a single string
+      const recruiterAssignments = job.assignRecuiters || [];
+      const recruiterNames = recruiterAssignments.map(recruiterAssignment => recruiterAssignment.User?.name).join(', ');
+  
+  
+      worksheet.addRow([
           job.upload_date,
-            job.position,
-            job.Company.company_name,
-            job.location,
-            job.experience,
-            job.min_ctc,
-            job.max_ctc,
-            job.no_of_positions,
-            job.position_status,
-            job.gender_pref,
-            job.qualification,
-            job.User?.name,
-            
-        ]);
-    });
+          job.position,
+          job.Company.company_name,
+          job.location,
+          job.experience,
+          job.min_ctc,
+          job.max_ctc,
+          job.no_of_positions,
+          job.position_status,
+          job.gender_pref,
+          job.qualification,
+          recruiterNames,
+      ]);
+  });
 
     // Generate a unique filename for the Excel file
      

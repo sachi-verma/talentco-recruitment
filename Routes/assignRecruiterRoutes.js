@@ -4,7 +4,7 @@ const assignRecruiterController = require('../Controllers/assignRecruiterControl
 const getRecruiterPagination = require('../Controllers/getRecruiterPagination');
 
 router.get('/getrecruiter', assignRecruiterController.getRecruiter);
-router.patch('/recruiter/:id', assignRecruiterController.assignRecruiter);
+router.post('/recruiter/:id', assignRecruiterController.assignRecruiter);
 
 //new route
 router.get('/getrecruiterbypage', getRecruiterPagination.getRecruiterByPage);

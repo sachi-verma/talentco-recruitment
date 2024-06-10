@@ -493,7 +493,18 @@ exports.statusChange = async (req, res) => {
         const id = req.params.id;
         const { sourcing_status } = req.body;
 
-        await Candidate.update({ sourcing_status }, {where: {id: id}});
+        let thedate = new Date();
+        const sent_to_client_date = thedate.toISOString().split('T')[0];
+       // console.log(sent_to_client_date);
+    
+        if (sourcing_status ==='Sent To Client'){
+            await Candidate.update({ sourcing_status, sent_to_client_date }, {where: {id: id}});
+        } else{
+            
+            await Candidate.update({ sourcing_status }, {where: {id: id}});
+
+        }
+
 
         //changes
 
