@@ -28,6 +28,7 @@ router.get('/statushistory/:id', atsPipelineController.getStatusHistory);
 //new route
 
 router.get('/getatspipelinebypage', getAtsPipelinePagination.getAtsPipelinePagination );
+router.patch('/updatecandidateremarks/:id', getAtsPipelinePagination.updateCandidateRemarks);
 
 
 module.exports = router;

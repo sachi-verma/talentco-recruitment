@@ -367,3 +367,20 @@ exports.getAtsPipelinePagination = async (req, res) => {
     res.status(500).send("500 server error");
   }
 };
+
+exports.updateCandidateRemarks = async (req, res) => {
+
+  try {
+    const candidateId = req.params.id;
+    const { remarks}= req.body;
+    console.log("id", candidateId);
+
+    await Candidate.update({remarks} ,{where : {id: candidateId}});
+    return res.status(200).json({ success: "remarks updated sucessfully", candidate: {candidateId, remarks} }); 
+    
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).send("500 server error");
+    
+  }
+};
