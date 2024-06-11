@@ -43,55 +43,56 @@ exports.getCompanies = async (req, res) => {
             console.error("Role not found");
             return;
         }
+
+        let companies;
+        if (!role.role_name === "Recruiter") {
+             companies = await Company.findAll();
+        } else{
+            const positions = await assignRecruiter.findAll({
+                where: { recruiter_id: userId },
+                attributes: ['position_id']
+            });
+            
+            if (!positions || positions.length === 0) {
+                console.log("No positions found");
+                return;
+            }
+            
+            console.log(positions.map(position => position.position_id));
+            
+            let companiesId = [];
+            
+            for (let position of positions) {
+                let company = await Positions.findOne({ where: { id: position.position_id } });
+                if (company) {
+                    companiesId.push(company);
+                }
+            }
+            
+            console.log(companiesId.map(company => company.company_id));
+            
+            let companyDetails = [];
+            
+            for (let com of companiesId) {
+              let company =  await Company.findOne({where:{id: com.company_id}});
+              companyDetails.push(company);
+            };
+            
+            let total_companies = companyDetails.length;
+            
+            const companiesTosent = companyDetails.map(companyDetail => ({
+              id: companyDetail.id,
+              name: companyDetail.company_name
+            }));
+            console.log(companyDetails);    
+
+        }
         
         console.log(role.role_name);
         
         const recruiterFilter = {};
         
-       
-        
-        const positions = await assignRecruiter.findAll({
-            where: { recruiter_id: userId },
-            attributes: ['position_id']
-        });
-        
-        if (!positions || positions.length === 0) {
-            console.log("No positions found");
-            return;
-        }
-        
-        console.log(positions.map(position => position.position_id));
-        
-        let companiesId = [];
-        
-        for (let position of positions) {
-            let company = await Positions.findOne({ where: { id: position.position_id } });
-            if (company) {
-                companiesId.push(company);
-            }
-        }
-        
-        console.log(companiesId.map(company => company.company_id));
-        
-        let companyDetails = [];
-        
-        for (let com of companiesId) {
-          let company =  await Company.findOne({where:{id: com.company_id}});
-          companyDetails.push(company);
-        };
-        
-        let total_companies = companyDetails.length;
-        
-        const companiesTosent = companyDetails.map(companyDetail => ({
-          id: companyDetail.id,
-          name: companyDetail.company_name
-        }));
-        console.log(companyDetails);
-
-        let companies;
-        if (!role.role_name === "Recruiter") {
-             companies = await Company.findAll();
-        }
+      
        
         res.json(role.role_name === "Recruiter"?companyDetails:companies);
     } catch (error) {
@@ -122,37 +123,34 @@ exports.getPositionsOfCompany = async (req,res) => {
         
         console.log(role.role_name);
         
-        const recruiterFilter = {};
         
-        if (role.role_name === "Recruiter") {
-            recruiterFilter.recruiter_id = userId;
-        }
-        
-        const positions = await assignRecruiter.findAll({
-            where: { recruiter_id: userId },
-            attributes: ['position_id']
-        });
-        
-        if (!positions || positions.length === 0) {
-            console.log("No positions found");
-            return;
-        }
-
-         
-        let positionDetails = [];
-        
-        for (let positionid of positions) {
-            let position = await Positions.findOne({ where: { id: positionid.position_id, company_id: companyId } });
-            if (position) {
-                positionDetails.push(position);
-            }
-        }
         let positionsForall;
+
         if (!role.role_name === "Recruiter") {
             positionsForall = await Position.findAll({ where: { company_id: companyId } });
         }
+        else{
+            const positions = await assignRecruiter.findAll({
+                where: { recruiter_id: userId },
+                attributes: ['position_id']
+            });
+            
+            if (!positions || positions.length === 0) {
+                console.log("No positions found");
+                return;
+            }
+    
+             
+            let positionDetails = [];
+            
+            for (let positionid of positions) {
+                let position = await Positions.findOne({ where: { id: positionid.position_id, company_id: companyId } });
+                if (position) {
+                    positionDetails.push(position);
+                }
+            }
 
-     
+        }
         res.json(role.role_name === "Recruiter"?positionDetails:positionsForall);
     } catch (error) {
         console.error('Error:', error);
