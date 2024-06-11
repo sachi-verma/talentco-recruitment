@@ -33,6 +33,7 @@ exports.getCompanies = async (req, res) => {
         
         if (!user) {
             console.error("User not found");
+            res.status(404).json({ error: "User not found" });
             return;
         }
         
@@ -41,14 +42,16 @@ exports.getCompanies = async (req, res) => {
         
         if (!role) {
             console.error("Role not found");
+            res.status(404).json({ error: "Role not found" });
             return;
         }
-        let companyDetails = [];
 
+        let companyDetails = [];
         let companies;
-        if (!role.role_name === "Recruiter") {
-             companies = await Company.findAll();
-        } else{
+
+        if (role.role_name !== "Recruiter") {
+            companies = await Company.findAll();
+        } else {
             const positions = await assignRecruiter.findAll({
                 where: { recruiter_id: userId },
                 attributes: ['position_id']
@@ -56,6 +59,7 @@ exports.getCompanies = async (req, res) => {
             
             if (!positions || positions.length === 0) {
                 console.log("No positions found");
+                res.status(404).json({ error: "No positions found" });
                 return;
             }
             
@@ -64,43 +68,44 @@ exports.getCompanies = async (req, res) => {
             let companiesId = [];
             
             for (let position of positions) {
-                let company = await Positions.findOne({ where: { id: position.position_id } });
+                let company = await Positions.findOne({ attributes: ["company_id"], where: { id: position.position_id } });
                 if (company) {
-                    companiesId.push(company);
+                    companiesId.push(company.company_id);
                 }
             }
             
-            console.log(companiesId.map(company => company.company_id));
-             companiesId = [...new  Set(companiesId?.map(company => company.id))];
-           
+            console.log(companiesId);
+
+            // Remove duplicate company IDs
+            companiesId = [...new Set(companiesId)];
             
-            for (let com of companiesId) {
-              let company =  await Company.findOne({where:{id: com.company_id}});
-              companyDetails.push(company);
-            };
-            
+            for (let companyId of companiesId) {
+                let company = await Company.findOne({ where: { id: companyId } });
+                if (company) {
+                    companyDetails.push(company);
+                }
+            }
+
             let total_companies = companyDetails.length;
             
-            const companiesTosent = companyDetails.map(companyDetail => ({
-              id: companyDetail.id,
-              name: companyDetail.company_name
+            const companiesToSend = companyDetails.map(companyDetail => ({
+                id: companyDetail.id,
+                name: companyDetail.company_name
             }));
-            console.log(companyDetails);    
 
+            console.log(companiesToSend);
+
+            res.json(companyDetails);
+            return;
         }
         
-        console.log(role.role_name);
-        
-        const recruiterFilter = {};
-        
-      
-       
-        res.json(!role.role_name === "Recruiter"?companyDetails:companies);
+        res.json(companies);
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 }
+
 
 exports.getPositionsOfCompany = async (req,res) => {
    
@@ -111,6 +116,7 @@ exports.getPositionsOfCompany = async (req,res) => {
         
         if (!user) {
             console.error("User not found");
+            res.status(404).json({ error: "User not found" });
             return;
         }
         
@@ -119,18 +125,18 @@ exports.getPositionsOfCompany = async (req,res) => {
         
         if (!role) {
             console.error("Role not found");
+            res.status(404).json({ error: "Role not found" });
             return;
         }
         
         console.log(role.role_name);
         
         let positionDetails = [];
-        let positionsForall;
+        let positionsForAll;
 
-        if (!role.role_name === "Recruiter") {
-            positionsForall = await Position.findAll({ where: { company_id: companyId } });
-        }
-        else{
+        if (role.role_name !== "Recruiter") {
+            positionsForAll = await Position.findAll({ where: { company_id: companyId } });
+        } else {
             const positions = await assignRecruiter.findAll({
                 where: { recruiter_id: userId },
                 attributes: ['position_id']
@@ -138,18 +144,20 @@ exports.getPositionsOfCompany = async (req,res) => {
             
             if (!positions || positions.length === 0) {
                 console.log("No positions found");
+                res.status(404).json({ error: "No positions found" });
                 return;
             }
             
-            for (let positionid of positions) {
-                let position = await Positions.findOne({ where: { id: positionid.position_id, company_id: companyId } });
-                if (position) {
-                    positionDetails.push(position);
+            for (let position of positions) {
+                let positionDetail = await Positions.findOne({ where: { id: position.position_id, company_id: companyId } });
+                if (positionDetail) {
+                    positionDetails.push(positionDetail);
                 }
             }
-
         }
-        res.json(!role.role_name === "Recruiter"? positionDetails :positionsForall);
+
+        res.json(role.role_name === "Recruiter" ? positionDetails : positionsForAll);
+
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
