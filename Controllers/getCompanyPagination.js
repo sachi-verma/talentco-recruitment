@@ -3,6 +3,14 @@ const Companys = require("../Models/companyDetails");
 const { Op } = require("sequelize");
 const excel = require("exceljs");
 
+const Roles = require("../Models/roles");
+const Users = require("../Models/userDetails");
+const assignRecruiter = require("../Models/assignRecruiter");
+const Positions = require('../Models/allPositions')
+
+assignRecruiter.belongsTo(Users, { foreignKey: "recruiter_id" });
+Users.hasMany(assignRecruiter, { foreignKey: "recruiter_id" });
+
 exports.getCompanyByPage = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1; // Current page, default to 1
@@ -28,6 +36,69 @@ exports.getCompanyByPage = async (req, res) => {
     if (industry) {
       filters.industry = { [Op.like]: `%${industry}%` };
     }
+
+    const userId = req.query.id; 
+const user = await Users.findByPk(userId);
+
+if (!user) {
+    console.error("User not found");
+    return;
+}
+
+const role_id = user.role_id;
+const role = await Roles.findOne({ where: { id: role_id } });
+
+if (!role) {
+    console.error("Role not found");
+    return;
+}
+
+console.log(role.role_name);
+
+const recruiterFilter = {};
+
+if (role.role_name === "Recruiter") {
+    recruiterFilter.recruiter_id = userId;
+}
+
+const positions = await assignRecruiter.findAll({
+    where: { recruiter_id: userId },
+    attributes: ['position_id']
+});
+
+if (!positions || positions.length === 0) {
+    console.log("No positions found");
+    return;
+}
+
+console.log(positions.map(position => position.position_id));
+
+let companiesId = [];
+
+for (let position of positions) {
+    let company = await Positions.findOne({ where: { id: position.position_id } });
+    if (company) {
+        companiesId.push(company);
+    }
+}
+
+console.log(companiesId.map(company => company.company_id));
+
+let companyDetails = [];
+
+for (let com of companiesId) {
+  let company =  await Companys.findOne({where:{id: com.company_id}});
+  companyDetails.push(company);
+};
+
+let total_companies = companyDetails.length;
+
+const companiesTosent = companyDetails.map(companyDetail => ({
+  id: companyDetail.id,
+  name: companyDetail.company_name
+}));
+console.log(companyDetails);
+
 
 const [companys, totalRecords] = await Promise.all([
   await Companys.findAll({
@@ -109,9 +180,9 @@ const [companys, totalRecords] = await Promise.all([
     }else{
       let records = companys.length;
 
-      const pages = Math.ceil(filter? records/ limit: totalRecords / limit);
+      const pages = Math.ceil(role.role_name === "Recruiter"?(total_companies/limit):(filter? records/ limit: totalRecords / limit));
   
-      res.status(200).json({totalRecords: filter? records: totalRecords, pages:pages, data:[...companys]});
+      res.status(200).json({totalRecords: role.role_name === "Recruiter"? total_companies: (filter? records: totalRecords), pages:pages, data:role.role_name === "Recruiter"?[...companyDetails]: [...companys]});
     }
    
   } catch (error) {
