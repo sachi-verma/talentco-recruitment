@@ -43,6 +43,7 @@ exports.getCompanies = async (req, res) => {
             console.error("Role not found");
             return;
         }
+        let companyDetails = [];
 
         let companies;
         if (!role.role_name === "Recruiter") {
@@ -71,7 +72,7 @@ exports.getCompanies = async (req, res) => {
             
             console.log(companiesId.map(company => company.company_id));
             
-            let companyDetails = [];
+           
             
             for (let com of companiesId) {
               let company =  await Company.findOne({where:{id: com.company_id}});
@@ -123,7 +124,7 @@ exports.getPositionsOfCompany = async (req,res) => {
         
         console.log(role.role_name);
         
-        
+        let positionDetails = [];
         let positionsForall;
 
         if (!role.role_name === "Recruiter") {
@@ -141,7 +142,7 @@ exports.getPositionsOfCompany = async (req,res) => {
             }
     
              
-            let positionDetails = [];
+           
             
             for (let positionid of positions) {
                 let position = await Positions.findOne({ where: { id: positionid.position_id, company_id: companyId } });
