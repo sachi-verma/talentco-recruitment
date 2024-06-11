@@ -48,9 +48,7 @@ exports.getCompanies = async (req, res) => {
         
         const recruiterFilter = {};
         
-        if (role.role_name === "Recruiter") {
-            recruiterFilter.recruiter_id = userId;
-        }
+       
         
         const positions = await assignRecruiter.findAll({
             where: { recruiter_id: userId },
@@ -90,8 +88,12 @@ exports.getCompanies = async (req, res) => {
         }));
         console.log(companyDetails);
 
-        //const companies = await Company.findAll();
-        res.json(companyDetails);
+        let companies;
+        if (!role.role_name === "Recruiter") {
+             companies = await Company.findAll();
+        }
+       
+        res.json(role.role_name === "Recruiter"?companyDetails:companies);
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -145,9 +147,13 @@ exports.getPositionsOfCompany = async (req,res) => {
                 positionDetails.push(position);
             }
         }
+        let positionsForall;
+        if (!role.role_name === "Recruiter") {
+            positionsForall = await Position.findAll({ where: { company_id: companyId } });
+        }
 
-       // const positions = await Position.findAll({ where: { company_id: companyId } });
-        res.json(positionDetails);
+     
+        res.json(role.role_name === "Recruiter"?positionDetails:positionsForall);
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
