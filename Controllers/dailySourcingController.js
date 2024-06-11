@@ -71,7 +71,7 @@ exports.getCompanies = async (req, res) => {
             }
             
             console.log(companiesId.map(company => company.company_id));
-            
+             companiesId = [...new  Set(companiesId?.map(company => company.id))];
            
             
             for (let com of companiesId) {
@@ -95,7 +95,7 @@ exports.getCompanies = async (req, res) => {
         
       
        
-        res.json(role.role_name === "Recruiter"?companyDetails:companies);
+        res.json(!role.role_name === "Recruiter"?companyDetails:companies);
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -140,9 +140,6 @@ exports.getPositionsOfCompany = async (req,res) => {
                 console.log("No positions found");
                 return;
             }
-    
-             
-           
             
             for (let positionid of positions) {
                 let position = await Positions.findOne({ where: { id: positionid.position_id, company_id: companyId } });
@@ -152,7 +149,7 @@ exports.getPositionsOfCompany = async (req,res) => {
             }
 
         }
-        res.json(role.role_name === "Recruiter"?positionDetails:positionsForall);
+        res.json(!role.role_name === "Recruiter"? positionDetails :positionsForall);
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Internal Server Error' });
