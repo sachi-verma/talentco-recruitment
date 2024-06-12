@@ -64,7 +64,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
       whereClause.candidate_location = { [Op.like]: `%${location}%` };
     if (status) whereClause.candidate_status = { [Op.like]: `%${status}%` };
 
-    if (fromDate) whereClause.upload_date = { [Op.gte]: `%${fromDate}%` };
+    //if (fromDate) whereClause.upload_date = { [Op.gte]: `%${fromDate}%` };
 
     const companyFilters = {};
     if (company) companyFilters.company_name = { [Op.like]: `%${company}%` };

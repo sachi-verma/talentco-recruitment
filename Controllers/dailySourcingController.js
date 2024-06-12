@@ -191,7 +191,7 @@ exports.addSourcingReport = async (req, res) => {
 
         // Check if candidate status is 'Screened', then add candidate_phone and candidate_email to required fields
         if (sourcing_status === 'Screened') {
-            requiredFields = requiredFields.concat(['candidate_phone', 'candidate_alt_phone', 'candidate_email', 'candidate_location', 'candidate_qualification', 'candidate_experience', 'candidate_current_ctc', 'candidate_expected_ctc', 'candidate_organization', 'candidate_designation', 'candidate_notice_period', 'candidate_gender', 'candidate_remarks']);
+            requiredFields = requiredFields.concat(['candidate_phone', 'candidate_alt_phone', 'candidate_email', 'candidate_location', 'candidate_qualification', 'candidate_experience', 'candidate_current_ctc', 'candidate_expected_ctc', 'candidate_organization', 'candidate_designation', 'candidate_notice_period', 'candidate_gender']);
         }
 
         // Validate the request body
