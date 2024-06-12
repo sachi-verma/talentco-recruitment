@@ -156,7 +156,7 @@ exports.getPositionsOfCompany = async (req,res) => {
             }
         }
 
-        res.json(role.role_name === "Recruiter" ? positionDetails : positionsForAll);
+        res.json(role.role_name === "Recruiter" || role.role_name === "Team Lead" ? positionDetails : positionsForAll);
 
     } catch (error) {
         console.error('Error:', error);
