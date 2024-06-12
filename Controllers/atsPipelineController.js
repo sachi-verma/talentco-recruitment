@@ -58,16 +58,31 @@ exports.editAtsStatus = async (req, res) => {
     try {
         const id = req.params.id;
         const { candidate_status, status_date } = req.body;
-        
-        //changing the status in all candidates table
-        const candidate = await Candidate.update({ candidate_status, status_date }, { where: { id: id } });
 
-        //creating a new status to add in status history
-        let statusExist = await Status.findOne({where:{id: id , candidate_status: candidate.status}});
+        let candidate;
+        let status;
+        let incrementUpdate ;
+
+        let statusExist = await Status.findOne({where:{id: id , candidate_status: candidate_status}});
         if(statusExist){
             return res.status(404).json({error: "Can't change the status of candidate", candidate_status, id})
         }
-        const status = await Status.create({ candidate_id: id, candidate_status: candidate_status, status_date: status_date });
+        else{
+               //changing the status in all candidates table
+        candidate = await Candidate.update({ candidate_status, status_date }, { where: { id: id } });
+
+        //creating a new status to add in status history
+       
+        status = await Status.create({ candidate_id: id, candidate_status: candidate_status, status_date: status_date });
+
+   
+        
+        // //changing the status in all candidates table
+        // const candidate = await Candidate.update({ candidate_status, status_date }, { where: { id: id } });
+
+        // //creating a new status to add in status history
+       
+        // const status = await Status.create({ candidate_id: id, candidate_status: candidate_status, status_date: status_date });
 
     // changes
 
@@ -76,7 +91,7 @@ exports.editAtsStatus = async (req, res) => {
 
         const position= candidateinfo.position;
 
-        let incrementUpdate ;
+    
 
         if(candidate_status === 'CV Rejected'){
  
@@ -109,7 +124,7 @@ exports.editAtsStatus = async (req, res) => {
         if(incrementUpdate){
          console.log('Increment updateed position table' , incrementUpdate);
         }
-       
+    }
 
         return res.status(200).json({ success: "candidate status updated sucessfully", candidate: { id, candidate_status, status_date }, status });
 

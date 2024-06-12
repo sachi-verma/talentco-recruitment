@@ -16,7 +16,7 @@ exports.reportAndAnalysis = async (req, res) => {
     let limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
     let offset = (page - 1) * limit; // Calculate offset based on page number
 
-    const userid = req.query.id;
+   // const userid = req.query.id;
 
     const download = req.query.download ? true : false;
 
@@ -54,13 +54,13 @@ exports.reportAndAnalysis = async (req, res) => {
 
      
 
-        console.log(userid);
+        // console.log(userid);
 
-        const user =await User.findByPk(userid);
-        if(!user){
-             console.log("User not found");
-        }
-        console.log("=========>>>>>>>>",user.name);
+        // const user =await User.findByPk(userid);
+        // if(!user){
+        //      console.log("User not found");
+        // }
+        // console.log("=========>>>>>>>>",user.name);
 
     const result = await sourcingReportByRecruiter.findAll({
       include: [{
@@ -71,6 +71,8 @@ exports.reportAndAnalysis = async (req, res) => {
       }],
 
       where: whereClause,
+      limit,
+      offset
     });
 
     // const data = result[0].dataValues;
