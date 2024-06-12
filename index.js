@@ -22,6 +22,7 @@ const protectedRoutes = require('./Routes/protectedRoutes');
 const userRoutes = require('./Routes/userRoutes');
 
 const dashboardRoutes = require('./Routes/dashboardRoutes');
+const reportAndAnalysis = require('./Routes/reportAndAnalysisRoute');
 
 
 const app = express();
@@ -44,6 +45,7 @@ app.use(interviewRoutes);
 app.use(screenedCandidateRoutes);
 app.use(authRoutes);
 app.use(dashboardRoutes);
+app.use(reportAndAnalysis);
 
 
 // app.use("/protected_routes", protectedRoutes);

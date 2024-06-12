@@ -37,67 +37,67 @@ exports.getCompanyByPage = async (req, res) => {
       filters.industry = { [Op.like]: `%${industry}%` };
     }
 
-    const userId = req.query.id; 
-const user = await Users.findByPk(userId);
+//     const userId = req.query.id; 
+// const user = await Users.findByPk(userId);
 
-if (!user) {
-    console.error("User not found");
-    return;
-}
+// if (!user) {
+//     console.error("User not found");
+//     return;
+// }
 
-const role_id = user.role_id;
-const role = await Roles.findOne({ where: { id: role_id } });
+// const role_id = user.role_id;
+// const role = await Roles.findOne({ where: { id: role_id } });
 
-if (!role) {
-    console.error("Role not found");
-    return;
-}
+// if (!role) {
+//     console.error("Role not found");
+//     return;
+// }
 
-console.log(role.role_name);
+// console.log(role.role_name);
 
-const recruiterFilter = {};
+// const recruiterFilter = {};
 
-if (role.role_name === "Recruiter") {
-    recruiterFilter.recruiter_id = userId;
-}
+// if (role.role_name === "Recruiter") {
+//     recruiterFilter.recruiter_id = userId;
+// }
 
-const positions = await assignRecruiter.findAll({
-    where: { recruiter_id: userId },
-    attributes: ['position_id']
-});
+// const positions = await assignRecruiter.findAll({
+//     where: { recruiter_id: userId },
+//     attributes: ['position_id']
+// });
 
-if (!positions || positions.length === 0) {
-    console.log("No positions found");
-    return;
-}
+// if (!positions || positions.length === 0) {
+//     console.log("No positions found");
+//     return;
+// }
 
-console.log(positions.map(position => position.position_id));
+// console.log(positions.map(position => position.position_id));
 
-let companiesId = [];
+// let companiesId = [];
 
-for (let position of positions) {
-    let company = await Positions.findOne({ where: { id: position.position_id } });
-    if (company) {
-        companiesId.push(company);
-    }
-}
+// for (let position of positions) {
+//     let company = await Positions.findOne({ where: { id: position.position_id } });
+//     if (company) {
+//         companiesId.push(company);
+//     }
+// }
 
-console.log(companiesId.map(company => company.company_id));
+// console.log(companiesId.map(company => company.company_id));
 
-let companyDetails = [];
+// let companyDetails = [];
 
-for (let com of companiesId) {
-  let company =  await Companys.findOne({where:{id: com.company_id}});
-  companyDetails.push(company);
-};
+// for (let com of companiesId) {
+//   let company =  await Companys.findOne({where:{id: com.company_id}});
+//   companyDetails.push(company);
+// };
 
-let total_companies = companyDetails.length;
+// let total_companies = companyDetails.length;
 
-const companiesTosent = companyDetails.map(companyDetail => ({
-  id: companyDetail.id,
-  name: companyDetail.company_name
-}));
-console.log(companyDetails);
+// const companiesTosent = companyDetails.map(companyDetail => ({
+//   id: companyDetail.id,
+//   name: companyDetail.company_name
+// }));
+// console.log(companyDetails);
 
 
 const [companys, totalRecords] = await Promise.all([

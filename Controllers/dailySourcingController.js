@@ -1,5 +1,5 @@
 const db = require('../Models/db');
-const { Sequelize} = require('sequelize');
+const { Sequelize, where} = require('sequelize');
 const Report = require('../Models/dailySourcingReport');
 const Update = require('../Models/dailySourcingUpdate');
 const Candidate = require('../Models/allCandidates');
@@ -12,6 +12,7 @@ const Roles = require("../Models/roles");
 const Users = require("../Models/userDetails");
 const assignRecruiter = require("../Models/assignRecruiter");
 const Positions = require('../Models/allPositions');
+const sourcingReportByRecruiter = require("../Models/sourcingReportByRecruiter");
 
 
 Position.hasMany(Candidate, { foreignKey: 'position' });
@@ -184,7 +185,22 @@ exports.createSourcingReport = async (req, res) => {
 exports.addSourcingReport = async (req, res) => {
     try {
         let { id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date,  candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks } = req.body;
-          
+        const userid = req.query.id;
+        console.log(userid);
+
+        const user =await User.findByPk(userid);
+        if(!user){
+            return res.status(404).json({error: 'User not found'});
+        }
+        console.log("=========>>>>>>>>",user);
+
+       const created_by = user.id;
+        let thedate = new Date();
+        const date = thedate.toISOString().split('T')[0];
+        let total_cv_sourced=1;
+
+      
+
         candidate_resume = req.file ? req.file.path : null;
         // Define the required fields for validation
         let requiredFields = ['candidate', 'position', 'cv_sourced_from', 'relevant', 'sourcing_status'];
@@ -203,17 +219,31 @@ exports.addSourcingReport = async (req, res) => {
         }
         let report;
         if(sourcing_status === 'Screened'){
-             report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date, candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks, candidate_resume });
+             report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date, candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks, candidate_resume, created_by });
         }
         else{
-             report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date});
+             report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date,created_by});
 
         }
+
+        //updating sourcing report by recruiter
+
+        let recruiter = await sourcingReportByRecruiter.findOne({where:{recruiter_id: userid, date: date}});
+        let response ;
+         if(recruiter){
+          response = await sourcingReportByRecruiter.increment(
+              { total_cv_sourced: 1 },
+              { where: { recruiter_id: userid}  }
+          );
+         }
+         else{
+          response = await sourcingReportByRecruiter.create({recruiter_id: userid, total_cv_sourced, date});
+         }
 
         const alldata = await FilteredUpdate();
         const admindata = await DailyAdminUpdate();
 
-        res.status(200).json({ message: 'Report created successfully', report, alldata, admindata });
+        res.status(200).json({ message: 'Report created successfully', report, alldata, admindata , response:{msg:'created by added succesfully', userid,date} });
       } catch (error) {
         console.error('Error creating Report:', error);
         res.status(500).json({ error: 'Internal Server Error' });
