@@ -73,7 +73,7 @@ exports.editAtsStatus = async (req, res) => {
 
         let incrementUpdate ;
 
-        if(candidate_status === 'Rejected'){
+        if(candidate_status === 'CV Rejected'){
  
          incrementUpdate = await Position.increment(
              { cv_rejected: 1 },
