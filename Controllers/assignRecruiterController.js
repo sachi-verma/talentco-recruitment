@@ -2,10 +2,15 @@ const db = require('../Models/db');
 const Positions = require('../Models/allPositions');
 const Users = require('../Models/userDetails');
 const assignRecruiter = require('../Models/assignRecruiter');
+const {Op} = require('sequelize');
 
 exports.getRecruiter = async (req,res) => {
   try {
-      const users = await Users.findAll({where : {role_id: '17',},}); 
+      const users = await Users.findAll({  where: {
+        role_name: {
+          [Op.or]: ["Team Lead", "Recruiter"]
+        }
+      }}); 
       res.status(200).json(users); 
   } catch (error) {
       console.error('Error:', error);
