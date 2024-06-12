@@ -42,7 +42,8 @@ exports.getAtsPipeline = async (req, res) => {
 exports.editAtsPipeline = async (req, res) => {
     try {
         const id = req.params.id;
-        const { candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks, candidate_resume } = req.body;
+        const { candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks } = req.body;
+        const candidate_resume = req.file ? req.file.path : null;
         await Candidate.update({ candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks, candidate_resume }, { where: { id: id } });
 
         return res.status(200).json({ success: "candidate data updated sucessfully", candidate: { id, candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks, candidate_resume} });

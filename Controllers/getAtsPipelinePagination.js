@@ -49,6 +49,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
       location,
       fromDate,
       toDate,
+      recruiter
     } = filter;
 
     const whereClause = {
@@ -100,6 +101,8 @@ exports.getAtsPipelinePagination = async (req, res) => {
       recruiterFilter.recruiter_id=userId;
 
     }
+    
+    if(recruiter){recruiterFilter.recruiter_id=recruiter}
 
     const [report, totalRecords] = await Promise.all([
       Candidate.findAll({

@@ -183,8 +183,9 @@ exports.createSourcingReport = async (req, res) => {
 //USING THE all_candidates DATABASE
 exports.addSourcingReport = async (req, res) => {
     try {
-        const { id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date,  candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks, candidate_resume } = req.body;
-
+        let { id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date,  candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks } = req.body;
+          
+        candidate_resume = req.file ? req.file.path : null;
         // Define the required fields for validation
         let requiredFields = ['candidate', 'position', 'cv_sourced_from', 'relevant', 'sourcing_status'];
 

@@ -10,7 +10,8 @@ exports.createJob = async (req, res) => {
     try {
         const { id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, upload_date } = req.body;
         const jd_upload = req.file ? req.file.path : null;
-        const jobs = await Positions.create({ id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, upload_date, jd_upload });
+        const position_status ="Open";
+        const jobs = await Positions.create({ id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, upload_date, jd_upload, position_status });
         res.status(200).json({ message: 'jobs created successfully', jobs });
       } catch (error) {
         console.error('Error creating jobs:', error);
