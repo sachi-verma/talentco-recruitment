@@ -134,7 +134,7 @@ exports.getPositionsOfCompany = async (req,res) => {
         let positionDetails = [];
         let positionsForAll;
 
-        if (role.role_name !== "Recruiter") {
+        if (role.role_name !== "Recruiter" && role.role_name !== "Team Lead") {
             positionsForAll = await Position.findAll({ where: { company_id: companyId } });
         } else {
             const positions = await assignRecruiter.findAll({
