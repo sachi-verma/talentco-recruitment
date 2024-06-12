@@ -2,15 +2,30 @@ const db = require('../Models/db');
 const Positions = require('../Models/allPositions');
 const Users = require('../Models/userDetails');
 const assignRecruiter = require('../Models/assignRecruiter');
-const {Op} = require('sequelize');
+const Roles = require('../Models/roles');
+const {Op}= require("sequelize");
 
+// exports.getRecruiter = async (req,res) => {
+//   try {
+//       const users = await Users.findAll({where : {role_id: '17'},}); 
+//       res.status(200).json(users); 
+//   } catch (error) {
+//       console.error('Error:', error);
+//       res.status(500).send('500 server error');
+//   }
+//}
 exports.getRecruiter = async (req,res) => {
   try {
-      const users = await Users.findAll({  where: {
-        role_name: {
-          [Op.or]: ["Team Lead", "Recruiter"]
-        }
-      }}); 
+    const role = await Roles.findAll({where:{
+      role_name :{
+        [Op.or]: ["Team Lead", "Recruiter"]
+      }
+    }})
+     const teamlead = role[0].id;
+
+      const users = await Users.findAll({where :{ role_id:{
+        [Op.or]: [role[0].id,role[1].id]
+      }}}); 
       res.status(200).json(users); 
   } catch (error) {
       console.error('Error:', error);
