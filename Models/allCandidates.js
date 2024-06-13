@@ -77,7 +77,7 @@ const Candidates = sequelize.define('Candidates',{
     status_date: {
         type: DataTypes.DATEONLY,
     },
-    resume_file: {
+    candidate_resume: {
         type: DataTypes.STRING,
     },
     remarks: {
