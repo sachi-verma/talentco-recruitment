@@ -13,6 +13,7 @@ const Users = require("../Models/userDetails");
 const assignRecruiter = require("../Models/assignRecruiter");
 const Positions = require('../Models/allPositions');
 const sourcingReportByRecruiter = require("../Models/sourcingReportByRecruiter");
+const statusHistory = require("../Models/statusHistory");
 
 
 Position.hasMany(Candidate, { foreignKey: 'position' });
@@ -230,14 +231,14 @@ exports.addSourcingReport = async (req, res) => {
 
         let recruiter = await sourcingReportByRecruiter.findOne({where:{recruiter_id: userid, date: date}});
         let response ;
-         if(recruiter){
-          response = await sourcingReportByRecruiter.increment(
+         if(recruiter ){
+            response = await sourcingReportByRecruiter.increment(
               { total_cv_sourced: 1 },
-              { where: { recruiter_id: userid}  }
+              { where: { recruiter_id: userid,date: date}  }
           );
          }
          else{
-          response = await sourcingReportByRecruiter.create({recruiter_id: userid, total_cv_sourced, date});
+            response = await sourcingReportByRecruiter.create({recruiter_id: userid, total_cv_sourced, date});
          }
 
         const alldata = await FilteredUpdate();
@@ -476,7 +477,14 @@ async function DailyAdminUpdate() {
 
 exports.createBulkSourcingReport = async (req, res) => {
     try {
-      const reportsData = req.body; // Assuming the frontend sends an array of report objects
+        const userid = req.query.id;
+        console.log(userid);
+        const reportsData = req.body; // Assuming the frontend sends an array of report objects
+       //const created_by = user.id;
+        let thedate = new Date();
+        const date = thedate.toISOString().split('T')[0];
+        let total_cv_sourced= reportsData.length;
+      
       console.log("=====>>>>>");
       if (!Array.isArray(reportsData) || reportsData.length === 0) {
         console.error("No reports data provided");
@@ -504,6 +512,7 @@ exports.createBulkSourcingReport = async (req, res) => {
         "cv_sourced_from",
         "relevant",
         "sourcing_status",
+        "created_by"
       ];
   
       // If there are screened candidates, add additional fields to requiredFields
@@ -575,6 +584,25 @@ exports.createBulkSourcingReport = async (req, res) => {
       } else {
         createdReports = await Candidate.bulkCreate(reportsData);
       }
+
+       //updating sourcing report by recruiter
+
+     let recruiter = await sourcingReportByRecruiter.findOne({ where: { recruiter_id: userid, date: date } });
+
+    let response;
+    if (recruiter) {
+        response = await sourcingReportByRecruiter.increment(
+            { total_cv_sourced: total_cv_sourced },
+            { where: { recruiter_id: userid, date: date } }
+        );
+    } else {
+        response = await sourcingReportByRecruiter.create({
+            recruiter_id: userid,
+            total_cv_sourced: total_cv_sourced,
+            date: date
+        });
+    }
+
     
       const alldata = await FilteredUpdate();
       const admindata = await DailyAdminUpdate();
@@ -586,6 +614,7 @@ exports.createBulkSourcingReport = async (req, res) => {
   
       res.status(200).json({
         message: "Reports created successfully",
+        response:{msg:'total cv sourced added succesfully', userid, date, total_cv_sourced},
         reports: createdReports,
         alldata: alldata,
         admindata: admindata,
@@ -646,20 +675,47 @@ exports.statusChange = async (req, res) => {
     
     try {
         const id = req.params.id;
-        const { sourcing_status } = req.body;
+        const { sourcing_status,recruiter_id } = req.body;
+        
+        console.log('Found', recruiter_id);
 
         let thedate = new Date();
         const sent_to_client_date = thedate.toISOString().split('T')[0];
-       // console.log(sent_to_client_date);
+       console.log(sent_to_client_date);
 
-       
+       let candidate_status = sourcing_status;
     
        if (sourcing_status ==='Sent To Client') {
-        let candidate_status = sourcing_status;
+       
         console.log(`Setting sent_to_client_date to: ${sent_to_client_date}`);
         await Candidate.update({ sourcing_status, candidate_status, sent_to_client_date }, { where: { id } });
       }  
+
+      let response = await statusHistory.create({candidate_id:id, candidate_status:sourcing_status,created_by:recruiter_id,});
+      if(!response){
+
+        return res.status(404).json({error:"error creating candidate status in status history", candidate_status,id});
+
+      }
         //changes
+     let sent_to_client = 1; 
+        const status = await sourcingReportByRecruiter.findOne({ where:{recruiter_id: recruiter_id, date: sent_to_client_date}});
+        let history;
+        if (status){
+            history = await sourcingReportByRecruiter.increment(
+                { sent_to_client: 1 },
+                { where: { recruiter_id: recruiter_id, date:sent_to_client_date}  })
+             
+        }
+        else{
+            history = await sourcingReportByRecruiter.create({recruiter_id: recruiter_id, sent_to_client:sent_to_client, date:sent_to_client_date});
+
+        }
+
+        if(history){
+            console.log("==========================> Response =================>",response);
+        }
+
 
        const candidate= await Candidate.findByPk(id);
        console.log(candidate.position);
@@ -703,7 +759,7 @@ exports.statusChange = async (req, res) => {
 
         const alldata = await FilteredUpdate();
   
-        return res.status(200).json({ success: "status changed sucessfully", candidate: {id, sourcing_status}, alldata }); 
+        return res.status(200).json({ success: "status changed sucessfully", candidate: {id, sourcing_status}, alldata, recruiter_id, candidate_status }); 
 
     } catch (error) {
       console.error('Error changing status:', error);

@@ -29,7 +29,7 @@ const sourcingReportByRecruiter = sequelize.define('sourcingReportByRecruiter',{
         type: DataTypes.INTEGER,
         defaultValue: 0,
     },
-    sortlisted: {
+    shortlisted: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
     },
