@@ -535,10 +535,10 @@ exports.reportAndAnalysis = async (req, res) => {
 
     await sourcingReportByRecruiter.count({
       include: [{
-        model: User,
+        model: User, 
         required: true,
         attributes:["name"],
-        where:recruiterFilter
+        where:recruiterFilter 
       }],
 
       where: whereClause,

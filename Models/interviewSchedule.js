@@ -43,19 +43,31 @@ const Interview = sequelize.define('Interview',{
     interview_done: {
         type: DataTypes.STRING,
     },
+    scheduled_date:{
+        type: DataTypes.DATE,
+        defaultValue:null
+    },
     created_at: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
+        defaultValue:null
     },
     created_by: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
+        references: {
+            model: 'userDetails',
+            key: 'id'
+        }
     },
     updated_at: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
+        defaultValue:null
     },
     updated_by: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
+        references: {
+            model: 'userDetails',
+            key: 'id'
+        }
     }
 },
 {
