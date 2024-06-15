@@ -33,7 +33,7 @@ const sourcingReportByRecruiter = sequelize.define('sourcingReportByRecruiter',{
         type: DataTypes.INTEGER,
         defaultValue: 0,
     },
-    interview_sechdule: {
+    interview_schedule: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
     },

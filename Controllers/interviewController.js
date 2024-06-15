@@ -174,3 +174,38 @@ exports.candidateExist = async (req, res) => {
     }
 };
 
+exports.updateInterviewDetails = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const { interview_round,
+            interview_date,
+            interview_mode,
+            interview_time,
+            interview_location,
+            interview_status,
+            interview_remarks,
+            interview_done,
+            scheduled_date,
+         } = req.body;
+
+            let thedate = new Date();
+            let updated_at = thedate.toISOString().split('T')[0];
+
+        const candidate = await Interview.update({interview_round,interview_date,
+            interview_mode,
+            interview_time,
+            interview_location,
+            interview_status,
+            interview_remarks,
+            interview_done,
+            scheduled_date, updated_at:updated_at, updated_by:updated_at});
+
+        
+    } catch (error) {
+        console.error('Error creating Interview Schedule:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+
+};
+
