@@ -13,6 +13,7 @@ router.post('/bulkinterview', interviewController.bulkInterviewSchedule);
 //new
 //router.post('/schduleinterview',atsPipelineController.sechduleInterview);
 router.get('/existedcandidate', interviewController.candidateExist);
+router.patch('/updateinterviewdetails/:id', interviewController.updateInterviewDetails);
 
 
 module.exports = router;
