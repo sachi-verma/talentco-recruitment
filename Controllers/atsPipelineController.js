@@ -6,6 +6,7 @@ const Company = require("../Models/companyDetails");
 const Status = require("../Models/statusHistory");
 const sourcingReportByRecruiter = require("../Models/sourcingReportByRecruiter");
 const interviewSchedule = require("../Models/interviewSchedule");
+const {sendMail }= require("../Controllers/emailController");
 
 exports.getAtsPipeline = async (req, res) => {
   try {
@@ -347,6 +348,22 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
           candidate_status: candidate_status,
           status_date: status_date,
         });
+
+        const candidatedetails = await Candidate.findOne({where:{id: id}});
+         let candidate_email = candidatedetails.candidate_email;
+         let candidate_name = candidatedetails.candidate;
+
+         try {
+            await sendMail({
+              to: candidate_email,
+              subject: `Interview Scheduled !!`,
+              text: `Dear, ${candidate_name}!  Your interview have been scheduled for Software developer position at Talent Co Hr Services in ${interview_mode}
+               mode on ${interview_date}, ${interview_time} and the location is ${interview_location}. best of luck !!`
+            });
+          } catch (mailError) {
+            console.error('Error sending notification email:', mailError);
+            return res.status(500).json({ error: 'Failed to send notification email' });
+          }
   
         let data = {
           candidate: candidate,
@@ -364,3 +381,4 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
       throw error;
     }
   };
+

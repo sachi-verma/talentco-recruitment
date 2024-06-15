@@ -6,6 +6,7 @@ const Position = require("../Models/allPositions");
 const Company = require("../Models/companyDetails");
 const User = require("../Models/userDetails");
 const Interview = require("../Models/interviewSchedule");
+const {sendMail }= require("../Controllers/emailController");
 
 Position.hasMany(Candidate, { foreignKey: "position" });
 Candidate.belongsTo(Position, { foreignKey: "position" });
@@ -21,33 +22,50 @@ Position.belongsTo(User, { foreignKey: "recruiter_assign" });
 
 exports.getCandidates = async (req, res) => {
   try {
-    const candidates = await Candidate.findAll({
-      attributes: ["id", "candidate", "sourcing_status"],
-      include: [
-        {
-          model: Position,
-          required: true,
-          attributes: ["company_id", "position", "location"],
-          include: [
-            {
-              model: Company,
-              required: true,
-              attributes: ["company_name"],
-            },
-            {
-              model: User,
-              required: true,
-              attributes: ["name"],
-            },
-          ],
-        },
-      ],
-      where: {
-        sourcing_status: {
-          [Op.notIn]: ["Rejected", "Confirmation Pending"],
-        },
-      },
-    });
+    const id = req.query.id;
+    // const candidates = await Candidate.findAll({
+    //   attributes: ["id", "candidate", "sourcing_status"],
+    //   include: [
+    //     {
+    //       model: Position,
+    //       required: true,
+    //       attributes: ["company_id", "position", "location"],
+    //       include: [
+    //         {
+    //           model: Company,
+    //           required: true,
+    //           attributes: ["company_name"],
+    //         },
+    //         {
+    //           model: User,
+    //           required: true,
+    //           attributes: ["name"],
+    //         },
+    //       ],
+    //     },
+    //   ],
+    //   where: {
+    //     sourcing_status: {
+    //       [Op.notIn]: ["Rejected", "Confirmation Pending"],
+    //     },
+    //   },
+    // });
+    const candidates = await Candidate.findOne({attributes:['candidate', 'candidate_email'],where:{id:id}});
+
+    let candidate_email = candidates.candidate_email;
+    let candidate_name = candidates.candidate;
+    try {
+        await sendMail({
+          to: candidate_email,
+          subject: `Interview Details Updated for Candidate ID: ${id}`,
+          text: `Dear, ${candidate_name}!  Your interview details have been scheduled.`
+        });
+      } catch (mailError) {
+        console.error('Error sending notification email:', mailError);
+        return res.status(500).json({ error: 'Failed to send notification email' });
+      }
+    
+
     res.json(candidates);
   } catch (error) {
     console.error("Error:", error);
@@ -261,7 +279,8 @@ exports.candidateExist = async (req, res) => {
 
 exports.updateInterviewDetails = async (req, res) => {
     try {
-      const id = req.params.id;
+      let id = req.params.id;
+      id = parseInt(id);
       const {
         interview_round,
         interview_date,
@@ -292,7 +311,7 @@ exports.updateInterviewDetails = async (req, res) => {
       updateFields.updated_at = updated_at;
   
       const candidate = await Interview.update(updateFields, {
-        where: { id }
+        where: { candidate_id:id }
       });
   
       if (candidate[0] > 0) {
