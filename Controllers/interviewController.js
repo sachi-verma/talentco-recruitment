@@ -155,3 +155,22 @@ exports.bulkInterviewSchedule = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
+exports.candidateExist = async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        const candidate = await Interview.findOne({where: {candidate_id: id}});
+        if (candidate){
+            return res.status(404).json({error:"This candidate already been scheduled for interview !", id})
+        }else{
+            return res.status(200).json({success: "Ready to be scheduled",id});
+        }
+        
+    } catch (error) {
+        console.error('Error creating Interview Schedule:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+        
+    }
+};
+

@@ -209,127 +209,36 @@ exports.editAtsStatus = async (req, res) => {
 
       console.log("=======>>>> ", recruiter_id, date, candidate_status);
 
-      let recruiter = await sourcingReportByRecruiter.findOne({
-        where: { recruiter_id: recruiter_id, date: date },
-      });
+      let recruiter = await sourcingReportByRecruiter.findOne({ where: { recruiter_id: recruiter_id, date: newdate } });
 
       console.log("============>>", recruiter);
+
+      const statusMapping = {
+          'CV Rejected': 'cv_rejected',
+          'Shortlisted': 'shortlisted',
+          'Interview Scheduled': 'interview_schedule',
+          'Interview Done': 'interview_done',
+          'Rejected Post Interview': 'reject_post_interview',
+          'Final Selection': 'final_selection',
+          'Offer Letter Sent': 'offer_letter_sent',
+          'Final Joining': 'final_joining',
+          'Backout': 'feedback_pending',
+          'Feedback Pending': 'backout'
+      };
+
+      let fieldToIncrement = statusMapping[candidate_status];
+
       if (recruiter) {
-        if (candidate_status === "CV Rejected") {
-          await sourcingReportByRecruiter.increment(
-            { cv_rejected: 1 },
-            { where: { recruiter_id: recruiter_id, date: date } }
-          );
-        } else if (candidate_status === "Shortlisted") {
-          await sourcingReportByRecruiter.increment(
-            { shortlisted: 1 },
-            { where: { recruiter_id: recruiter_id, date: date } }
-          );
-        } else if (candidate_status === "Interview Scheduled") {
-          await sourcingReportByRecruiter.increment(
-            { interview_schedule: 1 },
-            { where: { recruiter_id: recruiter_id, date: date } }
-          );
-        } else if (candidate_status === "Interview Done") {
-          await sourcingReportByRecruiter.increment(
-            { interview_done: 1 },
-            { where: { recruiter_id: recruiter_id, date: date } }
-          );
-        } else if (candidate_status === "Rejected Post Interview") {
-          await sourcingReportByRecruiter.increment(
-            { reject_post_interview: 1 },
-            { where: { recruiter_id: recruiter_id, date: date } }
-          );
-        } else if (candidate_status === "Final Selection") {
-          await sourcingReportByRecruiter.increment(
-            { final_selection: 1 },
-            { where: { recruiter_id: recruiter_id, date: date } }
-          );
-        } else if (candidate_status === "Offer Letter Sent") {
-          await sourcingReportByRecruiter.increment(
-            { offer_letter_sent: 1 },
-            { where: { recruiter_id: recruiter_id, date: date } }
-          );
-        } else if (candidate_status === "Final Joining") {
-          await sourcingReportByRecruiter.increment(
-            { final_joining: 1 },
-            { where: { recruiter_id: recruiter_id, date: date } }
-          );
-        } else if (candidate_status === "Backout") {
-          await sourcingReportByRecruiter.increment(
-            { feedback_pending: 1 },
-            { where: { recruiter_id: recruiter_id, date: date } }
-          );
-        } else if (candidate_status === "Feedback Pending") {
-          await sourcingReportByRecruiter.increment(
-            { backout: 1 },
-            { where: { recruiter_id: recruiter_id, date: date } }
-          );
-        }
+          let incrementUpdate = {};
+          incrementUpdate[fieldToIncrement] = 1;
+          await sourcingReportByRecruiter.increment(incrementUpdate, { where: { recruiter_id: recruiter_id, date: date } });
       } else {
-        // response = await sourcingReportByRecruiter.create({recruiter_id:recruiter_id, date:status_date, });
-        if (candidate_status === "CV Rejected") {
-          await sourcingReportByRecruiter.create({
-            cv_rejected: 1,
-            recruiter_id: recruiter_id,
-            date: date,
-          });
-        } else if (candidate_status === "Shortlisted") {
-          await sourcingReportByRecruiter.create({
-            shortlisted: 1,
-            recruiter_id: recruiter_id,
-            date: date,
-          });
-        } else if (candidate_status === "Interview Scheduled") {
-          await sourcingReportByRecruiter.create({
-            interview_schedule: 1,
-            recruiter_id: recruiter_id,
-            date: date,
-          });
-        } else if (candidate_status === "Interview Done") {
-          await sourcingReportByRecruiter.create({
-            interview_done: 1,
-            recruiter_id: recruiter_id,
-            date: date,
-          });
-        } else if (candidate_status === "Rejected Post Interview") {
-          await sourcingReportByRecruiter.create({
-            reject_post_interview: 1,
-            recruiter_id: recruiter_id,
-            date: date,
-          });
-        } else if (candidate_status === "Final Selection") {
-          await sourcingReportByRecruiter.create({
-            final_selection: 1,
-            recruiter_id: recruiter_id,
-            date: date,
-          });
-        } else if (candidate_status === "Offer Letter Sent") {
-          await sourcingReportByRecruiter.create({
-            offer_letter_sent: 1,
-            recruiter_id: recruiter_id,
-            date: date,
-          });
-        } else if (candidate_status === "Final Joining") {
-          await sourcingReportByRecruiter.create({
-            final_joining: 1,
-            recruiter_id: recruiter_id,
-            date: date,
-          });
-        } else if (candidate_status === "Backout") {
-          await sourcingReportByRecruiter.create({
-            feedback_pending: 1,
-            recruiter_id: recruiter_id,
-            date: date,
-          });
-        } else if (candidate_status === "Feedback Pending") {
-          await sourcingReportByRecruiter.create({
-            backout: 1,
-            recruiter_id: recruiter_id,
-            date: date,
-          });
-        }
+          let createData = { recruiter_id: recruiter_id, date: date };
+          createData[fieldToIncrement] = 1;
+          await sourcingReportByRecruiter.create(createData);
       }
+
+    
 
       const candidateinfo = await Candidate.findByPk(id);
       console.log(candidateinfo.position);
@@ -397,6 +306,7 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
       const {
         candidate_id,
         interview_round,
+        interview_date,
         interview_mode,
         interview_time,
         interview_location,
@@ -413,6 +323,7 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
         candidate_id,
         interview_round,
         interview_mode,
+        interview_date,
         interview_time,
         interview_location,
         interview_status,
