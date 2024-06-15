@@ -362,7 +362,7 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
             });
           } catch (mailError) {
             console.error('Error sending notification email:', mailError);
-            return res.status(500).json({ error: 'Failed to send notification email' });
+            //return res.status(500).json({ error: 'Failed to send notification email' });
           }
   
         let data = {
