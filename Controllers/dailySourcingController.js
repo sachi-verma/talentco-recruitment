@@ -216,9 +216,9 @@ exports.addSourcingReport = async (req, res) => {
             requiredFields = requiredFields.concat(['candidate_phone', 'candidate_alt_phone', 'candidate_email', 'candidate_location', 'candidate_qualification', 'candidate_experience', 'candidate_current_ctc', 'candidate_expected_ctc', 'candidate_organization', 'candidate_designation', 'candidate_notice_period', 'candidate_gender']);
         }
 
-        // Validate the request body
+        // Validate the request body !req.body.hasOwnProperty(field) ||
         for (let field of requiredFields) {
-            if (!req.body.hasOwnProperty(field) || req.body[field] === null || req.body[field] === '') {
+            if (req.body[field] === null || req.body[field] === '') {
                 console.error(`Missing or empty field: ${field} in report:`, req.body);
                 return res.status(400).json({ error: `Missing or empty fields detected` });
             }
