@@ -338,8 +338,29 @@ exports.updateInterviewDetails = async (req, res) => {
       const candidate = await Interview.update(updateFields, {
         where: { candidate_id:id }
       });
+      
+      const candidatedetails = await Candidate.findOne({where:{id: id}});
+      let candidate_email = candidatedetails.candidate_email;
+      let candidate_name = candidatedetails.candidate;
   
       if (candidate[0] > 0) {
+        try {
+            await sendMail({
+              to: candidate_email,
+              subject: `Interview Details Updated !!`,
+              text: `Dear, ${candidate_name}!  Your interview Detalis has been updated. You can find the updated Details below, 
+              Interview round: ${interview_round? interview_round:""},
+              Interview Date: ${interview_date? interview_date:""},
+              Interview Mode: ${interview_mode? interview_mode:""},
+              Interview Time: ${interview_time? interview_time:""},
+              Interview Location: ${interview_location? interview_location:""}
+
+                Best of luck !!`
+            });
+          } catch (mailError) {
+            console.error('Error sending notification email:', mailError);
+            //return res.status(500).json({ error: 'Failed to send notification email' });
+          }
         return res.status(200).json({ success: "updated successfully", id });
       } else {
         return res.status(404).json({ error: "cannot find", id });
