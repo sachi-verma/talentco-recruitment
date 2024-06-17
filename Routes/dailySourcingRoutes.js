@@ -6,18 +6,30 @@ const getDailySourcingByDateController = require('../Controllers/getDailySourcin
 const multer = require('multer');
 const path = require('path');
 
-// Multer storage configuration for file uploads
+// Set up storage configuration for Multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'uploads/resumes/'); // Destination folder for uploaded files
     },
     filename: (req, file, cb) => {
         cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-        //cb(null, file.originalname);
     }
-    });
+});
 
-const upload = multer({ storage });
+const upload = multer({
+    storage,
+    fileFilter: (req, file, cb) => {
+        const fileTypes = /pdf/;
+        const mimeType = fileTypes.test(file.mimetype);
+        const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
+
+        if (mimeType && extname) {
+            return cb(null, true);
+        } else {
+            cb('Error: Only PDF files are allowed!');
+        }
+    }
+});
 
 
 router.get('/getcompanies', dailySourcingController.getCompanies);
