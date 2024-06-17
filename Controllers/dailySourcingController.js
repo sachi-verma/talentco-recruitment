@@ -721,9 +721,9 @@ exports.statusChange = async (req, res) => {
 
         }
 
-        if(history){
-            console.log("==========================> Response =================>",response);
-        }
+        // if(history){
+        //     console.log("==========================> Response =================>",response);
+        // }
 
 
        const candidate= await Candidate.findByPk(id);

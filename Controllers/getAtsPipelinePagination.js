@@ -57,9 +57,9 @@ exports.getAtsPipelinePagination = async (req, res) => {
     };
     if (candidate) whereClause.candidate = { [Op.like]: `%${candidate}%` };
     if (email)
-      whereClause.candidate_email = { [Op.like]: `%${candidateEmail}%` };
+      whereClause.candidate_email = { [Op.like]: `%${email}%` };
     if (mobile)
-      whereClause.candidate_phone = { [Op.like]: `%${candidateNumber}%` };
+      whereClause.candidate_phone = { [Op.like]: `%${mobile}%` };
     if (location)
       whereClause.candidate_location = { [Op.like]: `%${location}%` };
     if (status) whereClause.candidate_status = { [Op.like]: `%${status}%` };
@@ -82,8 +82,10 @@ exports.getAtsPipelinePagination = async (req, res) => {
         [Op.gte]: fromDate,
       };
     } else if (toDate) {
+      let theDate = parseInt(toDate.split("-")[2]) + 1;
+      let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, "0");
       whereClause.sent_to_client_date = {
-        [Op.lte]: toDate,
+        [Op.lte]: newDate,
       };
     }
 

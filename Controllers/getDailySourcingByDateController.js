@@ -257,12 +257,13 @@ exports.getSourcingReportByDate = async (req, res) => {
       res.status(200).send(buffer);
     } else {
       let records = report.length;
-      const pages = Math.ceil(filter ? records / limit : totalRecords / limit);
+      const pages = Math.ceil(filter ? records / limit : records / limit);
       res
         .status(200)
         .json({
           message: "Candidates fetched successfully",
-          totalRecords: filter ? records : totalRecords,
+          // totalRecords: filter ? records : totalRecords,
+          totalRecords: records,
           pages: pages,
           Candidates: report,
         });

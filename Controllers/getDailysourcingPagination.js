@@ -380,15 +380,15 @@ exports.getAdminReportByPage = async (req, res) => {
     if (fromDate && toDate) {
       let theDate = parseInt(toDate.split("-")[2]) + 1;
       let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, "0");
-      whereClause.date = {
+      whereClause.sourcing_date = {
         [Op.between]: [fromDate, newDate],
       };
     } else if (fromDate) {
-      whereClause.date = {
+      whereClause.sourcing_date = {
         [Op.gte]: fromDate,
       };
     } else if (toDate) {
-      whereClause.date = {
+      whereClause.sourcing_date = {
         [Op.lte]: toDate,
       };
     }
