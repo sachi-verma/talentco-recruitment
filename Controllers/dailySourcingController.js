@@ -689,7 +689,7 @@ exports.statusChange = async (req, res) => {
        
         console.log(`Setting sent_to_client_date to: ${sent_to_client_date}`);
         await Candidate.update({ sourcing_status, candidate_status, sent_to_client_date }, { where: { id } });
-      }  
+      
 
       let response = await statusHistory.create({candidate_id:id, candidate_status:sourcing_status,created_by:recruiter_id,});
       if(!response){
@@ -697,6 +697,15 @@ exports.statusChange = async (req, res) => {
         return res.status(404).json({error:"error creating candidate status in status history", candidate_status,id});
 
       }
+    } else{
+        await Candidate.update({ sourcing_status }, { where: { id } });
+        let response = await statusHistory.create({candidate_id:id, candidate_status:sourcing_status,created_by:recruiter_id,});
+       if(!response){
+
+        return res.status(404).json({error:"error creating candidate status in status history", candidate_status,id});
+
+      }
+    } 
         //changes
      let sent_to_client = 1; 
         const status = await sourcingReportByRecruiter.findOne({ where:{recruiter_id: recruiter_id, date: sent_to_client_date}});

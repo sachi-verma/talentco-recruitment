@@ -53,13 +53,14 @@ exports.getSourcingReportByDate = async (req, res) => {
     if (company) {
       companyFilters.company_name = { [Op.like]: `%${company}%` };
     }
-    if (location) {
-      companyFilters.location = { [Op.like]: `%${location}%` };
-    }
+   
 
     const positionFilter = {};
     if (position) {
       positionFilter.position = { [Op.like]: `%${position}%` };
+    }
+    if (location) {
+      positionFilter.location = { [Op.like]: `%${location}%` };
     }
 
     const whereClause = {

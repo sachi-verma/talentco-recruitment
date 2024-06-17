@@ -88,19 +88,23 @@ exports.getAtsPipelinePagination = async (req, res) => {
     }
 
     const user = await Users.findByPk(userId);
+  let role_id;
+  let role;
+  let recruiterFilter = {};
 
-    const role_id = user.role_id;
-    
-    const role = await Roles.findOne({where: {id: role_id}});
-    console.log(role.role_name);
+  if (user) {
+    role_id = user.role_id;
+    console.log("========>", role_id, user);
 
-    const recruiterFilter={};
+    if (role_id) {
+      role = await Roles.findOne({ where: { id: role_id } });
+      console.log("++++++++++++++++>>>>>>>>>>>>>>", role);
 
-    if (role.role_name ==="Recruiter"){
-
-      recruiterFilter.recruiter_id=userId;
-
+      if (role && role.role_name === "Recruiter") {
+        recruiterFilter.recruiter_id = userId;
+      }
     }
+  }
     
     if(recruiter){recruiterFilter.recruiter_id=recruiter}
 
@@ -154,7 +158,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
               },
               {
                 model: assignRecruiter,
-                required: role.role_name ==="Recruiter"|| recruiter ? true: false, // Set to false if a position can have no recruiters assigned
+                required: role && role.role_name ==="Recruiter"|| recruiter ? true: false, // Set to false if a position can have no recruiters assigned
                 attributes: ["recruiter_id"],
                 where: recruiterFilter,
                 include: [
@@ -217,7 +221,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
               },
               {
                 model: assignRecruiter,
-                required: role.role_name ==="Recruiter"|| recruiter? true: false, // Set to false if a position can have no recruiters assigned
+                required: role && role.role_name ==="Recruiter"|| recruiter? true: false, // Set to false if a position can have no recruiters assigned
                 attributes: ["recruiter_id"],
                 where: recruiterFilter,
                 include: [
@@ -357,10 +361,14 @@ exports.getAtsPipelinePagination = async (req, res) => {
     } else {
       let records = report.length;
 
-      const pages = Math.ceil(filter ? records / limit : totalRecords / limit);
+      console.log("=============>>> total", totalRecords);
+
+      const pages = Math.ceil(filter ? records / limit : records / limit);
       res.status(200).json({
         message: "candidates fetched successfully",
-        totalRecords: filter ? records : totalRecords,
+        // totalRecords: filter ? records : totalRecords,
+        totalRecords: records,
+
         pages: pages,
         Candidates: report,
       });
