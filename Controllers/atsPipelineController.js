@@ -349,16 +349,54 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
           status_date: status_date,
         });
 
-        const candidatedetails = await Candidate.findOne({where:{id: id}});
+        const candidatedetails = await Candidate.findOne({
+
+            include: [
+                {
+                  model: Position,
+                  required: true,
+                  attributes: [
+                    "id",
+                    "company_id",
+                    "position",
+                    "location",
+                    "experience",
+                    "min_ctc",
+                    "max_ctc",
+                  ],
+                  include: [
+                    {
+                      model: Company,
+                      required: true,
+                      attributes: ["company_name"],
+                       
+                    },
+                ]
+            
+        }], 
+            where:{id: id}
+        });
          let candidate_email = candidatedetails.candidate_email;
          let candidate_name = candidatedetails.candidate;
+         let position = candidatedetails.Position.position;
+         let company = candidatedetails.Position.Company.company_name;
 
          try {
             await sendMail({
               to: candidate_email,
-              subject: `Interview Scheduled !!`,
-              text: `Dear, ${candidate_name}!  Your interview have been scheduled for Software developer position at Talent Co Hr Services in ${interview_mode}
-               mode on ${interview_date}, ${interview_time} and the location is ${interview_location}. best of luck !!`
+              subject: `Interview Scheduled for ${position} position at ${company} !!`,
+              text: `Dear, ${candidate_name}! 
+
+               Your interview have been scheduled for  ${position} position at ${company} on ${interview_date}. you can find interview Details below :-
+                Interview Mode : ${interview_round},
+                Interview Mode :  ${interview_mode},
+                Interview Time : ${interview_time},
+                ${interview_mode==="In Person" ?`Interview Location: ${interview_location} `:""}
+             
+            Best of Luck !!
+
+            Regards,
+            Talent Co Hr Services`
             });
           } catch (mailError) {
             console.error('Error sending notification email:', mailError);

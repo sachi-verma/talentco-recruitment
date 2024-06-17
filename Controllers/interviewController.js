@@ -385,16 +385,19 @@ exports.updateInterviewDetails = async (req, res) => {
         await sendMail({
           to: candidate_email,
           subject: `Interview Details Updated !!`,
-          text: `Dear, ${candidate_name}!  Your interview Detalis has been updated. You can find the updated Details below, 
+          text: `Dear, ${candidate_name}!
+            Your interview Detalis has been updated. You can find the updated Details below, 
+            
               Interview round: ${interview_round ? interview_round : ""},
               Interview Date: ${interview_date ? interview_date : ""},
               Interview Mode: ${interview_mode ? interview_mode : ""},
               Interview Time: ${interview_time ? interview_time : ""},
-              Interview Location: ${
-                interview_location ? interview_location : ""
-              }
+              ${interview_mode==="In Person" ?`Interview Location: ${interview_location} `:""}
 
-                Best of luck !!`,
+           Best of Luck !!
+
+           Regards,
+           Talent Co Hr Services`,
         });
       } catch (mailError) {
         console.error("Error sending notification email:", mailError);
