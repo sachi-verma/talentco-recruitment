@@ -90,24 +90,30 @@ exports.getInterviewSchedule = async (req, res) => {
 
     const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
 
+    const {
+        candidate,
+        company,
+        position
+    }= filter;
+
     console.log(filter);
-    
+
     const report = await Interview.findAll({
       include: [
         {
           model: Candidate,
           required: true,
-          attributes: ["candidate"],
+          //attributes: ["candidate"],
           include: [
             {
               model: Position,
               required: true,
-              attributes: ["company_id", "position", "location"],
+             // attributes: ["company_id", "position", "location"],
               include: [
                 {
                   model: Company,
                   required: true,
-                  attributes: ["company_name"],
+                 // attributes: ["company_name"],
                 },
                 {
                   model: User,
@@ -119,6 +125,8 @@ exports.getInterviewSchedule = async (req, res) => {
           ],
         },
       ],
+      limit,
+      offset
     });
     res
       .status(200)
