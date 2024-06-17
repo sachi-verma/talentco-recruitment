@@ -21,7 +21,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.patch('/job', upload.single('jd_upload'), jobController.createJob);
+router.post('/job', upload.single('jd_upload'), jobController.createJob);
 // router.post('/job', jobController.createJob);
 router.get('/getjobs', jobController.getJob);
 router.get('/getjob/:id', jobController.getJobById);

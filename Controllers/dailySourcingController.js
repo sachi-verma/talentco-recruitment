@@ -14,6 +14,7 @@ const assignRecruiter = require("../Models/assignRecruiter");
 const Positions = require('../Models/allPositions');
 const sourcingReportByRecruiter = require("../Models/sourcingReportByRecruiter");
 const statusHistory = require("../Models/statusHistory");
+const path = require('path');
 
 
 Position.hasMany(Candidate, { foreignKey: 'position' });
@@ -188,6 +189,9 @@ exports.addSourcingReport = async (req, res) => {
         let { id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date,  candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks } = req.body;
         const userid = req.query.id;
         console.log(userid);
+        console.log('Request body:', req.body); // Debugging: Log request body
+        console.log('Uploaded file:', req.file); // Debugging: Log uploaded file
+
 
         const user =await User.findByPk(userid);
         if(!user){
@@ -203,6 +207,7 @@ exports.addSourcingReport = async (req, res) => {
       
 
         candidate_resume = req.file ? req.file.path : null;
+        console.log("===================>>>>>> resume",candidate_resume);
         // Define the required fields for validation
         let requiredFields = ['candidate', 'position', 'cv_sourced_from', 'relevant', 'sourcing_status'];
 
