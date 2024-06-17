@@ -399,15 +399,15 @@ exports.getAdminReportByPage = async (req, res) => {
         [Sequelize.fn("DATE", Sequelize.col("sourcing_date")), "date"],
       ],
       where: whereClause,
-      include: [
-        {
-          model: Position,
-          required: true,
-          attributes: ["id"],
-        },
-      ],
+      // include: [
+      //   {
+      //     model: Position,
+      //     required: true,
+      //     attributes: ["id"],
+      //   },
+      // ],
       group: [
-        "Position.id",
+        // "Position.id",
         Sequelize.fn("DATE", Sequelize.col("sourcing_date")),
       ],
     });
@@ -417,7 +417,7 @@ exports.getAdminReportByPage = async (req, res) => {
     // Step 2: Get the paginated data
     const report = await Candidate.findAll({
       attributes: [
-        "position",
+        // "position",
         [Sequelize.fn("DATE", Sequelize.col("sourcing_date")), "date"],
         [
           Sequelize.fn("COUNT", Sequelize.col("sourcing_status")),
@@ -425,41 +425,41 @@ exports.getAdminReportByPage = async (req, res) => {
         ],
       ],
       where: whereClause,
-      include: [
-        {
-          model: Position,
-          required: true,
-          attributes: [
-            "id",
-            "company_id",
-            "position",
-            "location",
-            "recruiter_assign",
-          ],
-          include: [
-            {
-              model: Company,
-              required: true,
-              attributes: ["company_name"],
-            },
-            {
-              model: User,
-             // required: true,
-              attributes: ["name"],
-            },
-          ],
-        },
-      ],
+      // include: [
+      //   {
+      //     model: Position,
+      //     required: true,
+      //     attributes: [
+      //       "id",
+      //       "company_id",
+      //       "position",
+      //       "location",
+      //       "recruiter_assign",
+      //     ],
+      //     include: [
+      //       {
+      //         model: Company,
+      //         required: true,
+      //         attributes: ["company_name"],
+      //       },
+      //       {
+      //         model: User,
+      //        // required: true,
+      //         attributes: ["name"],
+      //       },
+      //     ],
+      //   },
+      // ],
       group: [
-        "Candidates.position",
+        // "Candidates.position",
         Sequelize.fn("DATE", Sequelize.col("sourcing_date")),
-        "Position.id",
-        "Position.company_id",
-        "Position.position",
-        "Position.location",
-        "Position.recruiter_assign",
-        "Position.Company.company_name",
-        "Position.User.name",
+        // "Position.id",
+        // "Position.company_id",
+        // "Position.position",
+        // "Position.location",
+        // "Position.recruiter_assign",
+        // "Position.Company.company_name",
+        // "Position.User.name",
       ],
       limit,
       offset,

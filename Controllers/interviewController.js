@@ -75,6 +75,23 @@ exports.getCandidates = async (req, res) => {
 
 exports.getInterviewSchedule = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1; // Current page, default to 1
+    let limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
+    let offset = (page - 1) * limit; // Calculate offset based on page number
+
+    const userId = req.query.id; 
+
+    const download = req.query.download ? true : false;
+
+    if (download) {
+      limit = null;
+      offset = null;
+    }
+
+    const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
+
+    console.log(filter);
+    
     const report = await Interview.findAll({
       include: [
         {
