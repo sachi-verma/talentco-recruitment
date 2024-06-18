@@ -65,7 +65,7 @@ const sourcingReportByRecruiter = sequelize.define('sourcingReportByRecruiter',{
         type: DataTypes.INTEGER,
         defaultValue: 0,
     },
-    date:{
+    report_date:{
         type: DataTypes.DATE
 
     }

@@ -180,63 +180,26 @@ exports.getAtsPipelinePagination = async (req, res) => {
         offset,
       }),
       Candidate.count({
-        attributes: [
-          "id",
-          "candidate",
-          "position",
-          "candidate_phone",
-          "candidate_email",
-          "candidate_location",
-          "candidate_experience",
-          "candidate_current_ctc",
-          "candidate_qualification",
-          "candidate_gender",
-          "cv_sourced_from",
-          "sourcing_date",
-          "relevant",
-          "candidate_status",
-          "remarks",
-          "created_at",
-          "updated_at",
-          "sent_to_client_date"
-        ],
         include: [
           {
-            model: Position,
-            required: true,
-            attributes: [
-              "id",
-              "company_id",
-              "position",
-              "location",
-              "experience",
-              "recruiter_assign",
-              "min_ctc",
-              "max_ctc",
-            ],
-            include: [
-              {
-                model: Company,
-                required: true,
-                attributes: ["company_name"],
-                where: companyFilters,
-              },
-              {
-                model: assignRecruiter,
-                required: role && role.role_name ==="Recruiter"|| recruiter? true: false, // Set to false if a position can have no recruiters assigned
-                attributes: ["recruiter_id"],
-                where: recruiterFilter,
-                include: [
+              model: Position,
+              required: true,
+              where: positionFilters,
+              include: [
                   {
-                    model: Users,
-                    attributes: ["name"], // Fetch recruiter names
+                      model: Company,
+                      required: true,
+                      where: companyFilters,
                   },
-                ],
-              },
-            ],
+                  {
+                      model: assignRecruiter,
+                      required: true,
+                      where: recruiterFilter,
+                  },
+              ],
           },
-        ],
-        where: whereClause,
+      ],
+      where: whereClause,
         // parameters
       }),
     ]);
@@ -377,7 +340,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
     }
   } catch (error) {
     console.error("Error:", error);
-    res.status(500).send("500 server error");
+    res.status(500).send("500 server error", error);
   }
 };
 

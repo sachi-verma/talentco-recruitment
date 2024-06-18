@@ -93,6 +93,7 @@ exports.getInterviewSchedule = async (req, res) => {
     const userId = req.query.id;
 
     const download = req.query.download ? true : false;
+    const whereClause= { }
 
     if (download) {
       limit = null;
@@ -158,6 +159,7 @@ exports.getInterviewSchedule = async (req, res) => {
       ],
       limit,
       offset,
+      where: whereClause,
     });
     let records = report.length;
 
@@ -387,7 +389,7 @@ exports.updateInterviewDetails = async (req, res) => {
           subject: `Interview Details Updated !!`,
           text: `Dear, ${candidate_name}!
             Your interview Detalis has been updated. You can find the updated Details below, 
-            
+
               Interview round: ${interview_round ? interview_round : ""},
               Interview Date: ${interview_date ? interview_date : ""},
               Interview Mode: ${interview_mode ? interview_mode : ""},

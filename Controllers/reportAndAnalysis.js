@@ -14,6 +14,16 @@ User.hasMany(sourcingReportByRecruiter, { foreignKey: "recruiter_id" });
 Status.belongsTo(User, { foreignKey: "created_by" });
 User.hasMany(Status, { foreignKey: "created_by" });
 
+
+async function filteredReports (){
+  try {
+    
+  } catch (error) {
+    
+  }
+
+}
+
 exports.reportAndAnalysis = async (req, res) => {
   const transaction = await db.sequelize.transaction();
   try {
@@ -70,40 +80,43 @@ exports.reportAndAnalysis = async (req, res) => {
         //const candidates = await Status.count({where:{candidate_status:"Sent To Client"}});
 
 //sent to client start
-//         const candidates = await Status.findAll({
-//           attributes: [
-//             'created_by',
-//             'status_date',
-//             [Sequelize.fn('COUNT', Sequelize.col('candidate_status')), 'count']
-//           ],
-//           where: { candidate_status: "Sent To Client" },
-//           group: ['created_by', 'status_date'],
-//         });
-//         console.log("================================>> sent to client", candidates);
+let recruiter;
+        const candidates = await Status.findAll({
+          attributes: [
+            'created_by',
+            'status_date',
+            [Sequelize.fn('COUNT', Sequelize.col('candidate_status')), 'count']
+          ],
+          where: { candidate_status: "Sent To Client" },
+          group: ['created_by', 'status_date'],
+        });
+        console.log("================================>> sent to client", candidates);
 
-//         if(candidates.length!=0){
+        if(candidates.length!=0){
 
       
         
-//         for (let sent of candidates) {
-//           let recruiter = await sourcingReportByRecruiter.findOne({
-//             where: { recruiter_id: sent.created_by, date: sent.status_date }
-//           });
+        for (let sent of candidates) {
+          recruiter = await sourcingReportByRecruiter.findAll({
+            where: { recruiter_id: sent.created_by, report_date: sent.status_date }
+          });
+
+          console.log("========>>>> RRR", recruiter, sent.status_date, sent.created_by, candidates);
         
-//           if (recruiter) {
-//             await sourcingReportByRecruiter.increment(
-//               { sent_to_client: sent.get('count') },
-//               { where: { recruiter_id: sent.created_by, date: sent.status_date } }
-//             );
-//           } else {
-//             await sourcingReportByRecruiter.create({
-//               recruiter_id: sent.created_by,
-//               date: sent.status_date,
-//               sent_to_client: sent.get('count')
-//             });
-//           }
-//         }
-//       }
+          if (recruiter) {
+            await sourcingReportByRecruiter.increment(
+              { sent_to_client: sent.get('count') },
+              { where: { recruiter_id: sent.created_by, report_date: sent.status_date } }
+            );
+          } else {
+            await sourcingReportByRecruiter.create({
+              recruiter_id: sent.created_by,
+              report_date: sent.status_date,
+              sent_to_client: sent.get('count')
+            });
+          }
+        }
+      }
 //         //sent to client end
 
 //         //cv rejected start
@@ -563,8 +576,12 @@ exports.reportAndAnalysis = async (req, res) => {
 
     // const data = result[0].dataValues;
     res.json({ totalRecords: filter ? records : totalRecords,
-      pages: pages,
-      data: result});
+    //   pages: pages,
+    //   data: result,
+    // candidates,
+    recruiter
+    
+    });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");
