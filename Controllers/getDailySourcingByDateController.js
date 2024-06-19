@@ -82,18 +82,22 @@ exports.getSourcingReportByDate = async (req, res) => {
     if (status) whereClause.sourcing_status = { [Op.like]: `%${status}%` };
 
     const user = await Users.findByPk(userId);
-
-    const role_id = user.role_id;
-    
-    const role = await Roles.findOne({where: {id: role_id}});
-    console.log(role.role_name);
-
+    let role;
+    let role_id;
     const recruiterFilter={};
 
-    if (role.role_name ==="Recruiter"){
-
-      recruiterFilter.recruiter_id=userId;
-
+    if (user) {
+      role_id = user.role_id;
+      console.log("========>", role_id, user);
+  
+      if (role_id) {
+        role = await Roles.findOne({ where: { id: role_id } });
+        console.log("=========>>>>>>>>>>>>>>", role);
+  
+        if (role && (role.role_name === "Recruiter" || role.role_name === "Team Lead")) {
+          recruiterFilter.recruiter_id = userId;
+        }
+      }
     }
 
     const [report, totalRecords] = await Promise.all([
@@ -132,7 +136,7 @@ exports.getSourcingReportByDate = async (req, res) => {
               },
               {
                 model: assignRecruiter,
-                required: role.role_name ==="Recruiter"? true: false, // Set to false if a position can have no recruiters assigned
+                required: true, // Set to false if a position can have no recruiters assigned
                 attributes: ["recruiter_id"],
                 where: recruiterFilter,
                 include: [
@@ -151,7 +155,7 @@ exports.getSourcingReportByDate = async (req, res) => {
         offset,
       }),
 
-      await Candidate.count({
+      await Candidate.findAll({
         attributes: [
           "id",
           "candidate",
@@ -184,7 +188,7 @@ exports.getSourcingReportByDate = async (req, res) => {
               },
               {
                 model: assignRecruiter,
-                required: role.role_name ==="Recruiter"? true: false, // Set to false if a position can have no recruiters assigned
+                required: true, // Set to false if a position can have no recruiters assigned
                 attributes: ["recruiter_id"],
                 where: recruiterFilter,
                 include: [
@@ -257,13 +261,13 @@ exports.getSourcingReportByDate = async (req, res) => {
       res.status(200).send(buffer);
     } else {
       let records = report.length;
-      const pages = Math.ceil(filter ? records / limit : records / limit);
+      const pages = Math.ceil(filter ? records / limit : totalRecords.length / limit);
       res
         .status(200)
         .json({
           message: "Candidates fetched successfully",
-          // totalRecords: filter ? records : totalRecords,
-          totalRecords: records,
+           totalRecords: filter ? records : totalRecords.length,
+          //totalRecords: totalRecords,
           pages: pages,
           Candidates: report,
         });

@@ -7,6 +7,7 @@ const Status = require("../Models/statusHistory");
 const sourcingReportByRecruiter = require("../Models/sourcingReportByRecruiter");
 const interviewSchedule = require("../Models/interviewSchedule");
 const {sendMail }= require("../Controllers/emailController");
+const Interview = require("../Models/interviewSchedule");
 
 exports.getAtsPipeline = async (req, res) => {
   try {
@@ -151,10 +152,34 @@ exports.editAtsStatus = async (req, res) => {
     let date = d;
 
     console.log(candidate_status, newdate, d, status_date, recruiter_id);
+    let interviewschedule = "Interview Scheduled";
+    let shortlistedfornextround ="Shortlisted For Next Round";
+    let onhold = "Hold Post Interview";
+    if(candidate_status ==="Interview Done" || candidate_status ==="Rejected Post Interview" || candidate_status ==="Interview Feedback Pending" || candidate_status ==="Final Selection" || candidate_status ==="Final Joining"){
+      let interviewExist = await Interview.findOne({
+        where: {
+          candidate_id: id,
+          interview_status: {
+            [Op.in]: [interviewschedule, shortlistedfornextround, onhold]  
+          }
+        }
+      });
+      if(interviewExist){
+        return res
+        .status(404)
+        .json({
+          error: `Can't change the status, candidate's Interview process is Ongoing!`,
+          candidate_status,
+          id,
+        });
+      }
+
+    }
 
     let statusExist = await Status.findOne({
       where: { id: id, candidate_status: candidate_status },
     });
+    
     if (statusExist) {
       return res
         .status(404)
@@ -179,8 +204,24 @@ exports.editAtsStatus = async (req, res) => {
             console.error('Error creating interview:', error);
             return res.status(500).json({ error: 'Error creating interview', details: error.message });
           }
-    }
-    else{
+    } else if(candidate_status==="Backout"){
+
+      candidate = await Candidate.update(
+        { candidate_status, status_date },
+        { where: { id: id } }
+      );
+
+      await Interview.update({interview_status:candidate_status},{where: { candidate_id: id}});
+
+      //creating a new status to add in status history
+
+      status = await Status.create({
+        candidate_id: id,
+        candidate_status: candidate_status,
+        status_date: status_date,
+      });
+
+    }else{
         candidate = await Candidate.update(
             { candidate_status, status_date },
             { where: { id: id } }

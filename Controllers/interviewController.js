@@ -117,7 +117,7 @@ exports.getInterviewSchedule = async (req, res) => {
       role = await Roles.findOne({ where: { id: role_id } });
       console.log(role.role_name);
 
-      if (role && role.role_name === "Recruiter") {
+      if (role && (role.role_name === "Recruiter" || role.role_name === "Team Lead")) {
         recruiterFilter.recruiter_id = userId;
       }
     }
@@ -422,6 +422,7 @@ exports.updateInterviewStatus = async (req, res) => {
     let thedate = new Date();
     let updated_at = thedate.toISOString().split("T")[0];
     let interview_done = "Interview Done";
+    let final_selection = "Final Selection";	
     let backout = "Backout";
 
     const iscandidate = await Interview.findOne({
@@ -435,9 +436,9 @@ exports.updateInterviewStatus = async (req, res) => {
         { where: { candidate_id: candidate_id } }
       );
 
-      if (interview_status === "Shortlisted Post Interview") {
+      if (interview_status === "Final Selection") {
         await Candidate.update(
-          { candidate_status: interview_done, status_date: updated_at },
+          { candidate_status: final_selection, status_date: updated_at },
           { where: { id: candidate_id } }
         );
 
@@ -445,7 +446,7 @@ exports.updateInterviewStatus = async (req, res) => {
 
         await Status.create({
           candidate_id: candidate_id,
-          candidate_status: interview_done,
+          candidate_status: final_selection,
           status_date: updated_at,
           created_by: recruiter_id,
         });
@@ -463,7 +464,7 @@ exports.updateInterviewStatus = async (req, res) => {
           status_date: updated_at,
           created_by: recruiter_id,
         });
-      } else if (interview_status === "Backout Post Interview") {
+      } else if (interview_status === "Backout") {
         await Candidate.update(
           { candidate_status: backout, status_date: updated_at },
           { where: { id: candidate_id } }
@@ -477,6 +478,28 @@ exports.updateInterviewStatus = async (req, res) => {
           status_date: updated_at,
           created_by: recruiter_id,
         });
+      } else if (interview_status === "Interview Feedback Pending") {
+
+        await Candidate.update(
+            { candidate_status: interview_status, status_date: updated_at },
+            { where: { id: candidate_id } }
+          );
+  
+          //creating a new status to add in status history
+          await Status.create({
+            candidate_id: candidate_id,
+            candidate_status: interview_done,
+            status_date: updated_at,
+            created_by: recruiter_id,
+          });
+  
+          await Status.create({
+            candidate_id: candidate_id,
+            candidate_status: interview_status,
+            status_date: updated_at,
+            created_by: recruiter_id,
+          });
+
       }
 
       return res

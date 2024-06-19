@@ -102,9 +102,10 @@ exports.getAtsPipelinePagination = async (req, res) => {
       role = await Roles.findOne({ where: { id: role_id } });
       console.log("=========>>>>>>>>>>>>>>", role);
 
-      if (role && role.role_name === "Recruiter") {
+      if (role && (role.role_name === "Recruiter" || role.role_name === "Team Lead")) {
         recruiterFilter.recruiter_id = userId;
       }
+      
     }
   }
     
