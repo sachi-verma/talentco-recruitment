@@ -713,16 +713,16 @@ exports.statusChange = async (req, res) => {
     } 
         //changes
      let sent_to_client = 1; 
-        const status = await sourcingReportByRecruiter.findOne({ where:{recruiter_id: recruiter_id, date: sent_to_client_date}});
+        const status = await sourcingReportByRecruiter.findOne({ where:{recruiter_id: recruiter_id, report_date: sent_to_client_date}});
         let history;
         if (status){
             history = await sourcingReportByRecruiter.increment(
                 { sent_to_client: 1 },
-                { where: { recruiter_id: recruiter_id, date:sent_to_client_date}  })
+                { where: { recruiter_id: recruiter_id, report_date:sent_to_client_date}  })
              
         }
         else{
-            history = await sourcingReportByRecruiter.create({recruiter_id: recruiter_id, sent_to_client:sent_to_client, date:sent_to_client_date});
+            history = await sourcingReportByRecruiter.create({recruiter_id: recruiter_id, sent_to_client:sent_to_client, report_date:sent_to_client_date});
 
         }
 

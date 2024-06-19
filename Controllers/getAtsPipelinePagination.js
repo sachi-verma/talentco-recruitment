@@ -89,7 +89,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
       };
     }
 
-    const user = await Users.findByPk(userId);
+  const user = await Users.findByPk(userId);
   let role_id;
   let role;
   let recruiterFilter = {};
@@ -100,7 +100,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
 
     if (role_id) {
       role = await Roles.findOne({ where: { id: role_id } });
-      console.log("++++++++++++++++>>>>>>>>>>>>>>", role);
+      console.log("=========>>>>>>>>>>>>>>", role);
 
       if (role && role.role_name === "Recruiter") {
         recruiterFilter.recruiter_id = userId;
@@ -109,6 +109,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
   }
     
     if(recruiter){recruiterFilter.recruiter_id=recruiter}
+    console.log("==========>>>> recruiter filter",recruiterFilter);
 
     const [report, totalRecords] = await Promise.all([
       Candidate.findAll({
@@ -129,6 +130,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
           "candidate_gender",
           "cv_sourced_from",
           "sourcing_date",
+          "sourcing_status",
           "relevant",
           "candidate_status",
           "remarks",
@@ -160,7 +162,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
               },
               {
                 model: assignRecruiter,
-                required: role && role.role_name ==="Recruiter"|| recruiter ? true: false, // Set to false if a position can have no recruiters assigned
+                required:  true, // Set to false if a position can have no recruiters assigned
                 attributes: ["recruiter_id"],
                 where: recruiterFilter,
                 include: [
@@ -179,27 +181,70 @@ exports.getAtsPipelinePagination = async (req, res) => {
         limit,
         offset,
       }),
-      Candidate.count({
+      Candidate.findAll({
+        attributes: [
+          "id",
+          "candidate",
+          "position",
+          "candidate_phone",
+          "candidate_email",
+          "candidate_location",
+          "candidate_experience",
+          "candidate_current_ctc",
+          "candidate_expected_ctc",
+          "candidate_notice_period",
+          "candidate_qualification",
+          "candidate_organization",
+          "candidate_designation",
+          "candidate_gender",
+          "cv_sourced_from",
+          "sourcing_date",
+          "sourcing_status",
+          "relevant",
+          "candidate_status",
+          "remarks",
+          "created_at",
+          "updated_at",
+          "sent_to_client_date"
+        ],
         include: [
           {
-              model: Position,
-              required: true,
-              where: positionFilters,
-              include: [
+            model: Position,
+            required: true,
+            where: positionFilters,
+            attributes: [
+              "id",
+              "company_id",
+              "position",
+              "location",
+              "recruiter_assign",
+              "experience",
+              "min_ctc",
+              "max_ctc",
+            ],
+            include: [
+              {
+                model: Company,
+                required: true,
+                attributes: ["company_name"],
+                where: companyFilters,
+              },
+              {
+                model: assignRecruiter,
+                required:  true, // Set to false if a position can have no recruiters assigned
+                attributes: ["recruiter_id"],
+                where: recruiterFilter,
+                include: [
                   {
-                      model: Company,
-                      required: true,
-                      where: companyFilters,
+                    model: Users,
+                    attributes: ["name"], // Fetch recruiter names
                   },
-                  {
-                      model: assignRecruiter,
-                      required: true,
-                      where: recruiterFilter,
-                  },
-              ],
+                ],
+              },
+            ],
           },
-      ],
-      where: whereClause,
+        ],
+        where: whereClause,
         // parameters
       }),
     ]);
@@ -326,14 +371,13 @@ exports.getAtsPipelinePagination = async (req, res) => {
     } else {
       let records = report.length;
 
-      console.log("=============>>> total", totalRecords);
+      console.log("=============>>> total", totalRecords.length);
 
-      const pages = Math.ceil(filter ? records / limit : records / limit);
+      const pages = Math.ceil(filter ? records / limit : totalRecords.length / limit);
       res.status(200).json({
         message: "candidates fetched successfully",
         // totalRecords: filter ? records : totalRecords,
-        totalRecords: records,
-
+        totalRecords: filter? records :totalRecords.length,
         pages: pages,
         Candidates: report,
       });

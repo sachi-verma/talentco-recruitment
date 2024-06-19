@@ -208,9 +208,9 @@ exports.editAtsStatus = async (req, res) => {
       let response;
       let result;
 
-      console.log("=======>>>> ", recruiter_id, date, candidate_status);
+     // console.log("=======>>>> ", recruiter_id, report_date, candidate_status);
 
-      let recruiter = await sourcingReportByRecruiter.findOne({ where: { recruiter_id: recruiter_id, date: newdate } });
+      let recruiter = await sourcingReportByRecruiter.findOne({ where: { recruiter_id: recruiter_id, report_date: newdate } });
 
       console.log("============>>", recruiter);
 
@@ -232,9 +232,9 @@ exports.editAtsStatus = async (req, res) => {
       if (recruiter) {
           let incrementUpdate = {};
           incrementUpdate[fieldToIncrement] = 1;
-          await sourcingReportByRecruiter.increment(incrementUpdate, { where: { recruiter_id: recruiter_id, date: date } });
+          await sourcingReportByRecruiter.increment(incrementUpdate, { where: { recruiter_id: recruiter_id, report_date: date } });
       } else {
-          let createData = { recruiter_id: recruiter_id, date: date };
+          let createData = { recruiter_id: recruiter_id, report_date: date };
           createData[fieldToIncrement] = 1;
           await sourcingReportByRecruiter.create(createData);
       }
@@ -388,7 +388,7 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
               text: `Dear, ${candidate_name}! 
 
                Your interview have been scheduled for  ${position} position at ${company} on ${interview_date}. you can find interview Details below :-
-                Interview Mode : ${interview_round},
+                Interview Round : ${interview_round},
                 Interview Mode :  ${interview_mode},
                 Interview Time : ${interview_time},
                 ${interview_mode==="In Person" ?`Interview Location: ${interview_location} `:""}

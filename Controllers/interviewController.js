@@ -141,8 +141,7 @@ exports.getInterviewSchedule = async (req, res) => {
                 },
                 {
                   model: assignRecruiter,
-                  required:
-                    role && role.role_name === "Recruiter" ? true : false, // Set to false if a position can have no recruiters assigned
+                  required:true, // Set to false if a position can have no recruiters assigned
                   attributes: ["recruiter_id"],
                   where: recruiterFilter,
                   include: [
