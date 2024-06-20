@@ -125,7 +125,7 @@ exports.getJobByPage = async (req, res) => {
           },
           {
             model: assignRecruiter,
-            required: false, // Include all positions, even if they don't have an assigned recruiter
+            required: recruiterId && recruiterId !== "Not Assigned"? true :false, // Include all positions, even if they don't have an assigned recruiter
             attributes: ["recruiter_id"],
             where: assignRecruiterFilters,
             include: [

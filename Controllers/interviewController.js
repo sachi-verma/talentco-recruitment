@@ -443,6 +443,12 @@ exports.updateInterviewStatus = async (req, res) => {
         );
 
         //creating a new status to add in status history
+        await Status.create({
+            candidate_id: candidate_id,
+            candidate_status: interview_done,
+            status_date: updated_at,
+            created_by: recruiter_id,
+          });
 
         await Status.create({
           candidate_id: candidate_id,
@@ -457,6 +463,12 @@ exports.updateInterviewStatus = async (req, res) => {
         );
 
         //creating a new status to add in status history
+        await Status.create({
+            candidate_id: candidate_id,
+            candidate_status: interview_done,
+            status_date: updated_at,
+            created_by: recruiter_id,
+          });
 
         await Status.create({
           candidate_id: candidate_id,
