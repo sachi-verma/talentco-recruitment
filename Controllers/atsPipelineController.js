@@ -152,6 +152,7 @@ exports.editAtsStatus = async (req, res) => {
     let date = d;
 
     console.log(candidate_status, newdate, d, status_date, recruiter_id);
+
     let interviewschedule = "Interview Scheduled";
     let shortlistedfornextround ="Shortlisted For Next Round";
     let onhold = "Hold Post Interview";
@@ -177,8 +178,10 @@ exports.editAtsStatus = async (req, res) => {
     }
 
     let statusExist = await Status.findOne({
-      where: { id: id, candidate_status: candidate_status },
+      where: { candidate_id:id, candidate_status: candidate_status },
     });
+
+    console.log("=====>>> statusExist", statusExist, id, candidate_status);
     
     if (statusExist) {
       return res
