@@ -68,18 +68,26 @@ exports.getJobByPage = async (req, res) => {
     const whereClause = {};
     if (position) whereClause.position = { [Op.like]: `%${position}%` };
     if (location) whereClause.location = { [Op.like]: `%${location}%` };
-    if (gender) whereClause.gender_pref = { [Op.like]: `%${gender}%` };
+    if (gender && gender ==="Male") whereClause.gender_pref = "Male";
+    if (gender && gender ==="Female") whereClause.gender_pref = "Female";
+
     if (qualification)
       whereClause.qualification = { [Op.like]: `%${qualification}%` };
 
     if (fromDate) whereClause.upload_date = { [Op.gte]: `%${fromDate}%` };
 
     const assignRecruiterFilters = {};
-    if (recruiterId)
-      assignRecruiterFilters.recruiter_id =  recruiterId;
+    
+    if (recruiterId && recruiterId !== "Not Assigned") {
+      assignRecruiterFilters.recruiter_id = recruiterId;
+       
+    }
+    if(recruiterId && recruiterId === "Not Assigned") {
+      whereClause.recruiter_assign = 0;
+    }
 
-    if (notAssigned === "Not Assigned")
-      assignRecruiterFilters.recruiter_id = null;
+    
+      
     // if (positionStatus)
     //   whereClause.position_status = { [Op.like]: `%${positionStatus}` };
     if (positionStatus) {
@@ -117,7 +125,7 @@ exports.getJobByPage = async (req, res) => {
           },
           {
             model: assignRecruiter,
-            required: recruiterId? true : false, // Set to false if a position can have no recruiters assigned
+            required: false, // Include all positions, even if they don't have an assigned recruiter
             attributes: ["recruiter_id"],
             where: assignRecruiterFilters,
             include: [

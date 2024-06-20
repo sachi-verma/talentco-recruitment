@@ -38,7 +38,7 @@ exports.assignRecruiter = async (req, res) => {
         const position_id = req.params.id;
         const { recruiter_id } = req.body;
         //await Positions.update({ recruiter_assign }, {where: {id: position_id}});
-
+        let assigned = 1;
         const recruiterExist =await assignRecruiter.findOne({where: {position_id: position_id, recruiter_id: recruiter_id}});
 
         if(recruiterExist){
@@ -46,6 +46,7 @@ exports.assignRecruiter = async (req, res) => {
         }
         else{
           await assignRecruiter.create({position_id, recruiter_id });
+          await Positions.update({recruiter_assign:assigned }, {where:{id:position_id}});
         }
         
   
