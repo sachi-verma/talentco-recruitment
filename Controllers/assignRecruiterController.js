@@ -39,6 +39,13 @@ exports.assignRecruiter = async (req, res) => {
         const { recruiter_id } = req.body;
         //await Positions.update({ recruiter_assign }, {where: {id: position_id}});
         let assigned = 1;
+        let position = await Positions.findOne({
+          
+          where:{id:position_id}});
+        let recruiter = await Users.findOne({where:{id:recruiter_id}});
+
+        if(position && recruiter){
+
         const recruiterExist =await assignRecruiter.findOne({where: {position_id: position_id, recruiter_id: recruiter_id}});
 
         if(recruiterExist){
@@ -47,13 +54,21 @@ exports.assignRecruiter = async (req, res) => {
         else{
           await assignRecruiter.create({position_id, recruiter_id });
           await Positions.update({recruiter_assign:assigned }, {where:{id:position_id}});
-        }
-        
-  
-        return res.status(200).json({ success: "recruiter assigned sucessfully", recruiter: {position_id, recruiter_id} }); 
 
+          let recruitername = recruiter.name;
+          let recruiteremail = recruiter.email;
+          let positionname = position.name;
+
+
+
+        }
+        return res.status(200).json({ success: "recruiter assigned sucessfully", recruiter: {position_id, recruiter_id} }); 
+      } else{
+
+        return res.status(404).json({error: "Position Or Recruiter Not Found !!", recruiter_id, position_id});
+      }
     } catch (error) {
       console.error('Error assigning recruiter:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({ error: 'Internal server error', msg: error.message });
     }
   };

@@ -11,6 +11,10 @@ const Status = require("../Models/statusHistory");
 const Users = require("../Models/userDetails");
 const Roles = require("../Models/roles");
 const assignRecruiter = require("../Models/assignRecruiter");
+const InterviewHistory = require("../Models/interviewHistory");
+
+const e = require("express");
+ 
 
 assignRecruiter.belongsTo(Users, { foreignKey: "recruiter_id" });
 Users.hasMany(assignRecruiter, { foreignKey: "recruiter_id" });
@@ -373,9 +377,24 @@ exports.updateInterviewDetails = async (req, res) => {
     if (recruiter_id !== undefined) updateFields.updated_by = recruiter_id;
     updateFields.updated_at = updated_at;
 
+    let round ;
+    if (interview_round !== undefined){
+        round = interview_round;
+    }
+
+    let history;
+    let roundExist =  await InterviewHistory.findOne({where:{candidate_id:id, interview_round:round }});
+    if(roundExist) {
+       history=  await InterviewHistory.update(updateFields, {where: { candidate_id: id, interview_round:round }});
+    }
+    else{
+       history=  await InterviewHistory.create(updateFields);
+    }
+
     const candidate = await Interview.update(updateFields, {
       where: { candidate_id: id },
     });
+
 
     const candidatedetails = await Candidate.findOne({ where: { id: id } });
     let candidate_email = candidatedetails.candidate_email;
@@ -393,8 +412,8 @@ exports.updateInterviewDetails = async (req, res) => {
               Interview Date: ${interview_date ? interview_date : ""},
               Interview Mode: ${interview_mode ? interview_mode : ""},
               Interview Time: ${interview_time ? interview_time : ""},
-              ${interview_mode==="In Person" ?`Interview Location: ${interview_location} `:""}
-
+              Interview Location: ${interview_location ? interview_location : ""},
+             
            Best of Luck !!
 
            Regards,
@@ -549,7 +568,7 @@ exports.markInterviewDone = async (req, res) => {
 
     res.status(200).json({ success: `Interviews marked as ${interview_done}` });
   } catch (error) {
-    console.error("Error updating Interview Schedule:", error);
+    console.error("Error updating Interview done:", error);
     res.status(500).json({ error: "Internal Server Error" }, error);
   }
 };

@@ -4,6 +4,7 @@ const { port } = require('./Config/config');
 const corsMiddleware = require('./Middleware/corsMiddleware');
 const errorHandler = require('./Middleware/errorHandler');
 const {sequelize, connectToDb} = require('./Models/db');
+const path = require('path');
 
 const roleRoutes = require('./Routes/roleRoutes');
 const moduleRoutes = require('./Routes/moduleRoutes');
@@ -23,6 +24,7 @@ const userRoutes = require('./Routes/userRoutes');
 
 const dashboardRoutes = require('./Routes/dashboardRoutes');
 const reportAndAnalysis = require('./Routes/reportAndAnalysisRoute');
+const downloadFileController = require('./Routes/downloadFileRoutes');
 
 
 const app = express();
@@ -30,6 +32,9 @@ const app = express();
 app.use(corsMiddleware);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Middleware to serve static files from 'uploads' directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(roleRoutes);
 app.use(moduleRoutes);
@@ -46,6 +51,7 @@ app.use(screenedCandidateRoutes);
 app.use(authRoutes);
 app.use(dashboardRoutes);
 app.use(reportAndAnalysis);
+app.use(downloadFileController);
 
 
 // app.use("/protected_routes", protectedRoutes);
