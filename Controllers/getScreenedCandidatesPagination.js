@@ -42,6 +42,7 @@ exports.getScreenedCandidatePagination = async (req, res) => {
       sourcing_status: "Screened",
     };
 
+    
     const companyFilters = {};
 
     if (location) whereClause.location = { [Op.like]: `%${location}%` };

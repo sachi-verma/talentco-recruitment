@@ -130,6 +130,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
           "candidate_designation",
           "candidate_gender",
           "cv_sourced_from",
+          "candidate_resume",
           "sourcing_date",
           "sourcing_status",
           "relevant",
