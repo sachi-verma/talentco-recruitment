@@ -85,11 +85,11 @@ exports.getScreenedCandidatePagination = async (req, res) => {
                 },
                 where: companyFilters,
               },
-              {
-                model: User,
-                required: true,
-                attributes: ["name"],
-              },
+              // {
+              //   model: User,
+              //   required: true,
+              //   attributes: ["name"],
+              // },
             ],
           },
         ],
@@ -111,11 +111,11 @@ exports.getScreenedCandidatePagination = async (req, res) => {
                 attributes: ["company_name"],
                 where: companyFilters,
               },
-              {
-                model: User,
-                required: true,
-                attributes: ["name"],
-              },
+              // {
+              //   model: User,
+              //   required: true,
+              //   attributes: ["name"],
+              // },
             ],
           },
         ],
