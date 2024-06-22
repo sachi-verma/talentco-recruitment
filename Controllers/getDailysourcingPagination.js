@@ -313,7 +313,15 @@ exports.getFilteredUpdateByPage = async (req, res) => {
     if (role && (role.role_name === "Recruiter" || role.role_name === "Team Lead")) {
         [report, totalRecords] = await Promise.all([
         
-        await sourcingReportByRecruiter.findAll({where:recruiterFilter , limit, offset}),
+        await sourcingReportByRecruiter.findAll({
+          attributes: [
+            ['total_cv_sourced', 'total_cv_sourced'],
+            ['cv_relevant', 'total_cv_relevant'],
+            ['cv_confirmation_pending', 'total_confirmation_pending'],
+            ['sent_to_client', 'total_sent_to_client'],
+            ['report_date', 'update_date']
+          ],
+          where:recruiterFilter , limit, offset}),
         await sourcingReportByRecruiter.count({where:recruiterFilter}),
       ]);
     } else{
