@@ -249,6 +249,157 @@ exports.getSourcingReportByPage = async (req, res) => {
   }
 };
 
+async function FilteredUpdateByRecruiter ({recruiterId}) {
+  try {
+      //const recruiterId = req.params.id;
+
+      // Fetch all candidate reports including their associated positions and recruiters
+      const allReports = await Candidate.findAll({
+          include: [
+              {
+                  model: Position,
+                  required: true,
+                  attributes: ["id", "position", "location"],
+                  include: [
+                      {
+                          model: assignRecruiter,
+                          required: true,
+                          attributes: ["recruiter_id"],
+                          where: { recruiter_id: recruiterId }
+                      }
+                  ]
+              }
+          ]
+      });
+
+      // Group the reports by sourcing_date
+      let groupedReports = allReports.reduce((acc, report) => {
+          const date = report.sourcing_date; // Ensure sourcing_date is being used correctly
+          if (!acc[date]) {
+              acc[date] = [];
+          }
+          acc[date].push(report);
+          return acc;
+      }, {});
+
+      let aggregatedData = [];
+
+      for (let date in groupedReports) {
+          const reports = groupedReports[date];
+
+          let totalCvSourced = reports.length;
+          let totalCvRelevant = reports.filter(report => report.relevant === "Yes").length;
+          let totalConfirmationPending = reports.filter(report => report.sourcing_status === "Confirmation Pending").length;
+          let totalSentToClient = reports.filter(report => report.sourcing_status === "Sent To Client").length;
+
+         let update = await sourcingReportByRecruiter.findOne({
+          where:{ report_date:date}
+
+         }) ;
+         console.log("==============>>>>>>>", update);
+         if(update){
+          await update.update({
+              total_cv_sourced:totalCvSourced,
+              sent_to_client:totalSentToClient,
+              cv_relevant:totalCvRelevant,
+              cv_confirmation_pending:totalConfirmationPending
+              
+          })
+
+         } 
+         else{
+
+          await sourcingReportByRecruiter.create({
+              total_cv_sourced:totalCvSourced,
+              sent_to_client:totalSentToClient,
+              cv_relevant:totalCvRelevant,
+              cv_confirmation_pending:totalConfirmationPending,
+              recruiter_id:recruiterId,
+              report_date:date
+          })
+          }
+
+
+          aggregatedData.push({
+              update_date: date,
+              total_cv_sourced: totalCvSourced,
+              total_cv_relevant: totalCvRelevant,
+              total_confirmation_pending: totalConfirmationPending,
+              total_sent_to_client: totalSentToClient
+          });
+      }
+
+      return aggregatedData;
+
+  } catch (error) {
+      console.error('Error:', error);
+  }
+};
+
+async function FilteredUpdate() {
+  try {
+      const allReports = await Candidate.findAll();
+
+      let groupedReports = allReports.reduce((acc, report) => {
+          const date = report.sourcing_date; // Ensure sourcing_date is being used correctly
+          if (!acc[date]) {
+              acc[date] = [];
+          }
+          acc[date].push(report);
+          return acc;
+      }, {});
+
+      let alldata = [];
+
+      for (let date in groupedReports) {
+          const reports = groupedReports[date];
+
+          let total_cv_sourced = reports.length;
+          let total_cv_relevant = reports.filter(report => report.relevant === "Yes").length;
+          let total_confirmation_pending = reports.filter(report => report.sourcing_status === "Confirmation Pending").length;
+          let total_sent_to_client = reports.filter(report => report.sourcing_status === "Sent To Client").length;
+
+          // Find the entry based on the update_date
+          let update = await Update.findOne({
+              where: { update_date: date }
+          });
+
+          if (update) {
+              // Update the existing entry
+              await update.update({
+                  total_cv_sourced,
+                  total_cv_relevant,
+                  total_confirmation_pending,
+                  total_sent_to_client
+              });
+          } else {
+              // Create a new entry
+              update = await Update.create({
+                  update_date: date,
+                  total_cv_sourced,
+                  total_cv_relevant,
+                  total_confirmation_pending,
+                  total_sent_to_client
+              });
+          }
+
+          alldata.push({
+              update_date: date,
+              total_cv_sourced,
+              total_cv_relevant,
+              total_confirmation_pending,
+              total_sent_to_client
+          });
+      }
+
+      return alldata;
+
+  } catch (error) {
+      console.error('Error:', error);
+      throw error;
+  }
+};
+
 exports.getFilteredUpdateByPage = async (req, res) => {
   try {
     //date filter
@@ -307,6 +458,9 @@ exports.getFilteredUpdateByPage = async (req, res) => {
         [Op.lte]: toDate,
       };
     }
+
+    const alldata = await FilteredUpdate();
+    const allrecruiterdata = await FilteredUpdateByRecruiter({recruiterId: userId});
 
    let report;
    let totalRecords;
@@ -391,6 +545,8 @@ exports.getFilteredUpdateByPage = async (req, res) => {
         totalRecords: filter ? records : totalRecords,
         pages: pages,
         update: [...report],
+        alldata,
+        allrecruiterdata
       });
     }
 
