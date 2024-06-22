@@ -85,6 +85,7 @@ exports.editAtsPipeline = async (req, res) => {
       candidate_current_ctc,
       candidate_qualification,
       candidate_gender,
+      candidate_organization,
       candidate_alt_phone,
       candidate_expected_ctc,
       candidate_designation,
@@ -100,6 +101,7 @@ exports.editAtsPipeline = async (req, res) => {
         candidate_experience,
         candidate_current_ctc,
         candidate_qualification,
+        candidate_organization,
         candidate_gender,
         candidate_alt_phone,
         candidate_expected_ctc,
@@ -123,6 +125,7 @@ exports.editAtsPipeline = async (req, res) => {
           candidate_experience,
           candidate_current_ctc,
           candidate_qualification,
+          candidate_organization,
           candidate_gender,
           candidate_alt_phone,
           candidate_expected_ctc,
@@ -150,6 +153,7 @@ exports.editAtsStatus = async (req, res) => {
     let newdate = new Date(status_date);
     let d = newdate.toISOString().split("T")[0];
     let date = d;
+    let Mailerror = false;
 
     console.log(candidate_status, newdate, d, status_date, recruiter_id);
 
@@ -198,6 +202,10 @@ exports.editAtsStatus = async (req, res) => {
         try {
             let report = await scheduleInterview({ id, candidate_status, status_date, recruiter_id, interview_data });
             console.log('Interview created successfully', report);
+
+            if(report.errorinmail === true){
+              Mailerror= true;
+            };
   
             return res.status(200).json({
               message: 'Interview created successfully',
@@ -254,34 +262,34 @@ exports.editAtsStatus = async (req, res) => {
 
      // console.log("=======>>>> ", recruiter_id, report_date, candidate_status);
 
-      let recruiter = await sourcingReportByRecruiter.findOne({ where: { recruiter_id: recruiter_id, report_date: newdate } });
+      // let recruiter = await sourcingReportByRecruiter.findOne({ where: { recruiter_id: recruiter_id, report_date: newdate } });
 
-      console.log("============>>", recruiter);
+      // console.log("============>>", recruiter);
 
-      const statusMapping = {
-          'CV Rejected': 'cv_rejected',
-          'Shortlisted': 'shortlisted',
-          'Interview Scheduled': 'interview_schedule',
-          'Interview Done': 'interview_done',
-          'Rejected Post Interview': 'reject_post_interview',
-          'Final Selection': 'final_selection',
-          'Offer Letter Sent': 'offer_letter_sent',
-          'Final Joining': 'final_joining',
-          'Backout': 'feedback_pending',
-          'Feedback Pending': 'backout'
-      };
+      // const statusMapping = {
+      //     'CV Rejected': 'cv_rejected',
+      //     'Shortlisted': 'shortlisted',
+      //     'Interview Scheduled': 'interview_schedule',
+      //     'Interview Done': 'interview_done',
+      //     'Rejected Post Interview': 'reject_post_interview',
+      //     'Final Selection': 'final_selection',
+      //     'Offer Letter Sent': 'offer_letter_sent',
+      //     'Final Joining': 'final_joining',
+      //     'Backout': 'feedback_pending',
+      //     'Feedback Pending': 'backout'
+      // };
 
-      let fieldToIncrement = statusMapping[candidate_status];
+      // let fieldToIncrement = statusMapping[candidate_status];
 
-      if (recruiter) {
-          let incrementUpdate = {};
-          incrementUpdate[fieldToIncrement] = 1;
-          await sourcingReportByRecruiter.increment(incrementUpdate, { where: { recruiter_id: recruiter_id, report_date: date } });
-      } else {
-          let createData = { recruiter_id: recruiter_id, report_date: date };
-          createData[fieldToIncrement] = 1;
-          await sourcingReportByRecruiter.create(createData);
-      }
+      // if (recruiter) {
+      //     let incrementUpdate = {};
+      //     incrementUpdate[fieldToIncrement] = 1;
+      //     await sourcingReportByRecruiter.increment(incrementUpdate, { where: { recruiter_id: recruiter_id, report_date: date } });
+      // } else {
+      //     let createData = { recruiter_id: recruiter_id, report_date: date };
+      //     createData[fieldToIncrement] = 1;
+      //     await sourcingReportByRecruiter.create(createData);
+      // }
 
     
 
@@ -320,7 +328,7 @@ exports.editAtsStatus = async (req, res) => {
     return res
       .status(200)
       .json({
-        success: "candidate status updated sucessfully",
+        success: `Candidate status updated sucessfully !! ${Mailerror ? "Error in sending Mail !!":""}`,
         candidate: { id, candidate_status, status_date },
         status,
       });
@@ -363,6 +371,7 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
   
       let thedate = new Date();
       let created_at = thedate.toISOString().split('T')[0];
+      let errorinmail = false;
   
       const report = await interviewSchedule.create({
         candidate_id,
@@ -424,6 +433,7 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
          let candidate_name = candidatedetails.candidate;
          let position = candidatedetails.Position.position;
          let company = candidatedetails.Position.Company.company_name;
+         
 
          try {
             await sendMail({
@@ -443,6 +453,7 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
             Talent Co Hr Services`
             });
           } catch (mailError) {
+            errorinmail =true;
             console.error('Error sending notification email:', mailError);
             //return res.status(500).json({ error: 'Failed to send notification email' });
           }
@@ -450,7 +461,8 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
         let data = {
           candidate: candidate,
           status: status,
-          report: report
+          report: report,
+          errorinmail: errorinmail
         };
   
         return data;

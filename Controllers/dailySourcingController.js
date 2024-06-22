@@ -248,8 +248,9 @@ exports.addSourcingReport = async (req, res) => {
 
         const alldata = await FilteredUpdate();
         const admindata = await DailyAdminUpdate();
+        const allrecruiterdata = await FilteredUpdateByRecruiter({recruiterId: userid});
 
-        res.status(200).json({ message: 'Report created successfully', report, alldata, admindata , response:{msg:'created by added succesfully', userid,date} });
+        res.status(200).json({ message: 'Report created successfully', report, alldata,allrecruiterdata, admindata , response:{msg:'created by added succesfully', userid,date} });
       } catch (error) {
         console.error('Error creating Report:', error);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -315,6 +316,92 @@ exports.addSourcingReport = async (req, res) => {
 //         throw error;
 //     }
 // };
+async function FilteredUpdateByRecruiter ({recruiterId}) {
+    try {
+        //const recruiterId = req.params.id;
+
+        // Fetch all candidate reports including their associated positions and recruiters
+        const allReports = await Candidate.findAll({
+            include: [
+                {
+                    model: Position,
+                    required: true,
+                    attributes: ["id", "position", "location"],
+                    include: [
+                        {
+                            model: assignRecruiter,
+                            required: true,
+                            attributes: ["recruiter_id"],
+                            where: { recruiter_id: recruiterId }
+                        }
+                    ]
+                }
+            ]
+        });
+
+        // Group the reports by sourcing_date
+        let groupedReports = allReports.reduce((acc, report) => {
+            const date = report.sourcing_date; // Ensure sourcing_date is being used correctly
+            if (!acc[date]) {
+                acc[date] = [];
+            }
+            acc[date].push(report);
+            return acc;
+        }, {});
+
+        let aggregatedData = [];
+
+        for (let date in groupedReports) {
+            const reports = groupedReports[date];
+
+            let totalCvSourced = reports.length;
+            let totalCvRelevant = reports.filter(report => report.relevant === "Yes").length;
+            let totalConfirmationPending = reports.filter(report => report.sourcing_status === "Confirmation Pending").length;
+            let totalSentToClient = reports.filter(report => report.sourcing_status === "Sent To Client").length;
+
+           let update = await sourcingReportByRecruiter.findOne({
+            where:{ report_date:date}
+
+           }) ;
+           console.log("==============>>>>>>>", update);
+           if(update){
+            await update.update({
+                total_cv_sourced:totalCvSourced,
+                sent_to_client:totalSentToClient,
+                cv_relevant:totalCvRelevant,
+                cv_confirmation_pending:totalConfirmationPending
+                
+            })
+
+           } 
+           else{
+
+            await sourcingReportByRecruiter.create({
+                total_cv_sourced:totalCvSourced,
+                sent_to_client:totalSentToClient,
+                cv_relevant:totalCvRelevant,
+                cv_confirmation_pending:totalConfirmationPending,
+                recruiter_id:recruiterId,
+                report_date:date
+            })
+            }
+
+
+            aggregatedData.push({
+                update_date: date,
+                total_cv_sourced: totalCvSourced,
+                total_cv_relevant: totalCvRelevant,
+                total_confirmation_pending: totalConfirmationPending,
+                total_sent_to_client: totalSentToClient
+            });
+        }
+
+        return aggregatedData;
+
+    } catch (error) {
+        console.error('Error:', error);
+    }
+};
 
 async function FilteredUpdate() {
     try {
@@ -611,6 +698,7 @@ exports.createBulkSourcingReport = async (req, res) => {
     
       const alldata = await FilteredUpdate();
       const admindata = await DailyAdminUpdate();
+      const allrecruiterdata = await FilteredUpdateByRecruiter({recruiterId: userid});
   
       if (!createdReports || createdReports.length === 0) {
         console.error("No reports created");
@@ -623,6 +711,7 @@ exports.createBulkSourcingReport = async (req, res) => {
         reports: createdReports,
         alldata: alldata,
         admindata: admindata,
+        allrecruiterdata: allrecruiterdata,
       });
     } catch (error) {
       console.error("Error creating Reports:", error);
@@ -712,19 +801,19 @@ exports.statusChange = async (req, res) => {
       }
     } 
         //changes
-     let sent_to_client = 1; 
-        const status = await sourcingReportByRecruiter.findOne({ where:{recruiter_id: recruiter_id, report_date: sent_to_client_date}});
-        let history;
-        if (status){
-            history = await sourcingReportByRecruiter.increment(
-                { sent_to_client: 1 },
-                { where: { recruiter_id: recruiter_id, report_date:sent_to_client_date}  })
+    //  let sent_to_client = 1; 
+    //     const status = await sourcingReportByRecruiter.findOne({ where:{recruiter_id: recruiter_id, report_date: sent_to_client_date}});
+    //     let history;
+    //     if (status){
+    //         history = await sourcingReportByRecruiter.increment(
+    //             { sent_to_client: 1 },
+    //             { where: { recruiter_id: recruiter_id, report_date:sent_to_client_date}  })
              
-        }
-        else{
-            history = await sourcingReportByRecruiter.create({recruiter_id: recruiter_id, sent_to_client:sent_to_client, report_date:sent_to_client_date});
+    //     }
+    //     else{
+    //         history = await sourcingReportByRecruiter.create({recruiter_id: recruiter_id, sent_to_client:sent_to_client, report_date:sent_to_client_date});
 
-        }
+    //     }
 
         // if(history){
         //     console.log("==========================> Response =================>",response);
@@ -772,8 +861,9 @@ exports.statusChange = async (req, res) => {
       
 
         const alldata = await FilteredUpdate();
+        const allrecruiterdata = await FilteredUpdateByRecruiter({recruiterId: recruiter_id});
   
-        return res.status(200).json({ success: "status changed sucessfully", candidate: {id, sourcing_status}, alldata, recruiter_id, candidate_status }); 
+        return res.status(200).json({ success: "status changed sucessfully", candidate: {id, sourcing_status}, alldata, allrecruiterdata, recruiter_id, candidate_status }); 
 
     } catch (error) {
       console.error('Error changing status:', error);

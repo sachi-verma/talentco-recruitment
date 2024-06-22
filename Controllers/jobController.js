@@ -49,9 +49,46 @@ exports.updateJob = async (req, res) => {
     try {
         const id = req.params.id;
         const { company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification } = req.body;
+        
         const jd_upload = req.file ? req.file.path : null;
-        const job = await Positions.update({ company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, jd_upload }, {where: {id: id}});
-  
+
+        let updateData = {};
+         if(company_id !== undefined){
+            updateData.company_id = company_id;
+         }
+         if(position !== undefined){
+            updateData.position = position;
+         }
+         if(location !== undefined){
+            updateData.location = location;
+         }
+         if(experience !== undefined){
+            updateData.experience = experience;
+         }
+         if(min_ctc !== undefined){
+            updateData.min_ctc = min_ctc;
+         }
+         if(max_ctc !== undefined){
+            updateData.max_ctc = max_ctc;
+         }
+         if(no_of_positions !== undefined){
+            updateData.no_of_positions = no_of_positions;
+         }
+         if(gender_pref !== undefined){
+            updateData.gender_pref = gender_pref;
+         }
+         if(qualification !== undefined){
+            updateData.qualification = qualification;
+         }
+
+
+         // Only add jd_upload to updateData if a file was uploaded
+         if (jd_upload) {
+             updateData.jd_upload = jd_upload;
+         }
+ 
+         const job = await Positions.update(updateData, { where: { id: id } });
+
           if (job[0] === 0) {
             return res.status(404).json({ error: 'job not found' });
           }

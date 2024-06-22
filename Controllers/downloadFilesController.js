@@ -4,6 +4,7 @@ const Candidate = require("../Models/allCandidates");
 const Position = require("../Models/allPositions");
 const Update = require('../Models/dailySourcingUpdate');
 const assignRecruiter = require("../Models/assignRecruiter");
+const sourcingReportByRecruiter = require("../Models/sourcingReportByRecruiter");
 
 
 exports.exportResumes = async (req, res) => {
@@ -128,6 +129,36 @@ exports.FilteredUpdate = async (req, res) => {
             let totalConfirmationPending = reports.filter(report => report.sourcing_status === "Confirmation Pending").length;
             let totalSentToClient = reports.filter(report => report.sourcing_status === "Sent To Client").length;
 
+           let update = await sourcingReportByRecruiter.findOne({
+            where:{ report_date:date}
+
+           }) ;
+           console.log("==============>>>>>>>", update);
+           if(update){
+            await update.update({
+                total_cv_sourced:totalCvSourced,
+                sent_to_client:totalSentToClient,
+                cv_relevent:totalCvRelevant,
+                cv_confirmation_pending:totalConfirmationPending
+                
+            })
+
+           } 
+           else{
+
+            await sourcingReportByRecruiter.create({
+                total_cv_sourced:totalCvSourced,
+                sent_to_client:totalSentToClient,
+                cv_relevent:totalCvRelevant,
+                cv_confirmation_pending:totalConfirmationPending,
+                recruiter_id:recruiterId,
+                report_date:date
+            })
+
+
+            }
+
+           
             // Find the entry based on the update_date
             // let update = await Update.findOne({
             //     where: { update_date: date }

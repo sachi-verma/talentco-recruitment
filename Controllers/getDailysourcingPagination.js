@@ -8,8 +8,10 @@ const Company = require("../Models/companyDetails");
 const AdminUpdate = require("../Models/dailyAdminUpdate");
 const User = require("../Models/userDetails");
 const { Op } = require("sequelize");
-
+const sourcingReportByRecruiter = require("../Models/sourcingReportByRecruiter");
 const excel = require("exceljs");
+const Users = require("../Models/userDetails");
+const Roles = require("../Models/roles");
 
 exports.getSourcingReportByPage = async (req, res) => {
   try {
@@ -255,6 +257,28 @@ exports.getFilteredUpdateByPage = async (req, res) => {
     let limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
     let offset = (page - 1) * limit; // Calculate offset based on page number
 
+    const userId = req.query.id;
+
+    const user = await Users.findByPk(userId);
+  let role_id;
+  let role;
+  let recruiterFilter = {};
+
+  if (user) {
+    role_id = user.role_id;
+    console.log("========>", role_id, user);
+
+    if (role_id) {
+      role = await Roles.findOne({ where: { id: role_id } });
+      console.log("=========>>>>>>>>>>>>>>", role);
+
+      if (role && (role.role_name === "Recruiter" || role.role_name === "Team Lead")) {
+        recruiterFilter.recruiter_id = userId;
+      }
+      
+    }
+  }
+
     console.log(filter);
 
     const download = req.query.download ? true : false;
@@ -284,11 +308,27 @@ exports.getFilteredUpdateByPage = async (req, res) => {
       };
     }
 
+   let report;
+   let totalRecords;
+    if (role && (role.role_name === "Recruiter" || role.role_name === "Team Lead")) {
+        [report, totalRecords] = await Promise.all([
+        
+        await sourcingReportByRecruiter.findAll({where:recruiterFilter , limit, offset}),
+        await sourcingReportByRecruiter.count({where:recruiterFilter}),
+      ]);
+    } else{
+
+        [report, totalRecords] = await Promise.all([
+        await Update.findAll({ where: whereClause, limit, offset }),
+        await Update.count({ limit, offset }),
+        
+         
+      ]);
+
+    }
+
    
-    const [report, totalRecords] = await Promise.all([
-      await Update.findAll({ where: whereClause, limit, offset }),
-      await Update.count({ limit, offset }),
-    ]);
+   
 
     if (download){
         // Create Excel workbook and worksheet

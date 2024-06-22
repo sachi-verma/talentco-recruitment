@@ -7,6 +7,8 @@ const Status = require("../Models/statusHistory");
 const sourcingReportByRecruiter = require("../Models/sourcingReportByRecruiter");
 const User = require("../Models/userDetails");
 const {Sequelize} = require('sequelize');
+const Users = require("../Models/userDetails");
+const Roles = require("../Models/roles");
 
 sourcingReportByRecruiter.belongsTo(User, { foreignKey: "recruiter_id" });
 User.hasMany(sourcingReportByRecruiter, { foreignKey: "recruiter_id" });
@@ -15,21 +17,41 @@ Status.belongsTo(User, { foreignKey: "created_by" });
 User.hasMany(Status, { foreignKey: "created_by" });
 
 
-async function filteredReports (){
-  try {
-    
-  } catch (error) {
-    
-  }
-
-}
-
+ 
 exports.reportAndAnalysis = async (req, res) => {
   const transaction = await db.sequelize.transaction();
   try {
     const page = parseInt(req.query.page) || 1; // Current page, default to 1
     let limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
     let offset = (page - 1) * limit; // Calculate offset based on page number
+
+    const userId = req.query.id;
+    const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
+
+    console.log(filter);
+
+    const { recruiterName, fromDate, toDate } = filter;
+    
+    const whereClause = {};
+    const recruiterFilter = {};
+
+    const user = await Users.findByPk(userId);
+    let role_id;
+    let role;
+    if (user) {
+    role_id = user.role_id;
+    console.log("========>", role_id, user);
+
+    if (role_id) {
+      role = await Roles.findOne({ where: { id: role_id } });
+      console.log("=========>>>>>>>>>>>>>>", role);
+
+      if (role && (role.role_name === "Recruiter" || role.role_name === "Team Lead")) {
+        whereClause.recruiter_id = userId;
+      }
+      
+    }
+  }
 
    // const userid = req.query.id;
 
@@ -40,15 +62,7 @@ exports.reportAndAnalysis = async (req, res) => {
       offset = null;
     }
 
-    const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
-
-    console.log(filter);
-
-    const { recruiterName, fromDate, toDate } = filter;
-    
-    const whereClause = {};
-    const recruiterFilter = {};
-
+   
     if (fromDate && toDate) {
         let theDate = parseInt(toDate.split("-")[2]) + 1;
         let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, "0");
@@ -80,43 +94,43 @@ exports.reportAndAnalysis = async (req, res) => {
         //const candidates = await Status.count({where:{candidate_status:"Sent To Client"}});
 
 //sent to client start
-let recruiter;
-        const candidates = await Status.findAll({
-          attributes: [
-            'created_by',
-            'status_date',
-            [Sequelize.fn('COUNT', Sequelize.col('candidate_status')), 'count']
-          ],
-          where: { candidate_status: "Sent To Client" },
-          group: ['created_by', 'status_date'],
-        });
-        console.log("================================>> sent to client", candidates);
+// let recruiter;
+//         const candidates = await Status.findAll({
+//           attributes: [
+//             'created_by',
+//             'status_date',
+//             [Sequelize.fn('COUNT', Sequelize.col('candidate_status')), 'count']
+//           ],
+//           where: { candidate_status: "Sent To Client" },
+//           group: ['created_by', 'status_date'],
+//         });
+//         console.log("================================>> sent to client", candidates);
 
-        if(candidates.length!=0){
+//         if(candidates.length!=0){
 
       
         
-        for (let sent of candidates) {
-          recruiter = await sourcingReportByRecruiter.findAll({
-            where: { recruiter_id: sent.created_by, report_date: sent.status_date }
-          });
+//         for (let sent of candidates) {
+//           recruiter = await sourcingReportByRecruiter.findAll({
+//             where: { recruiter_id: sent.created_by, report_date: sent.status_date }
+//           });
 
-          console.log("========>>>> RRR", recruiter, sent.status_date, sent.created_by, candidates);
+//           console.log("========>>>> RRR", recruiter, sent.status_date, sent.created_by, candidates);
         
-          if (recruiter) {
-            await sourcingReportByRecruiter.increment(
-              { sent_to_client: sent.get('count') },
-              { where: { recruiter_id: sent.created_by, report_date: sent.status_date } }
-            );
-          } else {
-            await sourcingReportByRecruiter.create({
-              recruiter_id: sent.created_by,
-              report_date: sent.status_date,
-              sent_to_client: sent.get('count')
-            });
-          }
-        }
-      }
+//           if (recruiter) {
+//             await sourcingReportByRecruiter.increment(
+//               { sent_to_client: sent.get('count') },
+//               { where: { recruiter_id: sent.created_by, report_date: sent.status_date } }
+//             );
+//           } else {
+//             await sourcingReportByRecruiter.create({
+//               recruiter_id: sent.created_by,
+//               report_date: sent.status_date,
+//               sent_to_client: sent.get('count')
+//             });
+//           }
+//         }
+//       }
 //         //sent to client end
 
 //         //cv rejected start
@@ -478,56 +492,56 @@ let recruiter;
 //backout ends
 
 
-// const statusMappings = [
-//   { status: "Sent To Client", column: "sent_to_client" },
-//   { status: "CV Rejected", column: "cv_rejected" },
-//   { status: "Shortlisted", column: "shortlisted" },
-//   { status: "Interview Scheduled", column: "interview_scheduled" },
-//   { status: "Interview Done", column: "interview_done" },
-//   { status: "Rejected Post Interview", column: "reject_post_interview" },
-//   { status: "Final Selection", column: "final_selection" },
-//   { status: "Offer Letter Sent", column: "offer_letter_sent" },
-//   { status: "Final Joining", column: "final_joining" },
-//   { status: "Feedback Pending", column: "feedback_pending" },
-//   { status: "Backout", column: "backout" }
-// ];
+const statusMappings = [
+  { status: "Sent To Client", column: "sent_to_client" },
+  { status: "CV Rejected", column: "cv_rejected" },
+  { status: "Shortlisted", column: "shortlisted" },
+  { status: "Interview Scheduled", column: "interview_scheduled" },
+  { status: "Interview Done", column: "interview_done" },
+  { status: "Rejected Post Interview", column: "reject_post_interview" },
+  { status: "Final Selection", column: "final_selection" },
+  { status: "Offer Letter Sent", column: "offer_letter_sent" },
+  { status: "Final Joining", column: "final_joining" },
+  { status: "Feedback Pending", column: "feedback_pending" },
+  { status: "Backout", column: "backout" }
+];
 
-// for (let mapping of statusMappings) {
-//   const candidates = await Status.findAll({
-//     attributes: [
-//       'created_by',
-//       'status_date',
-//       [Sequelize.fn('COUNT', Sequelize.col('candidate_status')), 'count']
-//     ],
-//     where: { candidate_status: mapping.status },
-//     group: ['created_by', 'status_date'],
-//   });
+for (let mapping of statusMappings) {
+  const candidates = await Status.findAll({
+    attributes: [
+      'created_by',
+      'status_date',
+      [Sequelize.fn('COUNT', Sequelize.col('candidate_status')), 'count']
+    ],
+    where: { candidate_status: mapping.status },
+    group: ['created_by', 'status_date'],
+  });
 
-//   for (let sent of candidates) {
-//     const existingEntry = await sourcingReportByRecruiter.findOne({
-//       where: { recruiter_id: sent.created_by, date: sent.status_date },
-//       transaction
-//     });
+  for (let sent of candidates) {
+    const existingEntry = await sourcingReportByRecruiter.findOne({
+      where: { recruiter_id: sent.created_by, report_date: sent.status_date },
+      transaction
+    });
 
-//     console.log("....................>>>>>>>",sent.created_by, sent.status_date);
+    console.log("....................>>>>>>>",sent.created_by, sent.status_date);
 
-//     if (existingEntry) {
-//       // Update existing entry
-//       existingEntry[mapping.column] = sent.get('count');
-//       await existingEntry.save({ transaction });
-//     } else {
-//       // Create new entry
-//       await sourcingReportByRecruiter.create({
-//         recruiter_id: sent.created_by,
-//         date: sent.status_date,
-//         [mapping.column]: sent.get('count')
-//       }, { transaction });
-//       console.log("....................>>>>>>>",sent.created_by, sent.status_date);
-//     }
-//   }
-// }
+    if (existingEntry) {
+      // Update existing entry
+      existingEntry[mapping.column] = sent.get('count');
+      await existingEntry.save({ transaction });
+    } else {
+      // Create new entry
+      await sourcingReportByRecruiter.create({
+        recruiter_id: sent.created_by,
+        report_date: sent.status_date,
+        [mapping.column]: sent.get('count')
+      }, { transaction });
+      console.log("....................>>>>>>>",sent.created_by, sent.status_date);
+    }
+  }
+}
 
-// await transaction.commit();
+await transaction.commit();
 
   //fetching the report to send back 
 
@@ -576,11 +590,8 @@ let recruiter;
 
     // const data = result[0].dataValues;
     res.json({ totalRecords: filter ? records : totalRecords,
-    //   pages: pages,
-    //   data: result,
-    // candidates,
-    recruiter
-    
+      pages: pages,
+      data: result,
     });
   } catch (error) {
     console.error("Error:", error);

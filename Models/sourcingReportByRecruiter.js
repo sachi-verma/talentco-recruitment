@@ -21,6 +21,15 @@ const sourcingReportByRecruiter = sequelize.define('sourcingReportByRecruiter',{
         type: DataTypes.INTEGER,
         defaultValue: 0,
     },
+    cv_relevant :{
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+    },
+    cv_confirmation_pending:{
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+
+    },
     sent_to_client: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
@@ -66,8 +75,8 @@ const sourcingReportByRecruiter = sequelize.define('sourcingReportByRecruiter',{
         defaultValue: 0,
     },
     report_date:{
-        type: DataTypes.DATE
-
+        type: DataTypes.DATEONLY
+ 
     }
 },
 {
