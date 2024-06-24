@@ -12,6 +12,21 @@ const sourcingReportByRecruiter = require("../Models/sourcingReportByRecruiter")
 const excel = require("exceljs");
 const Users = require("../Models/userDetails");
 const Roles = require("../Models/roles");
+const assignRecruiter = require("../Models/assignRecruiter");
+
+assignRecruiter.belongsTo(Users, { foreignKey: "recruiter_id" });
+Users.hasMany(assignRecruiter, { foreignKey: "recruiter_id" });
+
+Position.hasMany(Candidate, { foreignKey: 'position' });
+Candidate.belongsTo(Position, { foreignKey: 'position' });
+
+Company.hasMany(Position, { foreignKey: 'company_id' });
+Position.belongsTo(Company, { foreignKey: 'company_id' });
+
+User.hasMany(Position, { foreignKey: 'recruiter_assign' });
+Position.belongsTo(User, { foreignKey: 'recruiter_assign' });
+
+ 
 
 exports.getSourcingReportByPage = async (req, res) => {
   try {

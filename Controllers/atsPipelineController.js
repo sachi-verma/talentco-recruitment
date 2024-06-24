@@ -93,23 +93,68 @@ exports.editAtsPipeline = async (req, res) => {
       candidate_remarks,
     } = req.body;
     const candidate_resume = req.file ? req.file.path : null;
+
+    let updateData ={};
+
+    if(candidate_phone !==undefined){
+      updateData.candidate_phone = candidate_phone;
+
+    }
+    if(candidate_email !==undefined){
+      updateData.candidate_email = candidate_email;
+      
+    }
+    if(candidate_location !==undefined){
+      updateData.candidate_location = candidate_location;
+      
+    }
+    if(candidate_experience !==undefined){
+      updateData.candidate_experience = candidate_experience;
+      
+    }
+    if(candidate_current_ctc !==undefined){
+      updateData.candidate_current_ctc = candidate_current_ctc;
+      
+    }
+    if(candidate_qualification !==undefined){
+      updateData.candidate_qualification = candidate_qualification;
+      
+    }
+    if(candidate_gender !==undefined){
+      updateData.candidate_gender = candidate_gender;
+      
+    }
+    if(candidate_organization !==undefined){
+      updateData.candidate_organization = candidate_organization;
+      
+    }
+    if(candidate_alt_phone !==undefined){
+      updateData.candidate_alt_phone = candidate_alt_phone;
+      
+    }
+    if(candidate_expected_ctc !==undefined){
+      updateData.candidate_expected_ctc = candidate_expected_ctc;
+      
+    }
+    if(candidate_designation !==undefined){
+      updateData.candidate_designation = candidate_designation;
+      
+    }
+    if(candidate_notice_period !==undefined){
+      updateData.candidate_notice_period = candidate_notice_period;
+      
+    }
+    if(candidate_remarks !==undefined){
+      updateData.candidate_remarks = candidate_remarks;
+      
+    }
+    if(candidate_resume !==null){
+      updateData.candidate_resume = candidate_resume;
+      
+    }
+   
     await Candidate.update(
-      {
-        candidate_phone,
-        candidate_email,
-        candidate_location,
-        candidate_experience,
-        candidate_current_ctc,
-        candidate_qualification,
-        candidate_organization,
-        candidate_gender,
-        candidate_alt_phone,
-        candidate_expected_ctc,
-        candidate_designation,
-        candidate_notice_period,
-        candidate_remarks,
-        candidate_resume,
-      },
+       updateData,
       { where: { id: id } }
     );
 

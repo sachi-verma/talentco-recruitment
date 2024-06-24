@@ -6,6 +6,7 @@ const Users = require("../Models/userDetails");
 const excel = require("exceljs");
 const Roles = require("../Models/roles");
 const assignRecruiter = require("../Models/assignRecruiter");
+const Company = require("../Models/companyDetails");
 
 assignRecruiter.belongsTo(Users, { foreignKey: "recruiter_id" });
 Users.hasMany(assignRecruiter, { foreignKey: "recruiter_id" });
@@ -87,35 +88,108 @@ exports.getNewReports = async (req, res)=>{
         let yoo = [];
     
         for (let mapping of statusMappings) {
-          const candidates = await Candidates.findAll({
-            attributes: [
-              [Sequelize.fn('COUNT', Sequelize.col('candidate_status')), 'count']
-            ],
-            include: [
+         let candidates= await Candidates.findAll({
+          attributes: [
+            [Sequelize.fn('COUNT', Sequelize.col('candidate_status')), 'count']
+          ],
+          include: [
+            {
+              model: Position,
+              required: true,
+              
+              attributes: [
+                "id",
+                "company_id",
+                "position",
+                "location",
+                "recruiter_assign",
+                "experience",
+                "min_ctc",
+                "max_ctc",
+              ],
+              include: [
                 {
-                  model: Position,
-                  attributes:[ ],
+                  model: Company,
                   required: true,
+                  attributes: ["company_name"],
+                  
+                },
+                {
+                  model: assignRecruiter,
+                  required:  true,  
+                  attributes: ["recruiter_id"],
+                  where: recruiterFilter,
                   include: [
                     {
-                      model: assignRecruiter,
-                      required:  true,  
-                      attributes: [ ],
-                     where:recruiterFilter,
+                      model: Users,
+                      attributes: ["name"],  
                     },
                   ],
                 },
               ],
-            where: { candidate_status: mapping.status }
-          });
+            },
+          ],
+          where: { candidate_status: mapping.status }
+        });
     
           // Extract the count from the query result
           const count = candidates[0]?.get('count') || 0;
+          console.log(candidates);
           yoo.push({ status: mapping.status, count });
         }
+
+        let candidate= await Candidates.findAll({
+          attributes: [
+          "id",
+          "candidate",
+          "position",
+          "cv_sourced_from",
+          "candidate_Status",
+            //[Sequelize.fn('COUNT', Sequelize.col('candidate_status')), 'count']
+          ],
+          include: [
+            {
+              model: Position,
+              required: true,
+              
+              attributes: [
+                "id",
+                "company_id",
+                "position",
+                "location",
+                "recruiter_assign",
+                "experience",
+                "min_ctc",
+                "max_ctc",
+              ],
+              include: [
+                {
+                  model: Company,
+                  required: true,
+                  attributes: ["company_name"],
+                  
+                },
+                {
+                  model: assignRecruiter,
+                  required:  true,  
+                  attributes: ["recruiter_id"],
+                  where: recruiterFilter,
+                  include: [
+                    {
+                      model: Users,
+                      attributes: ["name"],  
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+         // where: { candidate_status: mapping.status }
+         where: { candidate_Status: "Sent To Client",}
+        });
         
         console.log("================================>> sent to client", yoo);
-        res.status(200).json(yoo);
+        res.status(200).json({yoo, candidate});
  
         
     } catch (error) {
