@@ -31,6 +31,9 @@ Interview.belongsTo(Candidate, { foreignKey: "candidate_id" });
 User.hasMany(Position, { foreignKey: "recruiter_assign" });
 Position.belongsTo(User, { foreignKey: "recruiter_assign" });
 
+Users.hasMany(Candidate, { foreignKey: 'created_by' });
+Candidate.belongsTo(Users, { foreignKey: 'created_by' });
+
 exports.getCandidates = async (req, res) => {
   try {
     const id = req.query.id;
@@ -351,6 +354,7 @@ exports.updateInterviewDetails = async (req, res) => {
       //interview_status,
       interview_remarks,
       // interview_done,
+      scheduled_date,
       recruiter_id,
     } = req.body;
 
@@ -381,14 +385,18 @@ exports.updateInterviewDetails = async (req, res) => {
     if (interview_round !== undefined){
         round = interview_round;
     }
-
+console.log("==========>>>>>> id",id)
     let history;
     let roundExist =  await InterviewHistory.findOne({where:{candidate_id:id, interview_round:round }});
     if(roundExist) {
        history=  await InterviewHistory.update(updateFields, {where: { candidate_id: id, interview_round:round }});
     }
     else{
-       history=  await InterviewHistory.create(updateFields);
+      updateFields.candidate_id=id; 
+      updateFields.created_at= new Date();
+      updateFields.created_by = recruiter_id;
+      updateFields.scheduled_date=scheduled_date !== undefined ? scheduled_date : null;
+      history=  await InterviewHistory.create(updateFields);
     }
 
     const candidate = await Interview.update(updateFields, {
@@ -396,36 +404,79 @@ exports.updateInterviewDetails = async (req, res) => {
     });
 
 
-    const candidatedetails = await Candidate.findOne({ where: { id: id } });
-    let candidate_email = candidatedetails.candidate_email;
-    let candidate_name = candidatedetails.candidate;
+    const candidatedetails = await Candidate.findOne({
+
+      include: [
+          {
+            model: Position,
+            required: true,
+            attributes: [
+              "id",
+              "company_id",
+              "position",
+              "location",
+              "experience",
+              "min_ctc",
+              "max_ctc",
+            ],
+            include: [
+              {
+                model: Company,
+                required: true,
+                attributes: ["company_name","address"],
+                 
+              },
+               
+          ]
+      
+  },
+  {
+    model: Users,
+    required: true,
+    attributes:["name", "phone"], 
+  }
+], 
+      where:{id: id}
+  });
+   let candidate_email = candidatedetails.candidate_email;
+   let candidate_name = candidatedetails.candidate;
+   let position = candidatedetails.Position.position;
+   let company = candidatedetails.Position.Company.company_name;
+   let companyaddress = candidatedetails.Position.Company.address;
+   let contactperson = candidatedetails.User.name;
+   let contactpersonphone = candidatedetails.User.phone;
 
     if (candidate[0] > 0) {
       try {
         await sendMail({
           to: candidate_email,
           subject: `Interview Details Updated !!`,
-          text: `Dear, ${candidate_name}!
-            Your interview Detalis has been updated. You can find the updated Details below, 
+          text: `Dear, ${candidate_name}! 
 
-              Interview round: ${interview_round ? interview_round : ""},
-              Interview Date: ${interview_date ? interview_date : ""},
-              Interview Mode: ${interview_mode ? interview_mode : ""},
-              Interview Time: ${interview_time ? interview_time : ""},
-              Interview Location: ${interview_location ? interview_location : ""},
-             
-           Best of Luck !!
+Greetings from TalentCo HR Services LLP!
 
-           Regards,
-           Talent Co Hr Services`,
+Your interview Details has been updated with  ${company} i.e. ${interview_date} at  ${interview_time} for the post of ${position}.
+
+${interview_mode==="In Person" ?`Company Address: ${companyaddress}`:`${interview_location.includes('https')? `Link`:`Interview Location` }: ${interview_location}`}.
+            
+Contact Person: ${contactperson}, ${contactpersonphone} 
+              
+Try to ${interview_location.includes('https')? `Join 5 minutes`:`reach 15 minutes` } before the scheduled time to avoid any last-minute rush.  
+                                                                                                                                                                                                                                                        
+Kindly send your acknowledgment as a confirmation to this mail. 
+              
+All the very best.
+
+Regards,
+Talent Co Hr Services`,
         });
       } catch (mailError) {
         console.error("Error sending notification email:", mailError);
         //return res.status(500).json({ error: 'Failed to send notification email' });
       }
-      return res.status(200).json({ success: "updated successfully", id });
+      return res.status(200).json({ success: "updated successfully", id, candidatedetails });
     } else {
-      return res.status(404).json({ error: "cannot find", id });
+      return res.status(404).json({ error: "cannot find any changes", id });
     }
   } catch (error) {
     console.error("Error updating Interview Schedule:", error);

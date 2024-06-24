@@ -335,12 +335,15 @@ exports.getAtsPipelinePagination = async (req, res) => {
 
       // Add data rows to the worksheet
       report.forEach((report) => {
+        const recruiterAssignments = report.Position.assignRecuiters || [];
+      const recruiterNames = recruiterAssignments.map(recruiterAssignment => recruiterAssignment.User?.name).join(', ');
+  
         worksheet.addRow([
           report.sourcing_date,
           report.candidate_status,
           report.Position.Company.company_name,
           report.Position.position,
-          report.Position.User.name,
+          recruiterNames,
           report.candidate,
           report.candidate_location,
           report.candidate_phone,

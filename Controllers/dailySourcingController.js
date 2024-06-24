@@ -234,17 +234,17 @@ exports.addSourcingReport = async (req, res) => {
 
         //updating sourcing report by recruiter
 
-        let recruiter = await sourcingReportByRecruiter.findOne({where:{recruiter_id: userid, report_date: date}});
-        let response ;
-         if(recruiter ){
-            response = await sourcingReportByRecruiter.increment(
-              { total_cv_sourced: 1 },
-              { where: { recruiter_id: userid,report_date: date}  }
-          );
-         }
-         else{
-            response = await sourcingReportByRecruiter.create({recruiter_id: userid, total_cv_sourced, report_date:date});
-         }
+        // let recruiter = await sourcingReportByRecruiter.findOne({where:{recruiter_id: userid, report_date: date}});
+        // let response ;
+        //  if(recruiter ){
+        //     response = await sourcingReportByRecruiter.increment(
+        //       { total_cv_sourced: 1 },
+        //       { where: { recruiter_id: userid,report_date: date}  }
+        //   );
+        //  }
+        //  else{
+        //     response = await sourcingReportByRecruiter.create({recruiter_id: userid, total_cv_sourced, report_date:date});
+        //  }
 
         const alldata = await FilteredUpdate();
         const admindata = await DailyAdminUpdate();

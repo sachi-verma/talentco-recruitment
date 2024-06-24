@@ -8,6 +8,11 @@ const sourcingReportByRecruiter = require("../Models/sourcingReportByRecruiter")
 const interviewSchedule = require("../Models/interviewSchedule");
 const {sendMail }= require("../Controllers/emailController");
 const Interview = require("../Models/interviewSchedule");
+const { assignRecruiter } = require("./assignRecruiterController");
+const Users = require("../Models/userDetails");
+
+Users.hasMany(Candidate, { foreignKey: 'created_by' });
+Candidate.belongsTo(Users, { foreignKey: 'created_by' });
 
 exports.getAtsPipeline = async (req, res) => {
   try {
@@ -242,7 +247,7 @@ exports.editAtsStatus = async (req, res) => {
         });
     } else {
       //changing the status in all candidates table
-
+ 
       if(candidate_status==="Interview Scheduled"){
         try {
             let report = await scheduleInterview({ id, candidate_status, status_date, recruiter_id, interview_data });
@@ -466,18 +471,30 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
                     {
                       model: Company,
                       required: true,
-                      attributes: ["company_name"],
+                      attributes: ["company_name","address"],
                        
                     },
+                     
                 ]
             
-        }], 
+        },
+        {
+          model: Users,
+          required: true,
+          attributes:["name", "phone"], 
+        }
+      ], 
             where:{id: id}
         });
          let candidate_email = candidatedetails.candidate_email;
          let candidate_name = candidatedetails.candidate;
          let position = candidatedetails.Position.position;
          let company = candidatedetails.Position.Company.company_name;
+         let companyaddress = candidatedetails.Position.Company.address;
+         let contactperson = candidatedetails.User.name;
+         let contactpersonphone = candidatedetails.User.phone;
+          
+
          
 
          try {
@@ -486,16 +503,24 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
               subject: `Interview Scheduled for ${position} position at ${company} !!`,
               text: `Dear, ${candidate_name}! 
 
-               Your interview have been scheduled for  ${position} position at ${company} on ${interview_date}. you can find interview Details below :-
-                Interview Round : ${interview_round},
-                Interview Mode :  ${interview_mode},
-                Interview Time : ${interview_time},
-                ${interview_mode==="In Person" ?`Interview Location: ${interview_location} `:""}
-             
-            Best of Luck !!
+Greetings from TalentCo HR Services LLP!
 
-            Regards,
-            Talent Co Hr Services`
+Your interview is scheduled with  ${company} i.e. ${interview_date} at  ${interview_time} for the post of ${position}.
+
+Interview Round : ${interview_round}.
+
+${interview_mode==="In Person" ?`Company Address: ${companyaddress}`:`${interview_location.includes('https')? `Link`:`Interview Location` }: ${interview_location}`}.
+
+Contact Person: ${contactperson}, ${contactpersonphone} 
+              
+Try to ${interview_location.includes('https')? `Join 5 minutes`:`reach 15 minutes` } before the scheduled time to avoid any last-minute rush. 
+                                                                                                                                                                                                                                                       
+Kindly send your acknowledgment as a confirmation to this mail. 
+              
+All the very best.
+
+Regards,
+Talent Co Hr Services`
             });
           } catch (mailError) {
             errorinmail =true;
