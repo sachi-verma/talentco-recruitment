@@ -215,7 +215,7 @@ exports.editAtsPipeline = async (req, res) => {
 
 exports.editAtsStatus = async (req, res) => {
   try {
-    const id = req.params.id;
+    const id = req.params.id; 
     let { candidate_status, status_date, recruiter_id, interview_data } =
       req.body;
 
