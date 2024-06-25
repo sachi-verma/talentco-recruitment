@@ -92,21 +92,22 @@ exports.FilteredUpdate = async (req, res) => {
 
         // Fetch all candidate reports including their associated positions and recruiters
         const allReports = await Candidate.findAll({
-            include: [
-                {
-                    model: Position,
-                    required: true,
-                    attributes: ["id", "position", "location"],
-                    include: [
-                        {
-                            model: assignRecruiter,
-                            required: true,
-                            attributes: ["recruiter_id"],
-                            where: { recruiter_id: recruiterId }
-                        }
-                    ]
-                }
-            ]
+            // include: [
+            //     {
+            //         model: Position,
+            //         required: true,
+            //         attributes: ["id", "position", "location"],
+            //         include: [
+            //             {
+            //                 model: assignRecruiter,
+            //                 required: true,
+            //                 attributes: ["recruiter_id"],
+            //                 where: { recruiter_id: recruiterId }
+            //             }
+            //         ]
+            //     }
+            // ]
+            where: {created_by:recruiterId}
         });
 
         // Group the reports by sourcing_date
@@ -130,7 +131,7 @@ exports.FilteredUpdate = async (req, res) => {
             let totalSentToClient = reports.filter(report => report.sourcing_status === "Sent To Client").length;
 
            let update = await sourcingReportByRecruiter.findOne({
-            where:{ report_date:date}
+            where:{ report_date:date, recruiter_id:recruiterId}
 
            }) ;
            console.log("==============>>>>>>>", update);

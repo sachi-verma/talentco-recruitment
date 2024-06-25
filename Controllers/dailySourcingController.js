@@ -374,7 +374,7 @@ async function FilteredUpdateByRecruiter ({recruiterId}) {
             let totalSentToClient = reports.filter(report => report.sourcing_status === "Sent To Client").length;
 
            let update = await sourcingReportByRecruiter.findOne({
-            where:{ report_date:date}
+            where:{ report_date:date, recruiter_id:recruiterId}
 
            }) ;
            console.log("==============>>>>>>>", update);

@@ -453,6 +453,7 @@ console.log("==========>>>>>> id",id)
    let companyaddress = candidatedetails.Position.Company.address;
    let contactperson = candidatedetails.User.name;
    let contactpersonphone = candidatedetails.User.phone;
+   let interviewdate = interview_date ?interview_date.split("-").reverse().join("-"):"";
 
     if (candidate[0] > 0) {
       try {
@@ -463,10 +464,8 @@ console.log("==========>>>>>> id",id)
 
 Greetings from TalentCo HR Services LLP!
 
-Your interview Details has been updated with  ${company} i.e. ${interview_date} at  ${interview_time} for the post of ${position}.
-
-${interview_mode==="In Person" ?`Company Address: ${companyaddress}`:`${interview_location.includes('https')? `Link`:`Interview Location` }: ${interview_location}`}.
-            
+Your interview details has been updated with  ${company} on ${interviewdate} at ${interview_time} for the post of ${position}.
+${interview_mode==="In Person" ?`Company Address: ${companyaddress}`:`${interview_location.includes('https')? `Link`:`Interview Location` }: ${interview_location}`}.        
 Contact Person: ${contactperson}, ${contactpersonphone} 
               
 Try to ${interview_location.includes('https')? `Join 5 minutes`:`reach 15 minutes` } before the scheduled time to avoid any last-minute rush.  
@@ -476,7 +475,7 @@ Kindly send your acknowledgment as a confirmation to this mail.
 All the very best.
 
 Regards,
-Talent Co Hr Services`,
+TalentCo HR Services`,
         });
       } catch (mailError) {
         console.error("Error sending notification email:", mailError);

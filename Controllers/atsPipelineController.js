@@ -10,6 +10,7 @@ const {sendMail }= require("../Controllers/emailController");
 const Interview = require("../Models/interviewSchedule");
 const { assignRecruiter } = require("./assignRecruiterController");
 const Users = require("../Models/userDetails");
+const InterviewHistory = require("../Models/interviewHistory");
 
 Users.hasMany(Candidate, { foreignKey: 'created_by' });
 Candidate.belongsTo(Users, { foreignKey: 'created_by' });
@@ -100,15 +101,16 @@ exports.editAtsPipeline = async (req, res) => {
       position_id
     } = req.body;
     const candidate_resume = req.file ? req.file.path : null;
-
-    const candidateExist = await Candidate.findOne({
+    let candidateExist ;
+    if(position_id){
+     candidateExist = await Candidate.findOne({
       where:{
           candidate_phone:candidate_phone,
           candidate_email:candidate_email,
           position:position_id
       }
   });
-
+    }
   let updateData ={};
 
   if(candidateExist){
@@ -460,6 +462,21 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
   
       // Check if the interview data is successfully added
       if (report) {
+        await InterviewHistory.create(
+          {
+            candidate_id,
+            interview_round,
+            interview_mode,
+            interview_date,
+            interview_time,
+            interview_location,
+            interview_status,
+            interview_remarks,
+            scheduled_date,
+            created_by: recruiter_id,
+            created_at: created_at,
+          }
+        );
         const candidate = await Candidate.update(
           { candidate_status, status_date },
           { where: { id: id } }
@@ -513,10 +530,8 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
          let companyaddress = candidatedetails.Position.Company.address;
          let contactperson = candidatedetails.User.name;
          let contactpersonphone = candidatedetails.User.phone;
-          
-
-         
-
+         let interviewdate = interview_date.split("-").reverse().join("-");
+        
          try {
             await sendMail({
               to: candidate_email,
@@ -525,12 +540,9 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
 
 Greetings from TalentCo HR Services LLP!
 
-Your interview is scheduled with  ${company} i.e. ${interview_date} at  ${interview_time} for the post of ${position}.
-
+Your interview is scheduled with  ${company} on ${interviewdate} at  ${interview_time} for the post of ${position}.
 Interview Round : ${interview_round}.
-
 ${interview_mode==="In Person" ?`Company Address: ${companyaddress}`:`${interview_location.includes('https')? `Link`:`Interview Location` }: ${interview_location}`}.
-
 Contact Person: ${contactperson}, ${contactpersonphone} 
               
 Try to ${interview_location.includes('https')? `Join 5 minutes`:`reach 15 minutes` } before the scheduled time to avoid any last-minute rush. 
@@ -540,7 +552,7 @@ Kindly send your acknowledgment as a confirmation to this mail.
 All the very best.
 
 Regards,
-Talent Co Hr Services`
+TalentCo HR Services`
             });
           } catch (mailError) {
             errorinmail =true;
