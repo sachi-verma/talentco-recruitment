@@ -96,6 +96,7 @@ exports.editAtsPipeline = async (req, res) => {
       candidate_designation,
       candidate_notice_period,
       candidate_remarks,
+      recruiter_id
     } = req.body;
     const candidate_resume = req.file ? req.file.path : null;
 
@@ -156,6 +157,10 @@ exports.editAtsPipeline = async (req, res) => {
     if(candidate_resume !==null){
       updateData.candidate_resume = candidate_resume;
       
+    }
+    if(recruiter_id !==null){
+      updateData.updated_by = recruiter_id;
+      updateData.updated_at = new Date();
     }
    
     await Candidate.update(

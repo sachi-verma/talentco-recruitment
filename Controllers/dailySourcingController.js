@@ -15,6 +15,7 @@ const Positions = require('../Models/allPositions');
 const sourcingReportByRecruiter = require("../Models/sourcingReportByRecruiter");
 const statusHistory = require("../Models/statusHistory");
 const path = require('path');
+const { error } = require('console');
 
 
 Position.hasMany(Candidate, { foreignKey: 'position' });
@@ -189,8 +190,8 @@ exports.addSourcingReport = async (req, res) => {
         let { id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date,  candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks } = req.body;
         const userid = req.query.id;
         console.log(userid);
-        console.log('Request body:', req.body); // Debugging: Log request body
-        console.log('Uploaded file:', req.file); // Debugging: Log uploaded file
+        console.log('Request body:', req.body);  
+        console.log('Uploaded file:', req.file);  
 
 
         const user =await User.findByPk(userid);
@@ -204,53 +205,66 @@ exports.addSourcingReport = async (req, res) => {
         const date = thedate.toISOString().split('T')[0];
         let total_cv_sourced=1;
 
-      
-
-        candidate_resume = req.file ? req.file.path : null;
-        console.log("===================>>>>>> resume",candidate_resume);
-        // Define the required fields for validation
-        let requiredFields = ['candidate', 'position', 'cv_sourced_from', 'relevant', 'sourcing_status'];
-
-        // Check if candidate status is 'Screened', then add candidate_phone and candidate_email to required fields
-        if (sourcing_status === 'Screened') {
-            requiredFields = requiredFields.concat(['candidate_phone', 'candidate_alt_phone', 'candidate_email', 'candidate_location', 'candidate_qualification', 'candidate_experience', 'candidate_current_ctc', 'candidate_expected_ctc', 'candidate_organization', 'candidate_designation', 'candidate_notice_period', 'candidate_gender']);
-        }
-
-        // Validate the request body !req.body.hasOwnProperty(field) ||
-        for (let field of requiredFields) {
-            if (req.body[field] === null || req.body[field] === '') {
-                console.error(`Missing or empty field: ${field} in report:`, req.body);
-                return res.status(400).json({ error: `Missing or empty fields detected` });
+        const candidateExist = await Candidate.findOne({
+            where:{
+                candidate_phone:candidate_phone,
+                candidate_email:candidate_email,
+                position:position
             }
-        }
-        let report;
-        if(sourcing_status === 'Screened'){
-             report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date, candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks, candidate_resume, created_by });
-        }
-        else{
-             report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date,created_by});
+        });
+
+        if(candidateExist){
+            return res.status(404).json({error:"Candidate already exist for this Position !", candidate_email, candidate_phone,position})
+        }else{
+            candidate_resume = req.file ? req.file.path : null;
+            console.log("===================>>>>>> resume",candidate_resume);
+            // Define the required fields for validation
+            let requiredFields = ['candidate', 'position', 'cv_sourced_from', 'relevant', 'sourcing_status'];
+    
+            // Check if candidate status is 'Screened', then add candidate_phone and candidate_email to required fields
+            if (sourcing_status === 'Screened') {
+                requiredFields = requiredFields.concat(['candidate_phone', 'candidate_alt_phone', 'candidate_email', 'candidate_location', 'candidate_qualification', 'candidate_experience', 'candidate_current_ctc', 'candidate_expected_ctc', 'candidate_organization', 'candidate_designation', 'candidate_notice_period', 'candidate_gender']);
+            }
+    
+            // Validate the request body !req.body.hasOwnProperty(field) ||
+            for (let field of requiredFields) {
+                if (req.body[field] === null || req.body[field] === '') {
+                    console.error(`Missing or empty field: ${field} in report:`, req.body);
+                    return res.status(400).json({ error: `Missing or empty fields detected` });
+                }
+            }
+            let report; 
+            if(sourcing_status === 'Screened'){
+                 report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date, candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks, candidate_resume, created_by, created_at:thedate });
+            }
+            else{
+                 report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date,created_by, created_at:thedate});
+    
+            }
+    
+            //updating sourcing report by recruiter
+    
+            // let recruiter = await sourcingReportByRecruiter.findOne({where:{recruiter_id: userid, report_date: date}});
+            // let response ;
+            //  if(recruiter ){
+            //     response = await sourcingReportByRecruiter.increment(
+            //       { total_cv_sourced: 1 },
+            //       { where: { recruiter_id: userid,report_date: date}  }
+            //   );
+            //  }
+            //  else{
+            //     response = await sourcingReportByRecruiter.create({recruiter_id: userid, total_cv_sourced, report_date:date});
+            //  }
+    
+            const alldata = await FilteredUpdate();
+            const admindata = await DailyAdminUpdate();
+            const allrecruiterdata = await FilteredUpdateByRecruiter({recruiterId: userid});
+    
+            res.status(200).json({ message: 'Report created successfully', report, alldata,allrecruiterdata, admindata , response:{msg:'created by added succesfully', userid,date} });
 
         }
-
-        //updating sourcing report by recruiter
-
-        // let recruiter = await sourcingReportByRecruiter.findOne({where:{recruiter_id: userid, report_date: date}});
-        // let response ;
-        //  if(recruiter ){
-        //     response = await sourcingReportByRecruiter.increment(
-        //       { total_cv_sourced: 1 },
-        //       { where: { recruiter_id: userid,report_date: date}  }
-        //   );
-        //  }
-        //  else{
-        //     response = await sourcingReportByRecruiter.create({recruiter_id: userid, total_cv_sourced, report_date:date});
-        //  }
-
-        const alldata = await FilteredUpdate();
-        const admindata = await DailyAdminUpdate();
-        const allrecruiterdata = await FilteredUpdateByRecruiter({recruiterId: userid});
-
-        res.status(200).json({ message: 'Report created successfully', report, alldata,allrecruiterdata, admindata , response:{msg:'created by added succesfully', userid,date} });
+      
+     
       } catch (error) {
         console.error('Error creating Report:', error);
         res.status(500).json({ error: 'Internal Server Error' });
