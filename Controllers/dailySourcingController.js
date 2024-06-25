@@ -230,7 +230,7 @@ exports.addSourcingReport = async (req, res) => {
             for (let field of requiredFields) {
                 if (req.body[field] === null || req.body[field] === '') {
                     console.error(`Missing or empty field: ${field} in report:`, req.body);
-                    return res.status(400).json({ error: `Missing or empty fields detected` });
+                    return res.status(404).json({ error: `Missing or empty fields detected` });
                 }
             }
             let report; 
@@ -594,7 +594,7 @@ exports.createBulkSourcingReport = async (req, res) => {
       console.log("=====>>>>>");
       if (!Array.isArray(reportsData) || reportsData.length === 0) {
         console.error("No reports data provided");
-        return res.status(400).json({ error: "No reports data provided" });
+        return res.status(404).json({ error: "No reports data provided" });
       }
   
       let screenedCandidatePresent = false;
@@ -673,7 +673,7 @@ exports.createBulkSourcingReport = async (req, res) => {
               report
             );
             return res
-              .status(400)
+              .status(404)
               .json({ error: `Missing or empty fields detected ${field}` });
           }
         }
@@ -716,7 +716,7 @@ exports.createBulkSourcingReport = async (req, res) => {
   
       if (!createdReports || createdReports.length === 0) {
         console.error("No reports created");
-        return res.status(400).json({ error: "No reports created" });
+        return res.status(404).json({ error: "No reports created" });
       }
   
       res.status(200).json({

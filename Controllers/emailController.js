@@ -52,7 +52,7 @@ const  sendMail = async ({to, subject, text}) => {
   //const { to, subject, text } = req.body;
 
   if ( !to || !subject || !text) {
-    return res.status(400).send("Missing required fields: to, subject, text");
+    return res.status(404).send("Missing required fields: to, subject, text");
   }
 
   const mailOptions = {
