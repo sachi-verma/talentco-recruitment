@@ -14,6 +14,9 @@ const assignRecruiter = require("../Models/assignRecruiter");
 assignRecruiter.belongsTo(Users, { foreignKey: "recruiter_id" });
 Users.hasMany(assignRecruiter, { foreignKey: "recruiter_id" });
 
+Users.hasMany(Candidate, { foreignKey: 'created_by' });
+Candidate.belongsTo(Users, { foreignKey: 'created_by' });
+
 exports.getAtsPipelinePagination = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1; // Current page, default to 1
@@ -103,13 +106,19 @@ exports.getAtsPipelinePagination = async (req, res) => {
       console.log("=========>>>>>>>>>>>>>>", role);
 
       if (role && (role.role_name === "Recruiter" || role.role_name === "Team Lead")) {
-        recruiterFilter.recruiter_id = userId;
+        //recruiterFilter.recruiter_id = userId;
+        whereClause.created_by = userId;
+
       }
       
     }
   }
     
-    if(recruiter){recruiterFilter.recruiter_id=recruiter}
+    if(recruiter){
+      //recruiterFilter.recruiter_id=recruiter
+      whereClause.created_by = userId;
+
+    }
     console.log("==========>>>> recruiter filter",recruiterFilter);
 
     const [report, totalRecords] = await Promise.all([
@@ -138,6 +147,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
           "candidate_status",
           "remarks",
           "created_at",
+          "created_by",
           "updated_at",
           "sent_to_client_date"
         ],
@@ -163,20 +173,25 @@ exports.getAtsPipelinePagination = async (req, res) => {
                 attributes: ["company_name"],
                 where: companyFilters,
               },
-              {
-                model: assignRecruiter,
-                required:  true, // Set to false if a position can have no recruiters assigned
-                attributes: ["recruiter_id"],
-                where: recruiterFilter,
-                include: [
-                  {
-                    model: Users,
-                    attributes: ["name"], // Fetch recruiter names
-                  },
-                ],
-              },
+              // {
+              //   model: assignRecruiter,
+              //   required:  true, // Set to false if a position can have no recruiters assigned
+              //   attributes: ["recruiter_id"],
+              //   where: recruiterFilter,
+              //   include: [
+              //     {
+              //       model: Users,
+              //       attributes: ["name"], // Fetch recruiter names
+              //     },
+              //   ],
+              // },
             ],
           },
+          {
+            model: Users,
+            required : true,
+            attributes:['id', 'name','phone', 'email'],
+          }
         ],
         where: whereClause,
         // parameters
@@ -208,6 +223,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
           "candidate_status",
           "remarks",
           "created_at",
+          "created_by",
           "updated_at",
           "sent_to_client_date"
         ],
@@ -233,20 +249,25 @@ exports.getAtsPipelinePagination = async (req, res) => {
                 attributes: ["company_name"],
                 where: companyFilters,
               },
-              {
-                model: assignRecruiter,
-                required:  true, // Set to false if a position can have no recruiters assigned
-                attributes: ["recruiter_id"],
-                where: recruiterFilter,
-                include: [
-                  {
-                    model: Users,
-                    attributes: ["name"], // Fetch recruiter names
-                  },
-                ],
-              },
+              // {
+              //   model: assignRecruiter,
+              //   required:  true, // Set to false if a position can have no recruiters assigned
+              //   attributes: ["recruiter_id"],
+              //   //where: recruiterFilter,
+              //   include: [
+              //     {
+              //       model: Users,
+              //       attributes: ["name"], // Fetch recruiter names
+              //     },
+              //   ],
+              // },
             ],
           },
+          {
+            model: Users,
+            required : true,
+            attributes:['id', 'name','phone', 'email'],
+          }
         ],
         where: whereClause,
         // parameters
