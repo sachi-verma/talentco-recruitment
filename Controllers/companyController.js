@@ -3,8 +3,9 @@ const Companys = require('../Models/companyDetails')
 
 exports.registerCompany = async (req, res) => {
     try {
-        const { id, company_name, summary, industry, address, poc1_name, poc1_designation, poc1_phone, poc1_email, poc2_name, poc2_designation, poc2_phone, poc2_email, company_username, company_password, role_id } = req.body;
-        const company = await Companys.create({ id, company_name, summary, industry, address, poc1_name, poc1_designation, poc1_phone, poc1_email, poc2_name, poc2_designation, poc2_phone, poc2_email, company_username, company_password, role_id });
+        const { id, company_name, summary, industry, address, poc1_name, poc1_designation, poc1_phone, poc1_email, poc2_name, poc2_designation, poc2_phone, poc2_email, company_username, company_password, role_id, recruiter_id } = req.body;
+        const created_at= new Date();
+        const company = await Companys.create({ id, company_name, summary, industry, address, poc1_name, poc1_designation, poc1_phone, poc1_email, poc2_name, poc2_designation, poc2_phone, poc2_email, company_username, company_password, role_id, created_by:recruiter_id, created_at:created_at });
         res.status(200).json({ message: 'company created successfully', company });
       } catch (error) {
         console.error('Error creating company:', error);

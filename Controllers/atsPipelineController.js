@@ -96,11 +96,24 @@ exports.editAtsPipeline = async (req, res) => {
       candidate_designation,
       candidate_notice_period,
       candidate_remarks,
-      recruiter_id
+      recruiter_id,
+      position_id
     } = req.body;
     const candidate_resume = req.file ? req.file.path : null;
 
-    let updateData ={};
+    const candidateExist = await Candidate.findOne({
+      where:{
+          candidate_phone:candidate_phone,
+          candidate_email:candidate_email,
+          position:position_id
+      }
+  });
+
+  let updateData ={};
+
+  if(candidateExist){
+      return res.status(404).json({error:"Candidate already exist for this Position !", candidate_email, candidate_phone, position_id})
+  }else{
 
     if(candidate_phone !==undefined){
       updateData.candidate_phone = candidate_phone;
@@ -190,6 +203,8 @@ exports.editAtsPipeline = async (req, res) => {
           candidate_resume,
         },
       });
+
+  }
   } catch (error) {
     console.error("Error updating candidate:", error);
     return res.status(500).json({ error: "Internal server error" });

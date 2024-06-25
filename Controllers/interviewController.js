@@ -34,6 +34,9 @@ Position.belongsTo(User, { foreignKey: "recruiter_assign" });
 Users.hasMany(Candidate, { foreignKey: 'created_by' });
 Candidate.belongsTo(Users, { foreignKey: 'created_by' });
 
+Users.hasMany(Interview, { foreignKey: 'created_by' });
+Interview.belongsTo(Users, { foreignKey: 'created_by' });
+
 exports.getCandidates = async (req, res) => {
   try {
     const id = req.query.id;
@@ -125,7 +128,7 @@ exports.getInterviewSchedule = async (req, res) => {
       console.log(role.role_name);
 
       if (role && (role.role_name === "Recruiter" || role.role_name === "Team Lead")) {
-        recruiterFilter.recruiter_id = userId;
+        whereClause.created_by = userId;
       }
     }
 
@@ -146,22 +149,27 @@ exports.getInterviewSchedule = async (req, res) => {
                   required: true,
                   // attributes: ["company_name"],
                 },
-                {
-                  model: assignRecruiter,
-                  required:true, // Set to false if a position can have no recruiters assigned
-                  attributes: ["recruiter_id"],
-                  where: recruiterFilter,
-                  include: [
-                    {
-                      model: Users,
-                      attributes: ["name"], // Fetch recruiter names
-                    },
-                  ],
-                },
+                // {
+                //   model: assignRecruiter,
+                //   required:true, // Set to false if a position can have no recruiters assigned
+                //   attributes: ["recruiter_id"],
+                //   where: recruiterFilter,
+                //   include: [
+                //     {
+                //       model: Users,
+                //       attributes: ["name"], // Fetch recruiter names
+                //     },
+                //   ],
+                // },
               ],
             },
           ],
         },
+        {
+          model:User,
+          required:true,
+          attributes:["name","email","phone"]
+        }
       ],
       limit,
       offset,
