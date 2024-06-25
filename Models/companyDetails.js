@@ -55,7 +55,6 @@ const Companys = sequelize.define('Companys',{
     },
     created_at: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
     },
     created_by: {
         type: DataTypes.STRING,
