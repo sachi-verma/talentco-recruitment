@@ -89,7 +89,7 @@ exports.exportJobs = async (req, res) => {
     const worksheet = workbook.addWorksheet('Jobs');
 
     // Add headers to the worksheet
-    worksheet.addRow(['Upload Date','Position','Company', 'Location', 'Experience','Min CTC','Max CTC', 'Number of Positions','Position Status', 'Gender','Qualification', 'Recruiter Assign']);
+    worksheet.addRow(['Upload Date','Position','Company', 'Location', 'Min Experience','Max Experience','Min CTC','Max CTC', 'Number of Positions','Position Status', 'Gender','Qualification', 'Recruiter Assign']);
 
     // Add data rows to the worksheet
     job.forEach(job => {
@@ -103,7 +103,8 @@ exports.exportJobs = async (req, res) => {
           job.position,
           job.Company.company_name,
           job.location,
-          job.experience,
+          job.min_experience,
+          job.max_experience,
           job.min_ctc,
           job.max_ctc,
           job.no_of_positions,

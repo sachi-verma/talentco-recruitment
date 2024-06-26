@@ -102,7 +102,7 @@ exports.updateJob = async (req, res) => {
             return res.status(404).json({ error: 'job not found' });
           }
   
-          return res.status(200).json({ success: "job updated sucessfully", job: {id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, jd_upload} }); 
+          return res.status(200).json({ success: "job updated sucessfully", job: {id, company_id, position, location, min_experience, max_experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, jd_upload} }); 
 
     } catch (error) {
       console.error('Error updating job:', error);

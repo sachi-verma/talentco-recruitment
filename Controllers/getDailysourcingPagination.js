@@ -465,13 +465,22 @@ exports.getFilteredUpdateByPage = async (req, res) => {
       whereClause.update_date = {
         [Op.between]: [fromDate, newDate],
       };
+      recruiterFilter.report_date ={
+        [Op.between]: [fromDate, newDate],
+      }
     } else if (fromDate) {
       whereClause.update_date = {
+        [Op.gte]: fromDate,
+      };
+      recruiterFilter.report_date = {
         [Op.gte]: fromDate,
       };
     } else if (toDate) {
       whereClause.update_date = {
         [Op.lte]: toDate,
+      };
+      recruiterFilter.report_date = {
+        [Op.lte]: fromDate,
       };
     }
 
