@@ -103,7 +103,10 @@ exports.getInterviewSchedule = async (req, res) => {
     const userId = req.query.id;
 
     const download = req.query.download ? true : false;
-    const whereClause= { }
+    const whereClause= {};
+    const candidateFilter={};
+    const positionFilter={};
+    const companyFilter={};
 
     if (download) {
       limit = null;
@@ -112,7 +115,32 @@ exports.getInterviewSchedule = async (req, res) => {
 
     const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
 
-    const { candidate, company, position } = filter;
+    const { candidate, company, position, interview_round, interview_date, interview_status, fromDate, toDate, interview_location } = filter;
+
+    if(candidate !== undefined) candidateFilter.candidate=candidate;
+    if(company !== undefined) companyFilter.company_name=company;
+    if(position !== undefined) positionFilter.position=position;
+    if(interview_round !== undefined) whereClause.interview_round=interview_round;
+    if(interview_date !== undefined) whereClause.interview_date=interview_date;
+    if(interview_status !== undefined) whereClause.interview=interview_status;
+    //if(scheduled_date !== undefined) whereClause.scheduled_date=scheduled_date;
+    if(interview_location !== undefined) whereClause.interview_location=interview_location;
+
+    if (fromDate && toDate) {
+      let theDate = parseInt(toDate.split("-")[2]) + 1;
+      let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, "0");
+      whereClause.scheduled_date = {
+        [Op.between]: [fromDate, newDate],
+      };
+    } else if (fromDate) {
+      whereClause.scheduled_date = {
+        [Op.gte]: fromDate,
+      };
+    } else if (toDate) {
+      whereClause.scheduled_date = {
+        [Op.lte]: toDate, 
+      };
+    }
 
     console.log(filter);
 
@@ -138,16 +166,19 @@ exports.getInterviewSchedule = async (req, res) => {
           model: Candidate,
           required: true,
           //attributes: ["candidate"],
+          where:candidateFilter,
           include: [
             {
               model: Position,
               required: true,
               // attributes: ["company_id", "position", "location"],
+              where: positionFilter,
               include: [
                 {
                   model: Company,
                   required: true,
                   // attributes: ["company_name"],
+                  where: companyFilter,
                 },
                 // {
                 //   model: assignRecruiter,
@@ -423,7 +454,8 @@ console.log("==========>>>>>> id",id)
               "company_id",
               "position",
               "location",
-              "experience",
+              "min_experience",
+              "max_experience",
               "min_ctc",
               "max_ctc",
             ],

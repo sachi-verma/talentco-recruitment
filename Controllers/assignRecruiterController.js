@@ -85,9 +85,9 @@ exports.assignRecruiter = async (req, res) => {
                Company Name: ${companyname},
                Number of Positions : ${position.no_of_positions},
                Location : ${position.location},
-               Experience : ${position.experience},
-               Min CTC : ${position.min_ctc} LPA,
-               Max CTC : ${position.max_ctc} LPA,
+               Experience : ${position.min_experience} to ${position.max_experience},
+               Min CTC : ${position.min_ctc},
+               Max CTC : ${position.max_ctc},
                Qualification : ${position.qualification},
                Gender Preferences : ${position.gender_pref},
 
