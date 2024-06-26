@@ -70,6 +70,7 @@ exports.getJobByPage = async (req, res) => {
     if (location) whereClause.location = { [Op.like]: `%${location}%` };
     if (gender && gender ==="Male") whereClause.gender_pref = "Male";
     if (gender && gender ==="Female") whereClause.gender_pref = "Female";
+    if(gender && gender ==="No preference") whereClause.gender_pref = "No preference";
 
     if (qualification)
       whereClause.qualification = { [Op.like]: `%${qualification}%` };

@@ -22,7 +22,10 @@ const Positions = sequelize.define('Positions',{
     location: {
         type: DataTypes.STRING,
     },
-    experience: {
+    min_experience: {
+        type: DataTypes.TEXT,
+    },
+    max_experience: {
         type: DataTypes.TEXT,
     },
     min_ctc: {

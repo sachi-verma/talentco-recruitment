@@ -336,21 +336,22 @@ async function FilteredUpdateByRecruiter ({recruiterId}) {
 
         // Fetch all candidate reports including their associated positions and recruiters
         const allReports = await Candidate.findAll({
-            include: [
-                {
-                    model: Position,
-                    required: true,
-                    attributes: ["id", "position", "location"],
-                    include: [
-                        {
-                            model: assignRecruiter,
-                            required: true,
-                            attributes: ["recruiter_id"],
-                            where: { recruiter_id: recruiterId }
-                        }
-                    ]
-                }
-            ]
+            // include: [
+            //     {
+            //         model: Position,
+            //         required: true,
+            //         attributes: ["id", "position", "location"],
+            //         include: [
+            //             {
+            //                 model: assignRecruiter,
+            //                 required: true,
+            //                 attributes: ["recruiter_id"],
+            //                 where: { recruiter_id: recruiterId }
+            //             }
+            //         ]
+            //     }
+            // ]
+            where:{created_by:recruiterId}
         });
 
         // Group the reports by sourcing_date

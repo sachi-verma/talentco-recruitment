@@ -8,11 +8,11 @@ Positions.belongsTo(Company, { foreignKey: 'company_id' });
 
 exports.createJob = async (req, res) => {
     try {
-        const { id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, upload_date, recruiter_id } = req.body;
+        const { id, company_id, position, location, min_experience, max_experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, upload_date, recruiter_id } = req.body;
         const jd_upload = req.file ? req.file.path : null;
         const created_at = new Date();
         const position_status ="Open";
-        const jobs = await Positions.create({ id, company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, upload_date, jd_upload, position_status, created_at, created_by:recruiter_id });
+        const jobs = await Positions.create({ id, company_id, position, location, min_experience, max_experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, upload_date, jd_upload, position_status, created_at, created_by:recruiter_id });
         res.status(200).json({ message: 'jobs created successfully', jobs });
       } catch (error) {
         console.error('Error creating jobs:', error);
@@ -49,7 +49,7 @@ exports.getJobById = async (req, res) => {
 exports.updateJob = async (req, res) => {
     try {
         const id = req.params.id;
-        const { company_id, position, location, experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, recruiter_id } = req.body;
+        const { company_id, position, location, min_experience, max_experience, min_ctc, max_ctc, no_of_positions, gender_pref, qualification, recruiter_id } = req.body;
         
         const jd_upload = req.file ? req.file.path : null;
 
@@ -63,8 +63,11 @@ exports.updateJob = async (req, res) => {
          if(location !== undefined){
             updateData.location = location;
          }
-         if(experience !== undefined){
-            updateData.experience = experience;
+         if(min_experience !== undefined){
+            updateData.min_experience = min_experience;
+         }
+         if(max_experience !== undefined){
+            updateData.max_experience = max_experience;
          }
          if(min_ctc !== undefined){
             updateData.min_ctc = min_ctc;
