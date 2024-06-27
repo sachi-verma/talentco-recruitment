@@ -11,6 +11,9 @@ const assignRecruiter = require("../Models/assignRecruiter");
 assignRecruiter.belongsTo(Users, { foreignKey: "recruiter_id" });
 Users.hasMany(assignRecruiter, { foreignKey: "recruiter_id" });
 
+Users.hasMany(Candidate, { foreignKey: 'created_by' });
+Candidate.belongsTo(Users, { foreignKey: 'created_by' });
+
 exports.getSourcingReportByDate = async (req, res) => {
   try {
     const dateFromParams = req.query.date;
@@ -95,7 +98,7 @@ exports.getSourcingReportByDate = async (req, res) => {
         console.log("=========>>>>>>>>>>>>>>", role);
   
         if (role && (role.role_name === "Recruiter" || role.role_name === "Team Lead")) {
-          recruiterFilter.recruiter_id = userId;
+          whereClause.created_by = userId;
         }
       }
     }
@@ -135,21 +138,26 @@ exports.getSourcingReportByDate = async (req, res) => {
                 attributes: ["company_name"],
                 where: companyFilters,
               },
-              {
-                model: assignRecruiter,
-                required: true, // Set to false if a position can have no recruiters assigned
-                attributes: ["recruiter_id"],
-                where: recruiterFilter,
-                include: [
-                  {
-                    model: Users,
-                    attributes: ["name"], // Fetch recruiter names
-                  },
-                ],
-              },
+              // {
+              //   model: assignRecruiter,
+              //   required: true, // Set to false if a position can have no recruiters assigned
+              //   attributes: ["recruiter_id"],
+              //   where: recruiterFilter,
+              //   include: [
+              //     {
+              //       model: Users,
+              //       attributes: ["name"], // Fetch recruiter names
+              //     },
+              //   ],
+              // },
             ],
             where: positionFilter,
           },
+          {
+            model: Users,
+            required : true,
+            attributes:['id', 'name','phone', 'email'],
+          }
         ],
         where: whereClause,
         limit,
@@ -188,20 +196,25 @@ exports.getSourcingReportByDate = async (req, res) => {
                 required: true,
                 attributes: ["company_name"],
               },
-              {
-                model: assignRecruiter,
-                required: true, // Set to false if a position can have no recruiters assigned
-                attributes: ["recruiter_id"],
-                where: recruiterFilter,
-                include: [
-                  {
-                    model: Users,
-                    attributes: ["name"], // Fetch recruiter names
-                  },
-                ],
-              },
+              // {
+              //   model: assignRecruiter,
+              //   required: true, // Set to false if a position can have no recruiters assigned
+              //   attributes: ["recruiter_id"],
+              //   where: recruiterFilter,
+              //   include: [
+              //     {
+              //       model: Users,
+              //       attributes: ["name"], // Fetch recruiter names
+              //     },
+              //   ],
+              // },
             ],
           },
+          {
+            model: Users,
+            required : true,
+            attributes:['id', 'name','phone', 'email'],
+          }
         ],
         where: whereClause,
       }),
