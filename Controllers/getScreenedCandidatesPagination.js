@@ -132,7 +132,7 @@ exports.getScreenedCandidatePagination = async (req, res) => {
  
        worksheet.addRow([
          "Sourcing Date",
-         "Candidate Status",
+        // "Candidate Status",
          "company Name",
          "Position Name",
         // "Recriuter Name",
@@ -153,7 +153,7 @@ exports.getScreenedCandidatePagination = async (req, res) => {
        candidates.forEach((candidates) => {
          worksheet.addRow([
            candidates.sourcing_date,
-           candidates.candidate_status,
+           //candidates.candidate_status,
            candidates.Position.Company.company_name,
            candidates.Position.position,
            //candidates.Position.User.name,
@@ -204,6 +204,6 @@ exports.getScreenedCandidatePagination = async (req, res) => {
    
   } catch (error) {
     console.error("Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Internal Server Error", errorMessage: error });
   }
 };

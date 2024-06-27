@@ -5,6 +5,8 @@ const corsMiddleware = require('./Middleware/corsMiddleware');
 const errorHandler = require('./Middleware/errorHandler');
 const {sequelize, connectToDb} = require('./Models/db');
 const path = require('path');
+const fs = require('fs');
+const readline = require('readline');
 
 const roleRoutes = require('./Routes/roleRoutes');
 const moduleRoutes = require('./Routes/moduleRoutes');
@@ -68,16 +70,37 @@ app.post('/restartNodeServer', (req, res) => {
 });
 
 // Route to read and return the log file content
-app.get('/logs', (req, res) => {
-  const logFilePath = '/root/.pm2/logs/ATS-error.log'; // Your log file path
+app.get('/viewLogs', (req, res) => {
+  const logFilePath = '/root/.pm2/logs/ATS-error.log';
 
-  exec(`tail -n 100 ${logFilePath}`, (error, stdout, stderr) => {
-      if (error) {
-          console.error('Error executing tail command:', error);
-          return res.status(500).send('Error reading log file');
+  const fullPath = path.join(__dirname, logFilePath);
+
+  if (!fs.existsSync(fullPath)) {
+    return res.status(404).json({ error: "File not found !!" });
+}
+
+  const readStream = fs.createReadStream(logFilePath, { encoding: 'utf8' });
+  const rl = readline.createInterface({
+      input: readStream,
+      output: process.stdout,
+      terminal: false
+  });
+
+  const lines = [];
+  rl.on('line', (line) => {
+      lines.push(line);
+      if (lines.length > 100) {
+          lines.shift(); // Remove the first line if we have more than 100 lines
       }
+  });
 
-      res.send(stdout);
+  rl.on('close', () => {
+      res.send(lines.join('\n'));
+  });
+
+  rl.on('error', (err) => {
+      console.error('Error reading log file:', err);
+      res.status(500).send('Error reading log file');
   });
 });
 

@@ -187,7 +187,7 @@ exports.createSourcingReport = async (req, res) => {
 //USING THE all_candidates DATABASE
 exports.addSourcingReport = async (req, res) => {
     try {
-        let { id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date,  candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks } = req.body;
+        let { id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date,  candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc, candidate_designation, candidate_organization, candidate_notice_period, candidate_remarks } = req.body;
         const userid = req.query.id;
         console.log(userid);
         console.log('Request body:', req.body);  
@@ -235,7 +235,7 @@ exports.addSourcingReport = async (req, res) => {
             }
             let report; 
             if(sourcing_status === 'Screened'){
-                 report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date, candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation,candidate_notice_period, candidate_remarks, candidate_resume, created_by, created_at:thedate });
+                 report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date, candidate_phone, candidate_email, candidate_location, candidate_experience, candidate_current_ctc, candidate_qualification, candidate_gender, candidate_alt_phone, candidate_expected_ctc,candidate_designation, candidate_organization, candidate_notice_period, candidate_remarks, candidate_resume, created_by, created_at:thedate });
             }
             else{
                  report = await Candidate.create({ id, candidate, position, cv_sourced_from, relevant, sourcing_status, remarks, sourcing_date,created_by, created_at:thedate});

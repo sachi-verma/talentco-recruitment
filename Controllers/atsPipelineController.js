@@ -303,6 +303,7 @@ exports.editAtsStatus = async (req, res) => {
         candidate_id: id,
         candidate_status: candidate_status,
         status_date: status_date,
+        created_by:recruiter_id
       });
 
     }else{
@@ -317,6 +318,7 @@ exports.editAtsStatus = async (req, res) => {
             candidate_id: id,
             candidate_status: candidate_status,
             status_date: status_date,
+            created_by:recruiter_id
           });
 
     }
@@ -488,6 +490,7 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
           candidate_id: id,
           candidate_status: candidate_status,
           status_date: status_date,
+          created_by:recruiter_id
         });
 
         const candidatedetails = await Candidate.findOne({
