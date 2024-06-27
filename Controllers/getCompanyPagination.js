@@ -106,10 +106,7 @@ const [companys, totalRecords] = await Promise.all([
     limit,
     offset,
   }),
-  await Companys.count({
-    where: filters,
-     
-  })
+  await Companys.count()
 
 ]);
 

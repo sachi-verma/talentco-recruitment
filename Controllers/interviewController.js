@@ -115,16 +115,17 @@ exports.getInterviewSchedule = async (req, res) => {
 
     const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
 
-    const { candidate, company, position, interview_round, interview_date, interview_status, fromDate, toDate, interview_location } = filter;
+    const { candidate, company, position, interview_round, interview_date, interview_status, fromDate, toDate, interview_location, interview_done } = filter;
 
-    if(candidate !== undefined) candidateFilter.candidate=candidate;
-    if(company !== undefined) companyFilter.company_name=company;
-    if(position !== undefined) positionFilter.position=position;
-    if(interview_round !== undefined) whereClause.interview_round=interview_round;
-    if(interview_date !== undefined) whereClause.interview_date=interview_date;
-    if(interview_status !== undefined) whereClause.interview=interview_status;
+    if(candidate !== undefined) candidateFilter.candidate={ [Op.like]: `%${candidate}%` };
+    if(company !== undefined) companyFilter.company_name={ [Op.like]: `%${company}%` }; 
+    if(position !== undefined) positionFilter.position={ [Op.like]: `%${position}%` };
+    if(interview_round !== undefined) whereClause.interview_round=  interview_round;
+    if(interview_date !== undefined) whereClause.interview_date= { [Op.like]: `%${interview_date}%` };
+    if(interview_status !== undefined) whereClause.interview= { [Op.like]: `%${interview_status}%` };
     //if(scheduled_date !== undefined) whereClause.scheduled_date=scheduled_date;
-    if(interview_location !== undefined) whereClause.interview_location=interview_location;
+    if(interview_location !== undefined) whereClause.interview_location= { [Op.like]: `%${interview_location}%` };
+    if(interview_done !== undefined) whereClause.interview_done=  { [Op.like]: `%${interview_done}%` };
 
     if (fromDate && toDate) {
       let theDate = parseInt(toDate.split("-")[2]) + 1;
@@ -160,60 +161,110 @@ exports.getInterviewSchedule = async (req, res) => {
       }
     }
 
-    const report = await Interview.findAll({
-      include: [
-        {
-          model: Candidate,
-          required: true,
-          //attributes: ["candidate"],
-          where:candidateFilter,
-          include: [
-            {
-              model: Position,
-              required: true,
-              // attributes: ["company_id", "position", "location"],
-              where: positionFilter,
-              include: [
-                {
-                  model: Company,
-                  required: true,
-                  // attributes: ["company_name"],
-                  where: companyFilter,
-                },
-                // {
-                //   model: assignRecruiter,
-                //   required:true, // Set to false if a position can have no recruiters assigned
-                //   attributes: ["recruiter_id"],
-                //   where: recruiterFilter,
-                //   include: [
-                //     {
-                //       model: Users,
-                //       attributes: ["name"], // Fetch recruiter names
-                //     },
-                //   ],
-                // },
-              ],
-            },
-          ],
-        },
-        {
-          model:User,
-          required:true,
-          attributes:["name","email","phone"]
-        }
-      ],
-      limit,
-      offset,
-      where: whereClause,
-    });
+    const [report, totalReports]= await Promise.all([
+       await Interview.findAll({
+        include: [
+          {
+            model: Candidate,
+            required: true,
+            //attributes: ["candidate"],
+            where:candidateFilter,
+            include: [
+              {
+                model: Position,
+                required: true,
+                // attributes: ["company_id", "position", "location"],
+                where: positionFilter,
+                include: [
+                  {
+                    model: Company,
+                    required: true,
+                    // attributes: ["company_name"],
+                    where: companyFilter,
+                  },
+                  // {
+                  //   model: assignRecruiter,
+                  //   required:true, // Set to false if a position can have no recruiters assigned
+                  //   attributes: ["recruiter_id"],
+                  //   where: recruiterFilter,
+                  //   include: [
+                  //     {
+                  //       model: Users,
+                  //       attributes: ["name"], // Fetch recruiter names
+                  //     },
+                  //   ],
+                  // },
+                ],
+              },
+            ],
+          },
+          {
+            model:User,
+            required:true,
+            attributes:["name","email","phone"]
+          }
+        ],
+        limit,
+        offset,
+        where: whereClause,
+      }),
+
+      await Interview.count({
+        include: [
+          {
+            model: Candidate,
+            required: true,
+            //attributes: ["candidate"],
+            where:candidateFilter,
+            include: [
+              {
+                model: Position,
+                required: true,
+                // attributes: ["company_id", "position", "location"],
+                where: positionFilter,
+                include: [
+                  {
+                    model: Company,
+                    required: true,
+                    // attributes: ["company_name"],
+                    where: companyFilter,
+                  },
+                  // {
+                  //   model: assignRecruiter,
+                  //   required:true, // Set to false if a position can have no recruiters assigned
+                  //   attributes: ["recruiter_id"],
+                  //   where: recruiterFilter,
+                  //   include: [
+                  //     {
+                  //       model: Users,
+                  //       attributes: ["name"], // Fetch recruiter names
+                  //     },
+                  //   ],
+                  // },
+                ],
+              },
+            ],
+          },
+          {
+            model:User,
+            required:true,
+            attributes:["name","email","phone"]
+          }
+        ],
+        
+        where: whereClause,
+      })
+    ]);
+
+    
     let records = report.length;
 
     //console.log("=============>>> total", totalRecords);
 
-    const pages = Math.ceil(filter ? records / limit : records / limit);
+    const pages = Math.ceil(filter ? records / limit : totalReports / limit);
     res.status(200).json({
       message: "interview schedule fetched successfully",
-      totalRecords: records,
+      totalRecords: filter? records:totalReports,
       pages: pages,
       Interview: report,
 

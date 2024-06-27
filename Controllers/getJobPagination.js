@@ -167,7 +167,7 @@ exports.getJobByPage = async (req, res) => {
     });
   } catch (error) {
     console.error("Error:", error);
-    res.status(500).send("500 server error",error);
+    res.status(500).send("500 server error");
   }
 };
 

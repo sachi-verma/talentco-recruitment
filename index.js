@@ -53,6 +53,33 @@ app.use(dashboardRoutes);
 app.use(reportAndAnalysis);
 app.use(downloadFileController);
 
+//https://atsapi.abstarthr.in/restartNodeServer
+//route to restart the server
+app.post('/restartNodeServer', (req, res) => {
+  exec('pm2 restart ATS --watch', (error, stdout, stderr) => {
+      if (error) {
+          console.error(`exec error: ${error}`);
+          return res.status(500).send('Error restarting server');
+      }
+      console.log(`stdout: ${stdout}`);
+      console.error(`stderr: ${stderr}`);
+      res.send('Server restarted successfully');
+  });
+});
+
+// Route to read and return the log file content
+app.get('/logs', (req, res) => {
+  const logFilePath = '/root/.pm2/logs/ATS-error.log'; // Your log file path
+
+  exec(`tail -n 100 ${logFilePath}`, (error, stdout, stderr) => {
+      if (error) {
+          console.error('Error executing tail command:', error);
+          return res.status(500).send('Error reading log file');
+      }
+
+      res.send(stdout);
+  });
+});
 
 // app.use("/protected_routes", protectedRoutes);
 app.use(userRoutes);
