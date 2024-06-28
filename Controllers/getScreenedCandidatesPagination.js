@@ -130,12 +130,11 @@ exports.getScreenedCandidatePagination = async (req, res) => {
  
        // Add headers to the worksheet
  
-       worksheet.addRow([
+      const headerRow= worksheet.addRow([
+         "Sr No.",
          "Sourcing Date",
-        // "Candidate Status",
          "company Name",
          "Position Name",
-        // "Recriuter Name",
          "Candidate Name",
          "Candidate Location",
          "Contact Number",
@@ -149,15 +148,18 @@ exports.getScreenedCandidatePagination = async (req, res) => {
          "Email",
          "Remarks",
        ]);
+
+       headerRow.eachCell((cell) => {
+        cell.font = { bold: true };
+      });
  
        // Add data rows to the worksheet
-       candidates.forEach((candidates) => {
+       candidates.forEach((candidates, index) => {
          worksheet.addRow([
+           index +1,
            candidates.sourcing_date,
-           //candidates.candidate_status,
            candidates.Position.Company.company_name,
            candidates.Position.position,
-           //candidates.Position.User.name,
            candidates.candidate,
            candidates.candidate_location,
            candidates.candidate_phone,
