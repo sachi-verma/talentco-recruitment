@@ -171,7 +171,7 @@ exports.getScreenedCandidatePagination = async (req, res) => {
            candidates.candidate_organization,
            candidates.candidate_designation,
            candidates.candidate_email,
-           candidates.remarks,
+           candidates.candidate_remarks,
          ]);
        });
  
