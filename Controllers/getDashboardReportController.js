@@ -112,7 +112,7 @@ exports.getNewReports = async (req, res)=>{
                 "company_id",
                 "position",
                 "location",
-                "recruiter_assign",
+                //"recruiter_assign",
                 "min_experience",
                 "max_experience",
                 "min_ctc",

@@ -113,6 +113,7 @@ exports.getSourcingReportByDate = async (req, res) => {
           "relevant",
           "sourcing_date",
           "sourcing_status",
+          "candidate_remarks",
           "remarks",
           "created_at",
           "updated_at",
@@ -172,6 +173,7 @@ exports.getSourcingReportByDate = async (req, res) => {
           "cv_sourced_from",
           "relevant",
           "sourcing_status",
+          "candidate_remarks",
           "remarks",
           "created_at",
           "updated_at",
@@ -226,7 +228,8 @@ exports.getSourcingReportByDate = async (req, res) => {
       const worksheet = workbook.addWorksheet("DailySourcing");
 
       // Add headers to the worksheet
-      worksheet.addRow([
+    const headerRow =  worksheet.addRow([
+        "Sr No.",
         "Sourcing Date",
         "Candidate",
         "Company",
@@ -240,10 +243,19 @@ exports.getSourcingReportByDate = async (req, res) => {
         "Sourcing Status",  
       ]);
 
+      headerRow.eachCell((cell) => {
+        cell.font = { bold: true };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFD3D3D3' }, 
+        };
+      });
       // Add data rows to the worksheet
-      report.forEach((report) => {
+      report.forEach((report, index) => {
         worksheet.addRow([
-         report.sourcing_date,
+          index +1,
+          report.sourcing_date,
           report.candidate,
           report.Position.Company.company_name,
           report.Position.position,
@@ -251,7 +263,7 @@ exports.getSourcingReportByDate = async (req, res) => {
           report.Position.min_ctc,
           report.Position.max_ctc,
           report.cv_sourced_from,
-          report.remarks,
+          report.candidate_remarks,
           report.relevant,
           report.sourcing_status, 
         ]);

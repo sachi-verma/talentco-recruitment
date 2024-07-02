@@ -123,7 +123,8 @@ const [companys, totalRecords] = await Promise.all([
        const worksheet = workbook.addWorksheet("company");
  
        // Add headers to the worksheet
-       worksheet.addRow([
+      const headerRow= worksheet.addRow([
+        "Sr No.",
          "Company Name",
          "Industry Name",
          "Address",
@@ -137,10 +138,19 @@ const [companys, totalRecords] = await Promise.all([
          "Person Two Email",
           "Summary"
        ]);
- 
+
+       headerRow.eachCell((cell) => {
+        cell.font = { bold: true };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFD3D3D3' }, 
+        };
+      });
        // Add data rows to the worksheet
-       companys.forEach((companys) => {
+       companys.forEach((companys, index) => {
          worksheet.addRow([
+          index + 1,
           companys.company_name,
            companys.industry,
            companys.address,

@@ -16,7 +16,9 @@ exports.registerCompany = async (req, res) => {
 
 exports.getCompany = async (req,res) => {
     try {
-        const company = await Companys.findAll(); 
+        const company = await Companys.findAll({  order: [
+            ['company_name', 'ASC'],
+        ],}); 
         res.status(200).json(company); 
     } catch (error) {
         console.error('Error:', error);

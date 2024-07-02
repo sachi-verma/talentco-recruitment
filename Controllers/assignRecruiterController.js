@@ -27,7 +27,7 @@ exports.getRecruiter = async (req,res) => {
 
       const users = await Users.findAll({where :{ role_id:{
         [Op.or]: [role[0].id,role[1].id]
-      }}}); 
+      }},order:[['name', 'ASC']] }); 
       res.status(200).json(users); 
   } catch (error) {
       console.error('Error:', error);

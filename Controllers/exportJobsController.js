@@ -89,16 +89,25 @@ exports.exportJobs = async (req, res) => {
     const worksheet = workbook.addWorksheet('Jobs');
 
     // Add headers to the worksheet
-    worksheet.addRow(['Upload Date','Position','Company', 'Location', 'Min Experience','Max Experience','Min CTC','Max CTC', 'Number of Positions','Position Status', 'Gender','Qualification', 'Recruiter Assign']);
+   const headerRow = worksheet.addRow(['Sr No.','Upload Date','Position','Company', 'Location', 'Min Experience','Max Experience','Min CTC','Max CTC', 'Number of Positions','Position Status', 'Gender','Qualification', 'Recruiter Assign']);
 
+   headerRow.eachCell((cell) => {
+    cell.font = { bold: true };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFD3D3D3' }, 
+    };
+  });
     // Add data rows to the worksheet
-    job.forEach(job => {
+    job.forEach((job, index) => {
       // Concatenate recruiter names into a single string
       const recruiterAssignments = job.assignRecuiters || [];
       const recruiterNames = recruiterAssignments.map(recruiterAssignment => recruiterAssignment.User?.name).join(', ');
   
   
       worksheet.addRow([
+          index +1,
           job.upload_date,
           job.position,
           job.Company.company_name,

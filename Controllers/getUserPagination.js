@@ -44,18 +44,29 @@ exports.getUserByPage = async (req, res) => {
        const worksheet = workbook.addWorksheet("Users");
  
        // Add headers to the worksheet
-       worksheet.addRow([
+       const headerRow = worksheet.addRow([
+        "Sr No.",
         "Name",
         "Designation",
         "Email",
         "Phone Number",
          
       ]);
+      
+      headerRow.eachCell((cell) => {
+        cell.font = { bold: true };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFD3D3D3' }, 
+        };
+      });
 
       // Add data rows to the worksheet
-      user.forEach((user) => {
+      user.forEach((user, index) => {
         worksheet.addRow([
-         user.name,
+          index +1,
+          user.name,
           user.designation,
           user.email,
           user.phone,

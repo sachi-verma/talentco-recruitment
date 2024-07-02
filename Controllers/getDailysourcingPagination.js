@@ -528,7 +528,8 @@ exports.getFilteredUpdateByPage = async (req, res) => {
   
         // Add headers to the worksheet
   
-        worksheet.addRow([
+      const headerRow =  worksheet.addRow([
+          "Sr No.",
           "Date",
           "Total CV Sourced",
           "Total CV Relevent",
@@ -536,10 +537,19 @@ exports.getFilteredUpdateByPage = async (req, res) => {
           "Total Sent to client",
           
         ]);
-  
+
+        headerRow.eachCell((cell) => {
+          cell.font = { bold: true };
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFD3D3D3' }, 
+          };
+        });
         // Add data rows to the worksheet
-        report.forEach((report) => {
+        report.forEach((report, index) => {
           worksheet.addRow([
+            index +1,
             report.update_date,
             report.total_cv_sourced,
             report.total_cv_relevant,

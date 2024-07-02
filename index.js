@@ -73,12 +73,6 @@ app.post('/restartNodeServer', (req, res) => {
 app.get('/viewLogs', (req, res) => {
   const logFilePath = '/root/.pm2/logs/ATS-error.log';
 
-  const fullPath = path.join(__dirname, logFilePath);
-
-  if (!fs.existsSync(fullPath)) {
-    return res.status(404).json({ error: "File not found !!" });
-}
-
   const readStream = fs.createReadStream(logFilePath, { encoding: 'utf8' });
   const rl = readline.createInterface({
       input: readStream,

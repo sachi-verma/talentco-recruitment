@@ -145,6 +145,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
           "sourcing_status",
           "relevant",
           "candidate_status",
+          "candidate_remarks",
           "remarks",
           "created_at",
           "created_by",
@@ -222,6 +223,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
           "sourcing_status",
           "relevant",
           "candidate_status",
+          "candidate_remarks",
           "remarks",
           "created_at",
           "created_by",
@@ -337,7 +339,8 @@ exports.getAtsPipelinePagination = async (req, res) => {
 
       // Add headers to the worksheet
 
-      worksheet.addRow([
+   const headerRow =   worksheet.addRow([
+        "Sr No.",
         "Sourcing Date",
         "Candidate Status",
         "company Name",
@@ -356,12 +359,22 @@ exports.getAtsPipelinePagination = async (req, res) => {
         "Remarks",
       ]);
 
+      headerRow.eachCell((cell) => {
+        cell.font = { bold: true };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFD3D3D3' }, 
+        };
+      });
+
       // Add data rows to the worksheet
-      report.forEach((report) => {
+      report.forEach((report, index) => {
         const recruiterAssignments = report.Position.assignRecuiters || [];
       const recruiterNames = recruiterAssignments.map(recruiterAssignment => recruiterAssignment.User?.name).join(', ');
   
         worksheet.addRow([
+          index +1,
           report.sourcing_date,
           report.candidate_status,
           report.Position.Company.company_name,
@@ -377,7 +390,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
           report.candidate_organization,
           report.candidate_designation,
           report.candidate_email,
-          report.remarks,
+          report.candidate_remarks,
         ]);
       });
 

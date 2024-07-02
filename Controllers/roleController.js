@@ -15,7 +15,9 @@ exports.createRole = async (req, res) => {
 
 exports.getRole = async (req, res) => {
     try {
-        const roles = await Roles.findAll(); 
+        const roles = await Roles.findAll({  order: [
+          ['role_name', 'ASC'],
+      ],}); 
         res.status(200).json(roles); 
     } catch (error) {
         console.error('Error:', error);
