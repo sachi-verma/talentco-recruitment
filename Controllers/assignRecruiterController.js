@@ -114,3 +114,27 @@ exports.assignRecruiter = async (req, res) => {
       return res.status(500).json({ error: 'Internal server error', msg: error.message });
     }
   };
+
+  exports.deleteAssignRecruiter = async (req, res) => {
+    try {
+      const position_id = req.params.id;
+      const { recruiter_id } = req.body;
+      let notassigned = 0;
+
+      await assignRecruiter.destroy({
+        where: { position_id, recruiter_id }
+      });
+
+      let recruiterassigned = await assignRecruiter.findOne({ where:{ position_id}});
+
+      if(!recruiterassigned){
+        await Positions.update({recruiter_assign:notassigned }, {where:{id:position_id}});
+      }
+  
+      res.status(200).json({ success: "Recruiter Removed Successfully !!", recruiter_id, position_id });
+    } catch (error) {
+      console.error('Error deleting assigned recruiter:', error);
+      return res.status(500).json({ error: 'Internal server error', msg: error.message });
+    }
+  };
+  

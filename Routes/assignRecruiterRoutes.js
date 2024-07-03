@@ -9,5 +9,7 @@ router.post('/recruiter/:id', assignRecruiterController.assignRecruiter);
 //new route
 router.get('/getrecruiterbypage', getRecruiterPagination.getRecruiterByPage);
 
+router.delete('/deleteassingrecruiter/:id', assignRecruiterController.deleteAssignRecruiter);
+
 
 module.exports = router;
