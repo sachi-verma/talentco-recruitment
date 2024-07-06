@@ -7,6 +7,7 @@ const {sequelize, connectToDb} = require('./Models/db');
 const path = require('path');
 const fs = require('fs');
 const readline = require('readline');
+const { exec } = require('child_process');
 
 const roleRoutes = require('./Routes/roleRoutes');
 const moduleRoutes = require('./Routes/moduleRoutes');

@@ -167,3 +167,82 @@ exports.getNewReports = async (req, res)=>{
     }
 
 };
+
+exports.getNewReporter = async (req, res)=>{
+  try {
+
+      const userId = req.query.id; 
+
+      const user = await Users.findByPk(userId);
+      let role_id;
+      let role;
+      let recruiterFilter = {};
+    
+      if (user) {
+        role_id = user.role_id;
+        console.log("========>", role_id, user);
+    
+        if (role_id) {
+          role = await Roles.findOne({ where: { id: role_id } });
+          console.log("=========>>>>>>>>>>>>>>", role);
+    
+          if (role && (role.role_name === "Recruiter" || role.role_name === "Team Lead")) {
+            recruiterFilter.created_by = userId;
+          }
+          
+        }
+      }
+     const totalposition= await Position.findAll({
+        attributes: [[Sequelize.fn('COUNT', Sequelize.col('id')), 'total_open_positions' ],],
+          where:{ position_status: 'Open'}
+          });
+
+      const statusMappings = [
+        { status: "Sent To Client", key: "total_cv_sent" },
+        { status: "CV Rejected", key: "total_cv_rejected" },
+        { status: "Shortlisted", key: "total_cv_shortlisted" },
+        { status: "Interview Scheduled", key: "total_cv_interview_scheduled" },
+        { status: "Interview Done", key: "total_cv_interviewed" },
+        { status: "Rejected Post Interview", key: "total_cv_rejected_post_interview" },
+        { status: "Final Selection", key: "total_cv_final_selection" },
+        { status: "Offer Letter Sent", key: "total_cv_offer_letter_sent" },
+        { status: "Final Joining", key: "total_cv_final_join" },
+        { status: "Feedback Pending", key: "total_cv_feedback_pending" },
+        { status: "Backout", key: "total_cv_backout" }
+      ];
+      const totalOpenPositions = totalposition[0]?.get('total_open_positions') || 0;
+
+     let report = {};
+     report.total_open_positions = totalOpenPositions;
+      for (let mapping of statusMappings) {
+       let candidates= await Candidates.findAll({
+        attributes: [
+          [Sequelize.fn('COUNT', Sequelize.col('candidate_status')), 'count'],
+          "candidate_status"
+        ],
+       
+        where: { candidate_status: mapping.status, ...recruiterFilter },
+        group: [
+          "candidate_status",
+        ]
+      });
+  
+        // Extract the count from the query result
+        const count = candidates[0]?.get('count') || 0;
+        //console.log(candidates);
+        report[mapping.key] = count;
+      }
+
+     
+      
+      //console.log("================================>> sent to client", report);
+      res.status(200).json(report);
+
+      
+  } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+      
+  }
+
+};
