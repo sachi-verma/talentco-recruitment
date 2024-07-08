@@ -14,10 +14,9 @@ const assignRecruiter = require("../Models/assignRecruiter");
 const InterviewHistory = require("../Models/interviewHistory");
 
 const e = require("express");
- 
 
-assignRecruiter.belongsTo(Users, { foreignKey: "recruiter_id" });
-Users.hasMany(assignRecruiter, { foreignKey: "recruiter_id" });
+// assignRecruiter.belongsTo(Users, { foreignKey: "recruiter_id" });
+// Users.hasMany(assignRecruiter, { foreignKey: "recruiter_id" });
 
 Position.hasMany(Candidate, { foreignKey: "position" });
 Candidate.belongsTo(Position, { foreignKey: "position" });
@@ -31,11 +30,11 @@ Interview.belongsTo(Candidate, { foreignKey: "candidate_id" });
 User.hasMany(Position, { foreignKey: "recruiter_assign" });
 Position.belongsTo(User, { foreignKey: "recruiter_assign" });
 
-Users.hasMany(Candidate, { foreignKey: 'created_by' });
-Candidate.belongsTo(Users, { foreignKey: 'created_by' });
+Users.hasMany(Candidate, { foreignKey: "created_by" });
+Candidate.belongsTo(Users, { foreignKey: "created_by" });
 
-Users.hasMany(Interview, { foreignKey: 'created_by' });
-Interview.belongsTo(Users, { foreignKey: 'created_by' });
+Users.hasMany(Interview, { foreignKey: "created_by" });
+Interview.belongsTo(Users, { foreignKey: "created_by" });
 
 exports.getCandidates = async (req, res) => {
   try {
@@ -103,10 +102,10 @@ exports.getInterviewSchedule = async (req, res) => {
     const userId = req.query.id;
 
     const download = req.query.download ? true : false;
-    const whereClause= {};
-    const candidateFilter={};
-    const positionFilter={};
-    const companyFilter={};
+    const whereClause = {};
+    const candidateFilter = {};
+    const positionFilter = {};
+    const companyFilter = {};
 
     if (download) {
       limit = null;
@@ -115,17 +114,36 @@ exports.getInterviewSchedule = async (req, res) => {
 
     const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
 
-    const { candidate, company, position, interview_round, interview_date, interview_status, fromDate, toDate, interview_location, interview_done } = filter;
+    const {
+      candidate,
+      company,
+      position,
+      interview_round,
+      interview_date,
+      interview_status,
+      fromDate,
+      toDate,
+      interview_location,
+      interview_done,
+    } = filter;
 
-    if(candidate !== undefined) candidateFilter.candidate={ [Op.like]: `%${candidate}%` };
-    if(company !== undefined) companyFilter.company_name={ [Op.like]: `%${company}%` }; 
-    if(position !== undefined) positionFilter.position={ [Op.like]: `%${position}%` };
-    if(interview_round !== undefined) whereClause.interview_round=  interview_round;
-    if(interview_date !== undefined) whereClause.interview_date= { [Op.like]: `%${interview_date}%` };
-    if(interview_status !== undefined) whereClause.interview= { [Op.like]: `%${interview_status}%` };
+    if (candidate !== undefined)
+      candidateFilter.candidate = { [Op.like]: `%${candidate}%` };
+    if (company !== undefined)
+      companyFilter.company_name = { [Op.like]: `%${company}%` };
+    if (position !== undefined)
+      positionFilter.position = { [Op.like]: `%${position}%` };
+    if (interview_round !== undefined)
+      whereClause.interview_round = interview_round;
+    if (interview_date !== undefined)
+      whereClause.interview_date = { [Op.like]: `%${interview_date}%` };
+    if (interview_status !== undefined)
+      whereClause.interview = { [Op.like]: `%${interview_status}%` };
     //if(scheduled_date !== undefined) whereClause.scheduled_date=scheduled_date;
-    if(interview_location !== undefined) whereClause.interview_location= { [Op.like]: `%${interview_location}%` };
-    if(interview_done !== undefined) whereClause.interview_done=  { [Op.like]: `%${interview_done}%` };
+    if (interview_location !== undefined)
+      whereClause.interview_location = { [Op.like]: `%${interview_location}%` };
+    if (interview_done !== undefined)
+      whereClause.interview_done = { [Op.like]: `%${interview_done}%` };
 
     if (fromDate && toDate) {
       let theDate = parseInt(toDate.split("-")[2]) + 1;
@@ -139,7 +157,7 @@ exports.getInterviewSchedule = async (req, res) => {
       };
     } else if (toDate) {
       whereClause.scheduled_date = {
-        [Op.lte]: toDate, 
+        [Op.lte]: toDate,
       };
     }
 
@@ -156,19 +174,22 @@ exports.getInterviewSchedule = async (req, res) => {
       role = await Roles.findOne({ where: { id: role_id } });
       console.log(role.role_name);
 
-      if (role && (role.role_name === "Recruiter" || role.role_name === "Team Lead")) {
+      if (
+        role &&
+        (role.role_name === "Recruiter" || role.role_name === "Team Lead")
+      ) {
         whereClause.created_by = userId;
       }
     }
 
-    const [report, totalReports]= await Promise.all([
-       await Interview.findAll({
+    const [report, totalReports] = await Promise.all([
+      await Interview.findAll({
         include: [
           {
             model: Candidate,
             required: true,
             //attributes: ["candidate"],
-            where:candidateFilter,
+            where: candidateFilter,
             include: [
               {
                 model: Position,
@@ -199,10 +220,10 @@ exports.getInterviewSchedule = async (req, res) => {
             ],
           },
           {
-            model:User,
-            required:true,
-            attributes:["name","email","phone"]
-          }
+            model: User,
+            required: true,
+            attributes: ["name", "email", "phone"],
+          },
         ],
         limit,
         offset,
@@ -215,7 +236,7 @@ exports.getInterviewSchedule = async (req, res) => {
             model: Candidate,
             required: true,
             //attributes: ["candidate"],
-            where:candidateFilter,
+            where: candidateFilter,
             include: [
               {
                 model: Position,
@@ -246,17 +267,16 @@ exports.getInterviewSchedule = async (req, res) => {
             ],
           },
           {
-            model:User,
-            required:true,
-            attributes:["name","email","phone"]
-          }
+            model: User,
+            required: true,
+            attributes: ["name", "email", "phone"],
+          },
         ],
-        
+
         where: whereClause,
-      })
+      }),
     ]);
 
-    
     let records = report.length;
 
     //console.log("=============>>> total", totalRecords);
@@ -264,10 +284,9 @@ exports.getInterviewSchedule = async (req, res) => {
     const pages = Math.ceil(filter ? records / limit : totalReports / limit);
     res.status(200).json({
       message: "interview schedule fetched successfully",
-      totalRecords: filter? records:totalReports,
+      totalRecords: filter ? records : totalReports,
       pages: pages,
       Interview: report,
-
     });
   } catch (error) {
     console.error("Error:", error);
@@ -471,72 +490,73 @@ exports.updateInterviewDetails = async (req, res) => {
     if (recruiter_id !== undefined) updateFields.updated_by = recruiter_id;
     updateFields.updated_at = updated_at;
 
-    let round ;
-    if (interview_round !== undefined){
-        round = interview_round;
+    let round;
+    if (interview_round !== undefined) {
+      round = interview_round;
     }
-console.log("==========>>>>>> id",id)
+    console.log("==========>>>>>> id", id);
     let history;
-    let roundExist =  await InterviewHistory.findOne({where:{candidate_id:id, interview_round:round }});
-    if(roundExist) {
-       history=  await InterviewHistory.update(updateFields, {where: { candidate_id: id, interview_round:round }});
-    }
-    else{
-      updateFields.candidate_id=id; 
-      updateFields.created_at= new Date();
+    let roundExist = await InterviewHistory.findOne({
+      where: { candidate_id: id, interview_round: round },
+    });
+    if (roundExist) {
+      history = await InterviewHistory.update(updateFields, {
+        where: { candidate_id: id, interview_round: round },
+      });
+    } else {
+      updateFields.candidate_id = id;
+      updateFields.created_at = new Date();
       updateFields.created_by = recruiter_id;
-      updateFields.scheduled_date=scheduled_date !== undefined ? scheduled_date : null;
-      history=  await InterviewHistory.create(updateFields);
+      updateFields.scheduled_date =
+        scheduled_date !== undefined ? scheduled_date : null;
+      history = await InterviewHistory.create(updateFields);
     }
 
     const candidate = await Interview.update(updateFields, {
       where: { candidate_id: id },
     });
 
-
     const candidatedetails = await Candidate.findOne({
-
       include: [
-          {
-            model: Position,
-            required: true,
-            attributes: [
-              "id",
-              "company_id",
-              "position",
-              "location",
-              "min_experience",
-              "max_experience",
-              "min_ctc",
-              "max_ctc",
-            ],
-            include: [
-              {
-                model: Company,
-                required: true,
-                attributes: ["company_name","address"],
-                 
-              },
-               
-          ]
-      
-  },
-  {
-    model: Users,
-    required: true,
-    attributes:["name", "phone"], 
-  }
-], 
-      where:{id: id}
-  });
-   let candidate_email = candidatedetails.candidate_email;
-   let candidate_name = candidatedetails.candidate;
-   let position = candidatedetails.Position.position;
-   let company = candidatedetails.Position.Company.company_name;
-   let companyaddress = candidatedetails.Position.Company.address;
-   let contactperson = candidatedetails.User.name;
-   let contactpersonphone = candidatedetails.User.phone;
-   let interviewdate = interview_date ?interview_date.split("-").reverse().join("-"):"";
+        {
+          model: Position,
+          required: true,
+          attributes: [
+            "id",
+            "company_id",
+            "position",
+            "location",
+            "min_experience",
+            "max_experience",
+            "min_ctc",
+            "max_ctc",
+          ],
+          include: [
+            {
+              model: Company,
+              required: true,
+              attributes: ["company_name", "address"],
+            },
+          ],
+        },
+        {
+          model: Users,
+          required: true,
+          attributes: ["name", "phone"],
+        },
+      ],
+      where: { id: id },
+    });
+    let candidate_email = candidatedetails.candidate_email;
+    let candidate_name = candidatedetails.candidate;
+    let position = candidatedetails.Position.position;
+    let company = candidatedetails.Position.Company.company_name;
+    let companyaddress = candidatedetails.Position.Company.address;
+    let contactperson = candidatedetails.User.name;
+    let contactpersonphone = candidatedetails.User.phone;
+    let interviewdate = interview_date
+      ? interview_date.split("-").reverse().join("-")
+      : "";
 
     if (candidate[0] > 0) {
       try {
@@ -548,10 +568,20 @@ console.log("==========>>>>>> id",id)
 Greetings from TalentCo HR Services LLP!
 
 Your interview details has been updated with  ${company} on ${interviewdate} at ${interview_time} for the post of ${position}.
-${interview_mode==="In Person" ?`Company Address: ${companyaddress}`:`${interview_location.includes('https')? `Link`:`Interview Location` }: ${interview_location}`}.        
+${
+  interview_mode === "In Person"
+    ? `Company Address: ${companyaddress}`
+    : `${
+        interview_location.includes("https") ? `Link` : `Interview Location`
+      }: ${interview_location}`
+}.        
 Contact Person: ${contactperson}, ${contactpersonphone} 
               
-Try to ${interview_location.includes('https')? `Join 5 minutes`:`reach 15 minutes` } before the scheduled time to avoid any last-minute rush.  
+Try to ${
+            interview_location.includes("https")
+              ? `Join 5 minutes`
+              : `reach 15 minutes`
+          } before the scheduled time to avoid any last-minute rush.  
                                                                                                                                                                                                                                                         
 Kindly send your acknowledgment as a confirmation to this mail. 
               
@@ -564,7 +594,9 @@ TalentCo HR Services`,
         console.error("Error sending notification email:", mailError);
         //return res.status(500).json({ error: 'Failed to send notification email' });
       }
-      return res.status(200).json({ success: "updated successfully", id, candidatedetails });
+      return res
+        .status(200)
+        .json({ success: "updated successfully", id, candidatedetails });
     } else {
       return res.status(404).json({ error: "cannot find any changes", id });
     }
@@ -582,7 +614,7 @@ exports.updateInterviewStatus = async (req, res) => {
     let thedate = new Date();
     let updated_at = thedate.toISOString().split("T")[0];
     let interview_done = "Interview Done";
-    let final_selection = "Final Selection";	
+    let final_selection = "Final Selection";
     let backout = "Backout";
 
     const iscandidate = await Interview.findOne({
@@ -604,11 +636,11 @@ exports.updateInterviewStatus = async (req, res) => {
 
         //creating a new status to add in status history
         await Status.create({
-            candidate_id: candidate_id,
-            candidate_status: interview_done,
-            status_date: updated_at,
-            created_by: recruiter_id,
-          });
+          candidate_id: candidate_id,
+          candidate_status: interview_done,
+          status_date: updated_at,
+          created_by: recruiter_id,
+        });
 
         await Status.create({
           candidate_id: candidate_id,
@@ -624,11 +656,11 @@ exports.updateInterviewStatus = async (req, res) => {
 
         //creating a new status to add in status history
         await Status.create({
-            candidate_id: candidate_id,
-            candidate_status: interview_done,
-            status_date: updated_at,
-            created_by: recruiter_id,
-          });
+          candidate_id: candidate_id,
+          candidate_status: interview_done,
+          status_date: updated_at,
+          created_by: recruiter_id,
+        });
 
         await Status.create({
           candidate_id: candidate_id,
@@ -651,36 +683,32 @@ exports.updateInterviewStatus = async (req, res) => {
           created_by: recruiter_id,
         });
       } else if (interview_status === "Interview Feedback Pending") {
-
         await Candidate.update(
-            { candidate_status: interview_status, status_date: updated_at },
-            { where: { id: candidate_id } }
-          );
-  
-          //creating a new status to add in status history
-          await Status.create({
-            candidate_id: candidate_id,
-            candidate_status: interview_done,
-            status_date: updated_at,
-            created_by: recruiter_id,
-          });
-  
-          await Status.create({
-            candidate_id: candidate_id,
-            candidate_status: interview_status,
-            status_date: updated_at,
-            created_by: recruiter_id,
-          });
+          { candidate_status: interview_status, status_date: updated_at },
+          { where: { id: candidate_id } }
+        );
 
+        //creating a new status to add in status history
+        await Status.create({
+          candidate_id: candidate_id,
+          candidate_status: interview_done,
+          status_date: updated_at,
+          created_by: recruiter_id,
+        });
+
+        await Status.create({
+          candidate_id: candidate_id,
+          candidate_status: interview_status,
+          status_date: updated_at,
+          created_by: recruiter_id,
+        });
       }
 
-      return res
-        .status(200)
-        .json({
-          success: "Interview status updated successfully !",
-          candidate_id,
-          interview_status,
-        });
+      return res.status(200).json({
+        success: "Interview status updated successfully !",
+        candidate_id,
+        interview_status,
+      });
     }
   } catch (error) {
     console.error("Error updating Interview Schedule:", error);
@@ -711,5 +739,136 @@ exports.markInterviewDone = async (req, res) => {
   } catch (error) {
     console.error("Error updating Interview done:", error);
     res.status(500).json({ error: "Internal Server Error" }, error);
+  }
+};
+
+exports.getPositionWiseCount = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+    let offset = (page - 1) * limit;
+
+    const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
+
+    const {
+      fromDate,
+      toDate,
+      company,
+      position,
+      orderBy,
+      orderDirection,
+      interview_status,
+    } = filter;
+
+    const positionFilter = {};
+    const companyFilter = {};
+
+    if (company) {
+      companyFilter.company_name = { [Op.like]: `%${company}%` };
+    }
+
+    if (position) {
+      positionFilter.position = { [Op.like]: `%${position}%` };
+    }
+
+    if (fromDate && toDate) {
+      let theDate = parseInt(toDate.split("-")[2]) + 1;
+      let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, "0");
+      positionFilter.upload_date = {
+        [Op.between]: [fromDate, newDate],
+      };
+    } else if (fromDate) {
+      positionFilter.upload_date = {
+        [Op.gte]: fromDate,
+      };
+    } else if (toDate) {
+      let theDate = parseInt(toDate.split("-")[2]) + 1;
+      let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, "0");
+      positionFilter.upload_date = {
+        [Op.lte]: newDate,
+      };
+    }
+
+    let order = [
+      ["upload_date", "DESC"],
+      ["position_name", "DESC"],
+    ];
+
+    if (orderBy && orderDirection) {
+      order = [[orderBy, orderDirection]];
+    }
+
+    const report = await Interview.findAll({
+      attributes: [
+        [Sequelize.col("Candidate.Position.id"), "position_id"],
+        [Sequelize.col("Candidate.Position.company_id"), "company_id"],
+        [Sequelize.col("Candidate.Position.position"), "position_name"],
+        [Sequelize.col("Candidate.Position.upload_date"), "upload_date"],
+        [
+          Sequelize.col("Candidate.Position.Company.company_name"),
+          "company_name",
+        ],
+        [
+          Sequelize.literal(`
+        (
+          SELECT COUNT(DISTINCT Interview.id)
+          FROM interview_schedule AS Interview
+          INNER JOIN all_candidates AS Candidate ON Candidate.id = Interview.candidate_id
+          WHERE Candidate.position = position_id
+          ${
+            interview_status
+              ? `AND Interview.interview_status = '${interview_status}'`
+              : ""
+          }
+        )
+      `),
+          "interview_count",
+        ],
+      ],
+      include: [
+        {
+          model: Candidate,
+          attributes: [],
+          required: true,
+          include: [
+            {
+              model: Position,
+              attributes: [],
+              required: true,
+              where: positionFilter,
+              include: [
+                {
+                  model: Company,
+                  attributes: [],
+                  required: true,
+                  where: companyFilter,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      group: [
+        "Candidate.Position.id",
+        "Candidate.Position.company_id",
+        "Candidate.Position.position",
+        "Candidate.Position.upload_date",
+        "Candidate.Position.Company.company_name",
+      ],
+      order: order,
+      limit,
+      offset,
+    });
+
+    const pages = Math.ceil(report.length / limit);
+    res.status(200).json({
+      msg: "Report fetched successfully !!",
+      totalReports: report.length,
+      pages: pages,
+      report: report,
+    });
+  } catch (error) {
+    console.error("Error in getPositionWiseCount:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };

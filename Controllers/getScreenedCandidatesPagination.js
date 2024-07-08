@@ -94,6 +94,7 @@ exports.getScreenedCandidatePagination = async (req, res) => {
         where: whereClause,
         limit,
         offset,
+        order: [["sourcing_date", "DESC"]],
       }),
 
       await Candidate.count({
@@ -216,6 +217,10 @@ exports.getScreenedCandidatePagination = async (req, res) => {
 
 exports.getPositionWiseCount = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+    let offset = (page - 1) * limit;
+
     const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
 
     const { fromDate, toDate, company, position, orderBy, orderDirection } =
@@ -225,11 +230,11 @@ exports.getPositionWiseCount = async (req, res) => {
     const companyFilter = {};
 
     if (company) {
-      companyFilter.id = company;
+      companyFilter.company_name = { [Op.like]: `%${company}%` };
     }
 
     if (position) {
-      positionFilter.id = position;
+      positionFilter.position = { [Op.like]: `%${position}%` };
     }
 
     if (fromDate && toDate) {
@@ -251,8 +256,8 @@ exports.getPositionWiseCount = async (req, res) => {
     }
 
     let order = [
-      ["upload_date", "ASC"],
-      ["position", "ASC"],
+      ["upload_date", "DESC"],
+      ["position", "DESC"],
     ];
 
     if (orderBy && orderDirection) {
@@ -285,9 +290,18 @@ exports.getPositionWiseCount = async (req, res) => {
       ],
       where: positionFilter,
       order: order,
+      limit,
+      offset,
     });
 
-    res.status(200).json({ report: report, msg: "Fetched Successfully !!" });
+    const pages = Math.ceil(report.length / limit);
+
+    res.status(200).json({
+      msg: "Fetched Successfully !!",
+      totalRecords: report.length,
+      pages: pages,
+      report: report,
+    });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");
