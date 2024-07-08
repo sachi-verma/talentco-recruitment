@@ -497,10 +497,7 @@ exports.getPositionWiseCount = async (req, res) => {
       };
     }
 
-    let order = [
-      ["upload_date", "DESC"],
-      ["position", "DESC"],
-    ];
+    let order = [["upload_date", "DESC"]];
 
     if (orderBy && orderDirection) {
       order = [[orderBy, orderDirection]];

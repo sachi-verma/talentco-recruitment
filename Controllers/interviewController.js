@@ -127,6 +127,9 @@ exports.getInterviewSchedule = async (req, res) => {
       interview_done,
     } = filter;
 
+    // Log filter values
+    console.log("Filter Values: ", filter);
+
     if (candidate !== undefined)
       candidateFilter.candidate = { [Op.like]: `%${candidate}%` };
     if (company !== undefined)
@@ -138,8 +141,7 @@ exports.getInterviewSchedule = async (req, res) => {
     if (interview_date !== undefined)
       whereClause.interview_date = { [Op.like]: `%${interview_date}%` };
     if (interview_status !== undefined)
-      whereClause.interview = { [Op.like]: `%${interview_status}%` };
-    //if(scheduled_date !== undefined) whereClause.scheduled_date=scheduled_date;
+      whereClause.interview_status = { [Op.like]: `%${interview_status}%` };
     if (interview_location !== undefined)
       whereClause.interview_location = { [Op.like]: `%${interview_location}%` };
     if (interview_done !== undefined)
@@ -156,12 +158,18 @@ exports.getInterviewSchedule = async (req, res) => {
         [Op.gte]: fromDate,
       };
     } else if (toDate) {
+      let theDate = parseInt(toDate.split("-")[2]) + 1;
+      let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, "0");
       whereClause.scheduled_date = {
-        [Op.lte]: toDate,
+        [Op.lte]: newDate,
       };
     }
 
-    console.log(filter);
+    // Log whereClause and other filters
+    console.log("Where Clause: ", whereClause);
+    console.log("Candidate Filter: ", candidateFilter);
+    console.log("Position Filter: ", positionFilter);
+    console.log("Company Filter: ", companyFilter);
 
     const user = await Users.findByPk(userId);
     let role_id;
@@ -172,7 +180,7 @@ exports.getInterviewSchedule = async (req, res) => {
       role_id = user.role_id;
 
       role = await Roles.findOne({ where: { id: role_id } });
-      console.log(role.role_name);
+      console.log("Role Name: ", role.role_name);
 
       if (
         role &&
@@ -188,42 +196,28 @@ exports.getInterviewSchedule = async (req, res) => {
           {
             model: Candidate,
             required: true,
-            //attributes: ["candidate"],
             where: candidateFilter,
             include: [
               {
                 model: Position,
                 required: true,
-                // attributes: ["company_id", "position", "location"],
+                attributes: ["id", "position", "location", "company_id"],
                 where: positionFilter,
                 include: [
                   {
                     model: Company,
                     required: true,
-                    // attributes: ["company_name"],
                     where: companyFilter,
                   },
-                  // {
-                  //   model: assignRecruiter,
-                  //   required:true, // Set to false if a position can have no recruiters assigned
-                  //   attributes: ["recruiter_id"],
-                  //   where: recruiterFilter,
-                  //   include: [
-                  //     {
-                  //       model: Users,
-                  //       attributes: ["name"], // Fetch recruiter names
-                  //     },
-                  //   ],
-                  // },
                 ],
               },
             ],
           },
-          {
-            model: User,
-            required: true,
-            attributes: ["name", "email", "phone"],
-          },
+          // {
+          //   model: User,
+          //   required: true,
+          //   attributes: ["name", "email", "phone"],
+          // },
         ],
         limit,
         offset,
@@ -235,51 +229,37 @@ exports.getInterviewSchedule = async (req, res) => {
           {
             model: Candidate,
             required: true,
-            //attributes: ["candidate"],
             where: candidateFilter,
             include: [
               {
                 model: Position,
                 required: true,
-                // attributes: ["company_id", "position", "location"],
                 where: positionFilter,
                 include: [
                   {
                     model: Company,
                     required: true,
-                    // attributes: ["company_name"],
                     where: companyFilter,
                   },
-                  // {
-                  //   model: assignRecruiter,
-                  //   required:true, // Set to false if a position can have no recruiters assigned
-                  //   attributes: ["recruiter_id"],
-                  //   where: recruiterFilter,
-                  //   include: [
-                  //     {
-                  //       model: Users,
-                  //       attributes: ["name"], // Fetch recruiter names
-                  //     },
-                  //   ],
-                  // },
                 ],
               },
             ],
           },
-          {
-            model: User,
-            required: true,
-            attributes: ["name", "email", "phone"],
-          },
+          // {
+          //   model: User,
+          //   required: true,
+          //   attributes: ["name", "email", "phone"],
+          // },
         ],
-
         where: whereClause,
       }),
     ]);
 
     let records = report.length;
 
-    //console.log("=============>>> total", totalRecords);
+    // Log the results of the query
+    console.log("Records: ", records);
+    console.log("Total Reports: ", totalReports);
 
     const pages = Math.ceil(filter ? records / limit : totalReports / limit);
     res.status(200).json({
@@ -789,10 +769,7 @@ exports.getPositionWiseCount = async (req, res) => {
       };
     }
 
-    let order = [
-      ["upload_date", "DESC"],
-      ["position_name", "DESC"],
-    ];
+    let order = [["upload_date", "DESC"]];
 
     if (orderBy && orderDirection) {
       order = [[orderBy, orderDirection]];
