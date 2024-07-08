@@ -454,8 +454,15 @@ exports.getPositionWiseCount = async (req, res) => {
   try {
     const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
 
-    const { fromDate, toDate, company, position, orderBy, orderDirection } =
-      filter;
+    const {
+      fromDate,
+      toDate,
+      company,
+      position,
+      orderBy,
+      orderDirection,
+      status,
+    } = filter;
 
     const positionFilter = {};
     const companyFilter = {};
@@ -504,9 +511,11 @@ exports.getPositionWiseCount = async (req, res) => {
         [Sequelize.col("Company.company_name"), "company_name"],
         [
           Sequelize.literal(`(
-            SELECT COUNT(*)
-            FROM all_candidates AS Candidate
-            WHERE Candidate.position = Positions.id
+          SELECT COUNT(*)
+          FROM all_candidates AS Candidate
+          WHERE Candidate.position = Position.id 
+          AND Candidate.sourcing_status = 'Sent To Client' 
+         ${status ? `AND Candidate.candidate_status = '${status}'` : ""}
           )`),
           "candidate_count",
         ],
