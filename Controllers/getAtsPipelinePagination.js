@@ -1,7 +1,7 @@
 // new controller
 
 const db = require("../Models/db");
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 const Candidate = require("../Models/allCandidates");
 const Position = require("../Models/allPositions");
 const Company = require("../Models/companyDetails");
@@ -14,8 +14,8 @@ const assignRecruiter = require("../Models/assignRecruiter");
 assignRecruiter.belongsTo(Users, { foreignKey: "recruiter_id" });
 Users.hasMany(assignRecruiter, { foreignKey: "recruiter_id" });
 
-Users.hasMany(Candidate, { foreignKey: 'created_by' });
-Candidate.belongsTo(Users, { foreignKey: 'created_by' });
+Users.hasMany(Candidate, { foreignKey: "created_by" });
+Candidate.belongsTo(Users, { foreignKey: "created_by" });
 
 exports.getAtsPipelinePagination = async (req, res) => {
   try {
@@ -23,7 +23,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
     let limit = parseInt(req.query.limit) || 10; // Number of records per page, default to 10
     let offset = (page - 1) * limit; // Calculate offset based on page number
 
-    const userId = req.query.id; 
+    const userId = req.query.id;
 
     const download = req.query.download ? true : false;
 
@@ -52,17 +52,15 @@ exports.getAtsPipelinePagination = async (req, res) => {
       location,
       fromDate,
       toDate,
-      recruiter
+      recruiter,
     } = filter;
 
     const whereClause = {
       sourcing_status: "Sent To Client",
     };
     if (candidate) whereClause.candidate = { [Op.like]: `%${candidate}%` };
-    if (email)
-      whereClause.candidate_email = { [Op.like]: `%${email}%` };
-    if (mobile)
-      whereClause.candidate_phone = { [Op.like]: `%${mobile}%` };
+    if (email) whereClause.candidate_email = { [Op.like]: `%${email}%` };
+    if (mobile) whereClause.candidate_phone = { [Op.like]: `%${mobile}%` };
     if (location)
       whereClause.candidate_location = { [Op.like]: `%${location}%` };
     if (status) whereClause.candidate_status = { [Op.like]: `%${status}%` };
@@ -92,34 +90,34 @@ exports.getAtsPipelinePagination = async (req, res) => {
       };
     }
 
-  const user = await Users.findByPk(userId);
-  let role_id;
-  let role;
-  let recruiterFilter = {};
+    const user = await Users.findByPk(userId);
+    let role_id;
+    let role;
+    let recruiterFilter = {};
 
-  if (user) {
-    role_id = user.role_id;
-    console.log("========>", role_id, user);
+    if (user) {
+      role_id = user.role_id;
+      console.log("========>", role_id, user);
 
-    if (role_id) {
-      role = await Roles.findOne({ where: { id: role_id } });
-      console.log("=========>>>>>>>>>>>>>>", role);
+      if (role_id) {
+        role = await Roles.findOne({ where: { id: role_id } });
+        console.log("=========>>>>>>>>>>>>>>", role);
 
-      if (role && (role.role_name === "Recruiter" || role.role_name === "Team Lead")) {
-        //recruiterFilter.recruiter_id = userId;
-        whereClause.created_by = userId;
-
+        if (
+          role &&
+          (role.role_name === "Recruiter" || role.role_name === "Team Lead")
+        ) {
+          //recruiterFilter.recruiter_id = userId;
+          whereClause.created_by = userId;
+        }
       }
-      
     }
-  }
-    
-    if(recruiter){
-      //recruiterFilter.recruiter_id=recruiter
-      whereClause.created_by = userId;
 
+    if (recruiter) {
+      //recruiterFilter.recruiter_id=recruiter
+      whereClause.created_by = recruiter;
     }
-    console.log("==========>>>> recruiter filter",recruiterFilter);
+    console.log("==========>>>> recruiter filter", recruiterFilter);
 
     const [report, totalRecords] = await Promise.all([
       Candidate.findAll({
@@ -150,7 +148,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
           "created_at",
           "created_by",
           "updated_at",
-          "sent_to_client_date"
+          "sent_to_client_date",
         ],
         include: [
           {
@@ -191,9 +189,9 @@ exports.getAtsPipelinePagination = async (req, res) => {
           },
           {
             model: Users,
-            required : true,
-            attributes:['id', 'name','phone', 'email'],
-          }
+            required: true,
+            attributes: ["id", "name", "phone", "email"],
+          },
         ],
         where: whereClause,
         // parameters
@@ -228,7 +226,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
           "created_at",
           "created_by",
           "updated_at",
-          "sent_to_client_date"
+          "sent_to_client_date",
         ],
         include: [
           {
@@ -269,9 +267,9 @@ exports.getAtsPipelinePagination = async (req, res) => {
           },
           {
             model: Users,
-            required : true,
-            attributes:['id', 'name','phone', 'email'],
-          }
+            required: true,
+            attributes: ["id", "name", "phone", "email"],
+          },
         ],
         where: whereClause,
         // parameters
@@ -339,7 +337,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
 
       // Add headers to the worksheet
 
-   const headerRow =   worksheet.addRow([
+      const headerRow = worksheet.addRow([
         "Sr No.",
         "Sourcing Date",
         "Candidate Status",
@@ -362,19 +360,21 @@ exports.getAtsPipelinePagination = async (req, res) => {
       headerRow.eachCell((cell) => {
         cell.font = { bold: true };
         cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FFD3D3D3' }, 
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFD3D3D3" },
         };
       });
 
       // Add data rows to the worksheet
       report.forEach((report, index) => {
         const recruiterAssignments = report.Position.assignRecuiters || [];
-      const recruiterNames = recruiterAssignments.map(recruiterAssignment => recruiterAssignment.User?.name).join(', ');
-  
+        const recruiterNames = recruiterAssignments
+          .map((recruiterAssignment) => recruiterAssignment.User?.name)
+          .join(", ");
+
         worksheet.addRow([
-          index +1,
+          index + 1,
           report.sourcing_date,
           report.candidate_status,
           report.Position.Company.company_name,
@@ -416,11 +416,13 @@ exports.getAtsPipelinePagination = async (req, res) => {
 
       console.log("=============>>> total", totalRecords.length);
 
-      const pages = Math.ceil(filter ? records / limit : totalRecords.length / limit);
+      const pages = Math.ceil(
+        filter ? records / limit : totalRecords.length / limit
+      );
       res.status(200).json({
         message: "candidates fetched successfully",
         // totalRecords: filter ? records : totalRecords,
-        totalRecords: filter? records :totalRecords.length,
+        totalRecords: filter ? records : totalRecords.length,
         pages: pages,
         Candidates: report,
       });
@@ -432,18 +434,98 @@ exports.getAtsPipelinePagination = async (req, res) => {
 };
 
 exports.updateCandidateRemarks = async (req, res) => {
-
   try {
     const candidateId = req.params.id;
-    const { remarks}= req.body;
+    const { remarks } = req.body;
     console.log("id", candidateId);
 
-    await Candidate.update({remarks} ,{where : {id: candidateId}});
-    return res.status(200).json({ success: "remarks updated sucessfully", candidate: {candidateId, remarks} }); 
-    
+    await Candidate.update({ remarks }, { where: { id: candidateId } });
+    return res.status(200).json({
+      success: "remarks updated sucessfully",
+      candidate: { candidateId, remarks },
+    });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");
-    
+  }
+};
+
+exports.getPositionWiseCount = async (req, res) => {
+  try {
+    const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
+
+    const { fromDate, toDate, company, position, orderBy, orderDirection } =
+      filter;
+
+    const positionFilter = {};
+    const companyFilter = {};
+
+    if (company) {
+      companyFilter.id = company;
+    }
+
+    if (position) {
+      positionFilter.id = position;
+    }
+
+    if (fromDate && toDate) {
+      let theDate = parseInt(toDate.split("-")[2]) + 1;
+      let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, "0");
+      positionFilter.upload_date = {
+        [Op.between]: [fromDate, newDate],
+      };
+    } else if (fromDate) {
+      positionFilter.upload_date = {
+        [Op.gte]: fromDate,
+      };
+    } else if (toDate) {
+      let theDate = parseInt(toDate.split("-")[2]) + 1;
+      let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, "0");
+      positionFilter.upload_date = {
+        [Op.lte]: newDate,
+      };
+    }
+
+    let order = [
+      ["upload_date", "ASC"],
+      ["position", "ASC"],
+    ];
+
+    if (orderBy && orderDirection) {
+      order = [[orderBy, orderDirection]];
+    }
+
+    const report = await Position.findAll({
+      attributes: [
+        "id",
+        "company_id",
+        "position",
+        "upload_date",
+        [Sequelize.col("Company.company_name"), "company_name"],
+        [
+          Sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM all_candidates AS Candidate
+            WHERE Candidate.position = Positions.id
+          )`),
+          "candidate_count",
+        ],
+      ],
+      include: [
+        {
+          model: Company,
+          required: true,
+          attributes: [],
+          where: companyFilter,
+        },
+      ],
+      where: positionFilter,
+      order: order,
+    });
+
+    res.status(200).json({ report: report, msg: "Fetched Successfully !!" });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).send("500 server error");
   }
 };
