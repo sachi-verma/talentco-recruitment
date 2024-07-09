@@ -226,8 +226,11 @@ exports.getPositionWiseCount = async (req, res) => {
     const { fromDate, toDate, company, position, orderBy, orderDirection } =
       filter;
 
-    const positionFilter = {};
-    const companyFilter = {};
+      const positionFilter = {};
+      const companyFilter = {};
+      const whereClause = {
+        sourcing_status: "Screened",
+      };
 
     if (company) {
       companyFilter.company_name = { [Op.like]: `%${company}%` };
@@ -261,35 +264,78 @@ exports.getPositionWiseCount = async (req, res) => {
       order = [[orderBy, orderDirection]];
     }
 
-    const report = await Position.findAll({
+    const report = await Candidate.findAll({
       attributes: [
-        "id",
-        "company_id",
         "position",
-        "upload_date",
-        [Sequelize.col("Company.company_name"), "company_name"],
-        [
-          Sequelize.literal(`(
-            SELECT COUNT(*)
-            FROM all_candidates AS Candidate
-            WHERE Candidate.position = Positions.id AND Candidate.sourcing_status = "Screened"
-          )`),
-          "candidate_count",
-        ],
+        [Sequelize.fn("COUNT", Sequelize.col("Candidates.id")), "candidate_count"],
+        [Sequelize.col("Position.id"), "position_id"],
+        [Sequelize.col("Position.company_id"), "company_id"],
+        [Sequelize.col("Position.position"), "position_name"],
+        [Sequelize.col("Position.upload_date"), "upload_date"],
+        [Sequelize.col("Position.Company.company_name"), "company_name"],
+       // [Sequelize.col("User.id"), "id"],
       ],
       include: [
         {
-          model: Company,
+          model: Position,
           required: true,
           attributes: [],
-          where: companyFilter,
+          where: positionFilter,
+          include: [
+            {
+              model: Company,
+              required: true,
+              attributes: [],
+              where:companyFilter
+            },
+          ],
         },
+        // {
+        //   model :User,
+        //   required: true,
+        //   attributes: [],
+        // }
       ],
-      where: positionFilter,
-      order: order,
-      limit,
-      offset,
+      order: [[Sequelize.col("Position.upload_date"), "DESC"]],
+      where:whereClause,
+      group: [
+        "Position.id",
+        "Position.company_id",
+        "Position.position",
+        "Position.upload_date",
+        "Position.Company.company_name",
+        //"User.id"
+      ],
     });
+    // const report = await Position.findAll({
+    //   attributes: [
+    //     "id",
+    //     "company_id",
+    //     "position",
+    //     "upload_date",
+    //     [Sequelize.col("Company.company_name"), "company_name"],
+    //     [
+    //       Sequelize.literal(`(
+    //         SELECT COUNT(*)
+    //         FROM all_candidates AS Candidate
+    //         WHERE Candidate.position = Positions.id AND Candidate.sourcing_status = "Screened"
+    //       )`),
+    //       "candidate_count",
+    //     ],
+    //   ],
+    //   include: [
+    //     {
+    //       model: Company,
+    //       required: true,
+    //       attributes: [],
+    //       where: companyFilter,
+    //     },
+    //   ],
+    //   where: positionFilter,
+    //   order: order,
+    //   limit,
+    //   offset,
+    // });
 
     const pages = Math.ceil(report.length / limit);
 

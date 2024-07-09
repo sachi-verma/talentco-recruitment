@@ -490,7 +490,7 @@ exports.getPositionWiseCount = async (req, res) => {
         role &&
         (role.role_name === "Recruiter" || role.role_name === "Team Lead")
       ) {
-         recruiter = userId;
+         whereClause.created_by = userId;
       }
     }
 
