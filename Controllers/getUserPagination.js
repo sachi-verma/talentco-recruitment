@@ -2,10 +2,11 @@ const db = require("../Models/db");
 const Users = require("../Models/userDetails");
 const { Op } = require("sequelize");
 const excel = require("exceljs");
+const Roles = require("../Models/roles");
 
 exports.getUserByPage = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1; // Current page, default to 1
+    const page = parseInt(req.query.page) || 1;  
     let limit = parseInt(req.query.limit) || 10;
     let offset = (page - 1) * limit;
 
@@ -15,6 +16,12 @@ exports.getUserByPage = async (req, res) => {
       limit = null;
       offset = null;
     }
+
+    const userId = req.query.id;
+    const user = await Users.findByPk(userId);
+    let role_id;
+    let role;
+    
 
     const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
 
@@ -27,7 +34,7 @@ exports.getUserByPage = async (req, res) => {
     if (email) whereClause.email = { [Op.like]: `%${email}%` };
     if (phone) whereClause.phone = { [Op.like]: `%${phone}%` };
 
-    const [user, totalRecords] = await Promise.all([
+    const [users, totalRecords] = await Promise.all([
       await Users.findAll({
         where: whereClause,
         limit,
@@ -63,7 +70,7 @@ exports.getUserByPage = async (req, res) => {
       });
 
       // Add data rows to the worksheet
-      user.forEach((user, index) => {
+      users.forEach((user, index) => {
         worksheet.addRow([
           index +1,
           user.name,
@@ -90,16 +97,43 @@ exports.getUserByPage = async (req, res) => {
        );
        res.status(200).send(buffer);
     }else{
-      let records = user.length;
 
-      const pages = Math.ceil(filter ? records / limit : totalRecords / limit);
+     
+      if (user) {
+        role_id = user.role_id;
   
+        role = await Roles.findOne({ where: { id: role_id } });
+        console.log("Role Name: ", role.role_name);
+  
+        if (role &&(role.role_name === "Super Admin")) {
+          let records = users.length;
+          const pages = Math.ceil(filter ? records / limit : totalRecords / limit);
+    
+          res
+          .status(200)
+          .json({
+            totalRecords: filter ? records : totalRecords, 
+            pages: pages,
+            user: users,
+          });
+           
+        }
+      } 
+     
+        const superAdminRole = await Roles.findOne({ where: { role_name: "Super Admin" } });
+        const superAdminRoleId = superAdminRole ? superAdminRole.id : null;
+
+        const filteredUsers = superAdminRoleId ? users.filter(val => val.role_id !== superAdminRoleId) : users;
+       // console.log("======>>>>",filteredUsers);
+
+        const pages = Math.ceil(filter ? filteredUsers / limit : filteredUsers.length / limit);
+
       res
         .status(200)
         .json({
-          totalRecords: filter ? records : totalRecords,
+          totalRecords: filter ? filteredUsers.length : totalRecords -1,
           pages: pages,
-          user: user,
+          user: filteredUsers,
         });
     }
    

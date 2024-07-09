@@ -243,6 +243,7 @@ exports.getInterviewSchedule = async (req, res) => {
         limit,
         offset,
         where: whereClause,
+        order: [["scheduled_date", "DESC"]],
       }),
 
       await Interview.count({
