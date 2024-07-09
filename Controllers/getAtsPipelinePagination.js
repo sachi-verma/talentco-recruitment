@@ -472,7 +472,9 @@ exports.getPositionWiseCount = async (req, res) => {
 
     const positionFilter = {};
     const companyFilter = {};
-
+    const whereClause = {
+      sourcing_status: "Sent To Client",
+    };
     const user = await Users.findByPk(userId);
     let role_id;
     let role;
@@ -491,6 +493,8 @@ exports.getPositionWiseCount = async (req, res) => {
          recruiter = userId;
       }
     }
+
+    if (status) whereClause.candidate_status = { [Op.like]: `%${status}%` };
 
     if (company) {
       companyFilter.company_name = { [Op.like]: `%${company}%` };
@@ -524,38 +528,82 @@ exports.getPositionWiseCount = async (req, res) => {
       order = [[orderBy, orderDirection]];
     }
 
-    const report = await Position.findAll({
+    // const report = await Position.findAll({
+    //   attributes: [
+    //     "id",
+    //     "company_id",
+    //     "position",
+    //     "upload_date",
+    //     [Sequelize.col("Company.company_name"), "company_name"],
+    //     [
+    //       Sequelize.literal(`(
+    //       SELECT COUNT(*)
+    //       FROM all_candidates AS Candidate
+    //       WHERE Candidate.position = Positions.id 
+    //       AND Candidate.sourcing_status = 'Sent To Client' 
+    //      ${status ? `AND Candidate.candidate_status = '${status}'` : ""}
+    //      ${recruiter ? `AND Candidate.created_by = '${recruiter}'` : ""}
+    //       )`),
+    //       "candidate_count",
+    //     ],
+    //   ],
+    //   include: [
+    //     {
+    //       model: Company,
+    //       required: true,
+    //       attributes: [],
+    //       where: companyFilter,
+    //     },
+    //   ],
+    //   where: positionFilter,
+    //   order: order,
+    //   limit,
+    //   offset,
+    // });
+    const report = await Candidate.findAll({
       attributes: [
-        "id",
-        "company_id",
         "position",
-        "upload_date",
-        [Sequelize.col("Company.company_name"), "company_name"],
-        [
-          Sequelize.literal(`(
-          SELECT COUNT(*)
-          FROM all_candidates AS Candidate
-          WHERE Candidate.position = Positions.id 
-          AND Candidate.sourcing_status = 'Sent To Client' 
-         ${status ? `AND Candidate.candidate_status = '${status}'` : ""}
-         ${recruiter ? `AND Candidate.created_by = '${recruiter}'` : ""}
-          )`),
-          "candidate_count",
-        ],
+        [Sequelize.fn("COUNT", Sequelize.col("Candidates.id")), "candidate_count"],
+        [Sequelize.col("Position.id"), "position_id"],
+        [Sequelize.col("Position.company_id"), "company_id"],
+        [Sequelize.col("Position.position"), "position_name"],
+        [Sequelize.col("Position.upload_date"), "upload_date"],
+        [Sequelize.col("Position.Company.company_name"), "company_name"],
+        [Sequelize.col("User.id"), "id"],
       ],
       include: [
         {
-          model: Company,
+          model: Position,
           required: true,
           attributes: [],
-          where: companyFilter,
+          where: positionFilter,
+          include: [
+            {
+              model: Company,
+              required: true,
+              attributes: [],
+              where:companyFilter
+            },
+          ],
         },
+        {
+          model :Users,
+          required: true,
+          attributes: [],
+        }
       ],
-      where: positionFilter,
-      order: order,
-      limit,
-      offset,
+      order: [[Sequelize.col("Position.upload_date"), "DESC"]],
+      where:whereClause,
+      group: [
+        "Position.id",
+        "Position.company_id",
+        "Position.position",
+        "Position.upload_date",
+        "Position.Company.company_name",
+        "User.id"
+      ],
     });
+
 
     const pages = Math.ceil(report.length / limit);
     res.status(200).json({
