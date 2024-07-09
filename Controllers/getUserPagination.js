@@ -18,10 +18,16 @@ exports.getUserByPage = async (req, res) => {
     }
 
     const userId = req.query.id;
-    const user = await Users.findByPk(userId);
-    let role_id;
-    let role;
+        const user = await Users.findByPk(userId);
+        let role_id;
+        let role;
+        let totalRecords;
+        let users;
+        let filteredUsers;
+        let pages;
     
+        const superAdminRole = await Roles.findOne({ where: { role_name: "Super Admin" } });
+        const superAdminRoleId = superAdminRole ? superAdminRole.id : null;
 
     const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
 
@@ -34,15 +40,51 @@ exports.getUserByPage = async (req, res) => {
     if (email) whereClause.email = { [Op.like]: `%${email}%` };
     if (phone) whereClause.phone = { [Op.like]: `%${phone}%` };
 
-    const [users, totalRecords] = await Promise.all([
-      await Users.findAll({
-        where: whereClause,
-        limit,
-        offset,
-      }),
+    if (user) {
+            role_id = user.role_id;
+            role = await Roles.findOne({ where: { id: role_id } });
+            console.log("Role Name: ", role.role_name);
 
-      await Users.count(),
-    ]);
+            if (role && role.role_name === "Super Admin") {
+                // If the user is a Super Admin, fetch all users
+                [users, totalRecords] = await Promise.all([
+                    Users.findAll({
+                        where: whereClause,
+                        limit,
+                        offset,
+                    }),
+                    Users.count(),
+                ]);
+                pages = Math.ceil(totalRecords / limit);
+                res.status(200).json({
+                    totalRecords,
+                    pages,
+                    users,
+                });
+                return;
+            }
+        }
+
+        [users, totalRecords] = await Promise.all([
+          Users.findAll({
+              where: {
+                  ...whereClause,
+                  role_id: {
+                      [Op.ne]: superAdminRoleId
+                  }
+              },
+              limit,
+              offset,
+          }),
+          Users.count({
+              where: {
+                  ...whereClause,
+                  role_id: {
+                      [Op.ne]: superAdminRoleId
+                  }
+              }
+          }),
+      ]);
 
     if(download){
 
@@ -97,43 +139,13 @@ exports.getUserByPage = async (req, res) => {
        );
        res.status(200).send(buffer);
     }else{
-
-     
-      if (user) {
-        role_id = user.role_id;
-  
-        role = await Roles.findOne({ where: { id: role_id } });
-        console.log("Role Name: ", role.role_name);
-  
-        if (role &&(role.role_name === "Super Admin")) {
-          let records = users.length;
-          const pages = Math.ceil(filter ? records / limit : totalRecords / limit);
-    
-          res
-          .status(200)
-          .json({
-            totalRecords: filter ? records : totalRecords, 
-            pages: pages,
-            user: users,
-          });
-           
-        }
-      } 
-     
-        const superAdminRole = await Roles.findOne({ where: { role_name: "Super Admin" } });
-        const superAdminRoleId = superAdminRole ? superAdminRole.id : null;
-
-        const filteredUsers = superAdminRoleId ? users.filter(val => val.role_id !== superAdminRoleId) : users;
-       // console.log("======>>>>",filteredUsers);
-
-        const pages = Math.ceil(filter ? filteredUsers / limit : filteredUsers.length / limit);
-
+      pages = Math.ceil(totalRecords / limit);
       res
         .status(200)
         .json({
-          totalRecords: filter ? filteredUsers.length : totalRecords -1,
+          totalRecords: totalRecords,
           pages: pages,
-          user: filteredUsers,
+          user: users,
         });
     }
    
