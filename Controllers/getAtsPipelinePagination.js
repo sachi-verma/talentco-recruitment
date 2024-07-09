@@ -456,6 +456,8 @@ exports.getPositionWiseCount = async (req, res) => {
     let limit = parseInt(req.query.limit) || 10;
     let offset = (page - 1) * limit;
 
+    const userId = req.query.id;
+
     const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
 
     const {
@@ -470,6 +472,25 @@ exports.getPositionWiseCount = async (req, res) => {
 
     const positionFilter = {};
     const companyFilter = {};
+
+    const user = await Users.findByPk(userId);
+    let role_id;
+    let role;
+    let recruiter;
+
+    if (user) {
+      role_id = user.role_id;
+
+      role = await Roles.findOne({ where: { id: role_id } });
+      console.log("Role Name: ", role.role_name);
+
+      if (
+        role &&
+        (role.role_name === "Recruiter" || role.role_name === "Team Lead")
+      ) {
+         recruiter = userId;
+      }
+    }
 
     if (company) {
       companyFilter.company_name = { [Op.like]: `%${company}%` };
@@ -517,6 +538,7 @@ exports.getPositionWiseCount = async (req, res) => {
           WHERE Candidate.position = Positions.id 
           AND Candidate.sourcing_status = 'Sent To Client' 
          ${status ? `AND Candidate.candidate_status = '${status}'` : ""}
+         ${recruiter ? `AND Candidate.created_by = '${recruiter}'` : ""}
           )`),
           "candidate_count",
         ],

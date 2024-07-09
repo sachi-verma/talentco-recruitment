@@ -1,5 +1,5 @@
 const db = require("../Models/db");
-const { Sequelize, INTEGER } = require("sequelize");
+const { Sequelize, INTEGER, where } = require("sequelize");
 const { Op } = require("sequelize");
 const Candidate = require("../Models/allCandidates");
 const Position = require("../Models/allPositions");
@@ -130,22 +130,43 @@ exports.getInterviewSchedule = async (req, res) => {
     // Log filter values
     console.log("Filter Values: ", filter);
 
-    if (candidate !== undefined)
+    if (candidate) {
       candidateFilter.candidate = { [Op.like]: `%${candidate}%` };
-    if (company !== undefined)
+    }
+    if (company) {
       companyFilter.company_name = { [Op.like]: `%${company}%` };
-    if (position !== undefined)
+    }
+    if (position) {
       positionFilter.position = { [Op.like]: `%${position}%` };
-    if (interview_round !== undefined)
-      whereClause.interview_round = interview_round;
-    if (interview_date !== undefined)
-      whereClause.interview_date = { [Op.like]: `%${interview_date}%` };
-    if (interview_status !== undefined)
+    }
+
+    if (interview_round) {
+      whereClause.interview_round = { [Op.like]: `%${interview_round}%` };
+    }
+    if (interview_status) {
       whereClause.interview_status = { [Op.like]: `%${interview_status}%` };
-    if (interview_location !== undefined)
-      whereClause.interview_location = { [Op.like]: `%${interview_location}%` };
-    if (interview_done !== undefined)
+    }
+    if (interview_done) {
       whereClause.interview_done = { [Op.like]: `%${interview_done}%` };
+    }
+  
+
+    // if (candidate !== undefined)
+    //   candidateFilter.candidate = { [Op.like]: `%${candidate}%` };
+    // if (company !== undefined)
+    //   companyFilter.company_name = { [Op.like]: `%${company}%` };
+    // if (position !== undefined)
+    //   positionFilter.position = { [Op.like]: `%${position}%` };
+    // if (interview_round !== undefined)
+    //   whereClause.interview_round = interview_round;
+    // if (interview_date !== undefined)
+    //   whereClause.interview_date = { [Op.like]: `%${interview_date}%` };
+    // if (interview_status !== undefined)
+    //   whereClause.interview_status = { [Op.like]: `%${interview_status}%` };
+    // if (interview_location !== undefined)
+    //   whereClause.interview_location = { [Op.like]: `%${interview_location}%` };
+    // if (interview_done !== undefined)
+    //   whereClause.interview_done = { [Op.like]: `%${interview_done}%` };
 
     if (fromDate && toDate) {
       let theDate = parseInt(toDate.split("-")[2]) + 1;
@@ -201,7 +222,7 @@ exports.getInterviewSchedule = async (req, res) => {
               {
                 model: Position,
                 required: true,
-                attributes: ["id", "position", "location", "company_id"],
+                //attributes: ["id", "position", "location", "company_id"],
                 where: positionFilter,
                 include: [
                   {
@@ -728,6 +749,8 @@ exports.getPositionWiseCount = async (req, res) => {
     let limit = parseInt(req.query.limit) || 10;
     let offset = (page - 1) * limit;
 
+    const userId = req.query.id;
+
     const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
 
     const {
@@ -742,6 +765,25 @@ exports.getPositionWiseCount = async (req, res) => {
 
     const positionFilter = {};
     const companyFilter = {};
+
+    const user = await Users.findByPk(userId);
+    let role_id;
+    let role;
+    let recruiter;
+
+    if (user) {
+      role_id = user.role_id;
+
+      role = await Roles.findOne({ where: { id: role_id } });
+      console.log("Role Name: ", role.role_name);
+
+      if (
+        role &&
+        (role.role_name === "Recruiter" || role.role_name === "Team Lead")
+      ) {
+         recruiter = userId;
+      }
+    }
 
     if (company) {
       companyFilter.company_name = { [Op.like]: `%${company}%` };
@@ -796,7 +838,12 @@ exports.getPositionWiseCount = async (req, res) => {
             interview_status
               ? `AND Interview.interview_status = '${interview_status}'`
               : ""
-          }
+          } 
+          ${
+            recruiter
+              ? `AND Interview.created_by = '${recruiter}'`
+              : ""
+          } 
         )
       `),
           "interview_count",
