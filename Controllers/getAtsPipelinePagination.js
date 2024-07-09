@@ -522,10 +522,18 @@ exports.getPositionWiseCount = async (req, res) => {
       };
     }
 
-    let order = [["upload_date", "DESC"]];
+    let order =[[Sequelize.col("Position.upload_date"), "DESC"]];
 
     if (orderBy && orderDirection) {
-      order = [[orderBy, orderDirection]];
+      const validColumns = {
+        upload_date: "Position.upload_date",
+        company_name: "Position.Company.company_name",
+        position: "Position.position",
+      };
+
+      if (validColumns[orderBy]) {
+        order = [[Sequelize.col(validColumns[orderBy]), orderDirection]];
+      }
     }
 
     // const report = await Position.findAll({
@@ -592,7 +600,7 @@ exports.getPositionWiseCount = async (req, res) => {
           attributes: [],
         }
       ],
-      order: [[Sequelize.col("Position.upload_date"), "DESC"]],
+      order: order,
       where:whereClause,
       group: [
         "Position.id",
