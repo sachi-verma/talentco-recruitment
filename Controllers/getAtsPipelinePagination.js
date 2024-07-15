@@ -48,6 +48,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
       mobile,
       status,
       position,
+      positionStatus,
       company,
       location,
       fromDate,
@@ -71,6 +72,12 @@ exports.getAtsPipelinePagination = async (req, res) => {
     if (company) companyFilters.company_name = { [Op.like]: `%${company}%` };
     const positionFilters = {};
     if (position) positionFilters.position = { [Op.like]: `%${position}%` };
+
+    if (positionStatus) {
+      positionFilters.position_status = { [Op.like]: `%${positionStatus}%` };
+    } else {
+      positionFilters.position_status = "Open";
+    }
 
     if (fromDate && toDate) {
       let theDate = parseInt(toDate.split("-")[2]) + 1;

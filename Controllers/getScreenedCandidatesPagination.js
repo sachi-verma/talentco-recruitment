@@ -15,8 +15,11 @@ Candidate.belongsTo(Position, { foreignKey: "position" });
 Company.hasMany(Position, { foreignKey: "company_id" });
 Position.belongsTo(Company, { foreignKey: "company_id" });
 
-User.hasMany(Position, { foreignKey: "recruiter_assign" });
-Position.belongsTo(User, { foreignKey: "recruiter_assign" });
+// User.hasMany(Position, { foreignKey: "recruiter_assign" });
+// Position.belongsTo(User, { foreignKey: "recruiter_assign" });
+
+User.hasMany(Candidate, { foreignKey: "created_by" });
+Candidate.belongsTo(User, { foreignKey: "created_by" });
 
 exports.getScreenedCandidatePagination = async (req, res) => {
   try {

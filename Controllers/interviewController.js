@@ -570,20 +570,10 @@ exports.updateInterviewDetails = async (req, res) => {
 Greetings from TalentCo HR Services LLP!
 
 Your interview details has been updated with  ${company} on ${interviewdate} at ${interview_time} for the post of ${position}.
-${
-  interview_mode === "In Person"
-    ? `Company Address: ${companyaddress}`
-    : `${
-        interview_location.includes("https") ? `Link` : `Interview Location`
-      }: ${interview_location}`
-}.        
+${interview_mode === "In Person" ? `Company Address: ${companyaddress}`: `${interview_location.includes("https") ? `Link` : `Interview Location`}: ${interview_location}`}.        
 Contact Person: ${contactperson}, ${contactpersonphone} 
               
-Try to ${
-            interview_location.includes("https")
-              ? `Join 5 minutes`
-              : `reach 15 minutes`
-          } before the scheduled time to avoid any last-minute rush.  
+Try to ${interview_location.includes("https")? `Join 5 minutes`: `reach 15 minutes`} before the scheduled time to avoid any last-minute rush.  
                                                                                                                                                                                                                                                         
 Kindly send your acknowledgment as a confirmation to this mail. 
               

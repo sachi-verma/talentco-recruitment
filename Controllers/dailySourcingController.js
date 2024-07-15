@@ -948,3 +948,28 @@ exports.getFilteredAdmin = async (req, res) => {
         res.status(500).send('500 server error');
     }
 }
+
+exports.deleteCandidate = async (req,res) =>{
+    try {
+        const id = req.params.id;
+
+        const candidate = await Candidate.findByPk(id);
+
+        if (!candidate){
+            return res.status(404).json({message:"No such candidate found !!"});
+        }
+
+        if(candidate.sourcing_status==='Sent To Client'){
+            return res.status(403).json({message:`Can't delete candidate with the status 'Sent To Client' !!`});
+
+        }
+
+        await Candidate.destroy({where: {id:id}});
+
+        return res.status(200).json({message:"Candidate deleted successfully !!", id});
+        
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Internal server error');
+    }
+};
