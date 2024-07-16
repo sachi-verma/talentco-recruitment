@@ -264,7 +264,7 @@ exports.editAtsStatus = async (req, res) => {
       return res
         .status(404)
         .json({
-          error: `${candidate_status} status already exist for this candidate, can't go backward !`,
+          error: `${candidate_status} status already exist for this candidate, can't go backward !!`,
           candidate_status,
           id,
         });
@@ -275,8 +275,8 @@ exports.editAtsStatus = async (req, res) => {
         let shortlistedStatus = 'Shortlisted';
         let cand = await Status.findOne({ where: { candidate_id: id, candidate_status: shortlistedStatus } });
         if (!cand) {
-          return res.status(403).json({
-            message: "Can't schedule interview. This candidate is not shortlisted yet!",
+          return res.status(404).json({
+            error: "Can't schedule interview. This candidate is not shortlisted yet!!",
             id
           });
         }
@@ -320,8 +320,8 @@ exports.editAtsStatus = async (req, res) => {
           let shortlistedStatus = 'Shortlisted';
           let cand = await Status.findOne({ where: { candidate_id: id, candidate_status: shortlistedStatus } });
           if (!cand) {
-            return res.status(403).json({
-              message: `Can't change status to ${candidate_status}. This candidate is not shortlisted yet!`,
+            return res.status(404).json({
+              error: `Can't change status to ${candidate_status}. This candidate is not shortlisted yet!!`,
               id
             });
           }
@@ -330,8 +330,8 @@ exports.editAtsStatus = async (req, res) => {
           let shortlistedStatus = 'Shortlisted';
           let cand = await Status.findOne({ where: { candidate_id: id, candidate_status: shortlistedStatus } });
           if (cand) {
-            return res.status(403).json({
-              message: `Can't change status to ${candidate_status}. This candidate is Shortlisted.`,
+            return res.status(404).json({
+              error: `Can't change status to ${candidate_status}. This candidate is Shortlisted.`,
               id
             });
           }
@@ -341,8 +341,29 @@ exports.editAtsStatus = async (req, res) => {
           let finalSelectionStatus = 'Final Selection';
           let cand = await Status.findOne({ where: { candidate_id: id, candidate_status: finalSelectionStatus } });
           if (cand) {
-            return res.status(403).json({
-              message: `Can't change status to ${candidate_status}. This candidate is Selected.`,
+            return res.status(404).json({
+              error: `Can't change status to ${candidate_status}. This candidate is Selected.`,
+              id
+            });
+          }
+        }
+
+        if (candidate_status === "Hold Post Interview" || candidate_status === "Interview Done") {
+          let finalSelectionStatus = 'Final Selection';
+          let cand = await Status.findOne({ where: { candidate_id: id, candidate_status: finalSelectionStatus } });
+          if (cand) {
+            return res.status(404).json({
+              error: `Can't change status to ${candidate_status}. This candidate is Selected.`,
+              id
+            });
+          }
+        }
+        if (candidate_status === "Final Joining") {
+          let finalSelectionStatus = 'Final Selection';
+          let cand = await Status.findOne({ where: { candidate_id: id, candidate_status: finalSelectionStatus } });
+          if (!cand) {
+            return res.status(404).json({
+              error: `Can't change status to ${candidate_status}. This candidate is not selected yet !!`,
               id
             });
           }
