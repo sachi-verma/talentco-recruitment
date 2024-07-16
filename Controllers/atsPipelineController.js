@@ -272,10 +272,13 @@ exports.editAtsStatus = async (req, res) => {
       //changing the status in all candidates table
 
       if (candidate_status === "Interview Scheduled") {
-        let status = 'Shortlisted';
-        let cand = Status.findOne({ where: { candidate_id: id, candidate_status: status } });
+        let shortlistedStatus = 'Shortlisted';
+        let cand = await Status.findOne({ where: { candidate_id: id, candidate_status: shortlistedStatus } });
         if (!cand) {
-          return res.status(403).json({ message: "Can't scheduled interview. This candidate is not shortlisted yet!!", id });
+          return res.status(403).json({
+            message: "Can't schedule interview. This candidate is not shortlisted yet!",
+            id
+          });
         }
         try {
           let report = await scheduleInterview({ id, candidate_status, status_date, recruiter_id, interview_data });
@@ -312,29 +315,39 @@ exports.editAtsStatus = async (req, res) => {
         });
 
       } else {
-        if (candidate_status !== "CV Rejected" || candidate_status !== "Duplicate CV") {
-          let status = 'Shortlisted';
-          let cand = Status.findOne({ where: { candidate_id: id, candidate_status: status } });
+         // Prevent changing status if the candidate is not shortlisted or already selected
+         if (!["CV Rejected", "Duplicate CV"].includes(candidate_status)) {
+          let shortlistedStatus = 'Shortlisted';
+          let cand = await Status.findOne({ where: { candidate_id: id, candidate_status: shortlistedStatus } });
           if (!cand) {
-            return res.status(403).json({ message: `Can't change status to ${candidate_status}. This candidate is not shortlisted yet!!`, id });
+            return res.status(403).json({
+              message: `Can't change status to ${candidate_status}. This candidate is not shortlisted yet!`,
+              id
+            });
           }
         }
-        //'CV Rejected', 'Duplicate CV', 'Rejected Post Interview',
-        if (candidate_status === "CV Rejected" || candidate_status === "Duplicate CV") {
-          let status = 'Shortlisted';
-          let cand = Status.findOne({ where: { candidate_id: id, candidate_status: status } });
+        if (["CV Rejected", "Duplicate CV"].includes(candidate_status)) {
+          let shortlistedStatus = 'Shortlisted';
+          let cand = await Status.findOne({ where: { candidate_id: id, candidate_status: shortlistedStatus } });
           if (cand) {
-            return res.status(403).json({ message: `Can't change status to ${candidate_status}. This candidate is Shortlisted.`, id });
+            return res.status(403).json({
+              message: `Can't change status to ${candidate_status}. This candidate is Shortlisted.`,
+              id
+            });
           }
         }
 
         if (candidate_status === "Rejected Post Interview") {
-          let status = 'Final Selection';
-          let cand = Status.findOne({ where: { candidate_id: id, candidate_status: status } });
+          let finalSelectionStatus = 'Final Selection';
+          let cand = await Status.findOne({ where: { candidate_id: id, candidate_status: finalSelectionStatus } });
           if (cand) {
-            return res.status(403).json({ message: `Can't change status to ${candidate_status}. This candidate is Selected.`, id });
+            return res.status(403).json({
+              message: `Can't change status to ${candidate_status}. This candidate is Selected.`,
+              id
+            });
           }
         }
+
         candidate = await Candidate.update(
           { candidate_status, status_date },
           { where: { id: id } }
