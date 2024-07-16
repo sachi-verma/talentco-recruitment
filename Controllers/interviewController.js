@@ -622,7 +622,7 @@ exports.updateInterviewStatus = async (req, res) => {
 
       if (interview_status === "Final Selection") {
         await Candidate.update(
-          { candidate_status: final_selection, status_date: updated_at },
+          { candidate_status: final_selection, status_date: updated_at, updated_by: recruiter_id },
           { where: { id: candidate_id } }
         );
 
@@ -642,7 +642,7 @@ exports.updateInterviewStatus = async (req, res) => {
         });
       } else if (interview_status === "Rejected Post Interview") {
         await Candidate.update(
-          { candidate_status: interview_status, status_date: updated_at },
+          { candidate_status: interview_status, status_date: updated_at, updated_by: recruiter_id },
           { where: { id: candidate_id } }
         );
 
@@ -662,7 +662,7 @@ exports.updateInterviewStatus = async (req, res) => {
         });
       } else if (interview_status === "Backout") {
         await Candidate.update(
-          { candidate_status: backout, status_date: updated_at },
+          { candidate_status: backout, status_date: updated_at, updated_by: recruiter_id },
           { where: { id: candidate_id } }
         );
 
@@ -676,7 +676,7 @@ exports.updateInterviewStatus = async (req, res) => {
         });
       } else if (interview_status === "Interview Feedback Pending") {
         await Candidate.update(
-          { candidate_status: interview_status, status_date: updated_at },
+          { candidate_status: interview_status, status_date: updated_at, updated_by: recruiter_id },
           { where: { id: candidate_id } }
         );
 
@@ -696,7 +696,7 @@ exports.updateInterviewStatus = async (req, res) => {
         });
       } else if ( interview_status === "Hold Post Interview"){
         await Candidate.update(
-          { candidate_status: interview_status, status_date: updated_at },
+          { candidate_status: interview_status, status_date: updated_at, updated_by: recruiter_id },
           { where: { id: candidate_id } }
         );
 
@@ -707,6 +707,20 @@ exports.updateInterviewStatus = async (req, res) => {
           status_date: updated_at,
           created_by: recruiter_id,
         });
+        await Status.findOrCreate({
+          candidate_id: candidate_id,
+          candidate_status: interview_status,
+          status_date: updated_at,
+          created_by: recruiter_id,
+        });
+      }else if ( interview_status === "Shortlisted Next Round"){
+        await Candidate.update(
+          { candidate_status: interview_status, status_date: updated_at, updated_by: recruiter_id },
+          { where: { id: candidate_id } }
+        );
+
+        //creating a new status to add in status history
+       
         await Status.findOrCreate({
           candidate_id: candidate_id,
           candidate_status: interview_status,
