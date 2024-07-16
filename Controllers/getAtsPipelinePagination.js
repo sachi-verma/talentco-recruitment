@@ -345,7 +345,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
       // Add headers to the worksheet
 
       const headerRow = worksheet.addRow([
-        "Sr No.",
+        "Sr. No.",
         "Sourcing Date",
         "Candidate Status",
         "company Name",

@@ -86,12 +86,13 @@ exports.getScreenedCandidatePagination = async (req, res) => {
                 },
                 where: companyFilters,
               },
-              {
-                model: User,
-                required: true,
-                attributes: ["name"],
-              },
+              
             ],
+          },
+          {
+            model: User,
+            required: true,
+            attributes: ["id","name"],
           },
         ],
         where: whereClause,
@@ -113,12 +114,13 @@ exports.getScreenedCandidatePagination = async (req, res) => {
                 attributes: ["company_name"],
                 where: companyFilters,
               },
-              {
-                model: User,
-                required: true,
-                attributes: ["name"],
-              },
+              
             ],
+          },
+          {
+            model: User,
+            required: true,
+            attributes: ["id","name"],
           },
         ],
         where: whereClause,
@@ -133,8 +135,9 @@ exports.getScreenedCandidatePagination = async (req, res) => {
       // Add headers to the worksheet
 
       const headerRow = worksheet.addRow([
-        "Sr No.",
+        "Sr. No.",
         "Sourcing Date",
+        "Recruiter Name",
         "Company Name",
         "Position Name",
         "Candidate Name",
@@ -165,6 +168,7 @@ exports.getScreenedCandidatePagination = async (req, res) => {
         worksheet.addRow([
           index + 1,
           candidates.sourcing_date,
+          candidates.User?.name,
           candidates.Position.Company.company_name,
           candidates.Position.position,
           candidates.candidate,

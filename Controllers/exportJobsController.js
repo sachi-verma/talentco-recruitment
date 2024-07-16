@@ -89,7 +89,7 @@ exports.exportJobs = async (req, res) => {
     const worksheet = workbook.addWorksheet('Jobs');
 
     // Add headers to the worksheet
-   const headerRow = worksheet.addRow(['Sr No.','Upload Date','Position','Company', 'Location', 'Min Experience','Max Experience','Min CTC','Max CTC', 'Number of Positions','Position Status', 'Gender','Qualification', 'Recruiter Assign']);
+   const headerRow = worksheet.addRow(['Sr. No.','Upload Date','Position','Company', 'Location', 'Min Experience','Max Experience','Min CTC','Max CTC', 'Number of Positions','Position Status', 'Gender','Qualification', 'Recruiter Assign']);
 
    headerRow.eachCell((cell) => {
     cell.font = { bold: true };

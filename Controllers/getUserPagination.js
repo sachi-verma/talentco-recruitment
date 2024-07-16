@@ -94,7 +94,7 @@ exports.getUserByPage = async (req, res) => {
  
        // Add headers to the worksheet
        const headerRow = worksheet.addRow([
-        "Sr No.",
+        "Sr. No.",
         "Name",
         "Designation",
         "Email",

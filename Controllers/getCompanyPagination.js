@@ -124,7 +124,7 @@ const [companys, totalRecords] = await Promise.all([
  
        // Add headers to the worksheet
       const headerRow= worksheet.addRow([
-        "Sr No.",
+        "Sr. No.",
          "Company Name",
          "Industry Name",
          "Address",
