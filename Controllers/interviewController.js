@@ -694,6 +694,25 @@ exports.updateInterviewStatus = async (req, res) => {
           status_date: updated_at,
           created_by: recruiter_id,
         });
+      } else if ( interview_status === "Hold Post Interview"){
+        await Candidate.update(
+          { candidate_status: interview_status, status_date: updated_at },
+          { where: { id: candidate_id } }
+        );
+
+        //creating a new status to add in status history
+        await Status.findOrCreate({
+          candidate_id: candidate_id,
+          candidate_status: interview_done,
+          status_date: updated_at,
+          created_by: recruiter_id,
+        });
+        await Status.findOrCreate({
+          candidate_id: candidate_id,
+          candidate_status: interview_status,
+          status_date: updated_at,
+          created_by: recruiter_id,
+        });
       }
 
       return res.status(200).json({
