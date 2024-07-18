@@ -79,12 +79,15 @@ exports.getJobByPage = async (req, res) => {
 
     const assignRecruiterFilters = {};
     
-    if (recruiterId && recruiterId !== "Not Assigned") {
+    if (recruiterId && recruiterId !== "Not Assigned" && recruiterId !== "Only Assigned") {
       assignRecruiterFilters.recruiter_id = recruiterId;
        
     }
     if(recruiterId && recruiterId === "Not Assigned") {
       whereClause.recruiter_assign = 0;
+    }
+    if(recruiterId && recruiterId === "Only Assigned") {
+      whereClause.recruiter_assign = 1;
     }
 
     
@@ -139,6 +142,7 @@ exports.getJobByPage = async (req, res) => {
         ],
         where: whereClause,
         limit,
+        order:[["upload_date", "DESC"]],
         offset,
       }),
       Positions.count({

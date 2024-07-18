@@ -27,4 +27,7 @@ router.get(
   interviewController.getPositionWiseCount
 );
 
+router.get("/getinterviewhistory/:id", interviewController.getInterviewHistory);
+router.get("/getinterviewstatushistory/:id", interviewController.getInterviewStatusHistory);
+
 module.exports = router;

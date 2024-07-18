@@ -12,6 +12,7 @@ const Users = require("../Models/userDetails");
 const Roles = require("../Models/roles");
 const assignRecruiter = require("../Models/assignRecruiter");
 const InterviewHistory = require("../Models/interviewHistory");
+const InterviewStatus = require("../Models/interviewStatusHistory");
 
 const e = require("express");
 
@@ -26,6 +27,9 @@ Position.belongsTo(Company, { foreignKey: "company_id" });
 
 Candidate.hasMany(Interview, { foreignKey: "candidate_id" });
 Interview.belongsTo(Candidate, { foreignKey: "candidate_id" });
+
+Candidate.hasMany(InterviewHistory, { foreignKey: "candidate_id" });
+InterviewHistory.belongsTo(Candidate, { foreignKey: "candidate_id" });
 
 User.hasMany(Position, { foreignKey: "recruiter_assign" });
 Position.belongsTo(User, { foreignKey: "recruiter_assign" });
@@ -702,16 +706,33 @@ exports.updateInterviewStatus = async (req, res) => {
 
         //creating a new status to add in status history
         await Status.findOrCreate({
-          candidate_id: candidate_id,
-          candidate_status: interview_done,
-          status_date: updated_at,
-          created_by: recruiter_id,
+          where: {
+            candidate_id: candidate_id,
+            candidate_status: interview_done,
+            status_date: updated_at,
+            created_by: recruiter_id,
+          },
+          defaults: {
+            candidate_id: candidate_id,
+            candidate_status: interview_done,
+            status_date: updated_at,
+            created_by: recruiter_id,
+          },
         });
+
         await Status.findOrCreate({
-          candidate_id: candidate_id,
-          candidate_status: interview_status,
-          status_date: updated_at,
-          created_by: recruiter_id,
+          where: {
+            candidate_id: candidate_id,
+            candidate_status: interview_status,
+            status_date: updated_at,
+            created_by: recruiter_id,
+          },
+          defaults: {
+            candidate_id: candidate_id,
+            candidate_status: interview_status,
+            status_date: updated_at,
+            created_by: recruiter_id,
+          },
         });
       }else if ( interview_status === "Shortlisted Next Round"){
         await Candidate.update(
@@ -722,12 +743,27 @@ exports.updateInterviewStatus = async (req, res) => {
         //creating a new status to add in status history
        
         await Status.findOrCreate({
-          candidate_id: candidate_id,
-          candidate_status: interview_status,
-          status_date: updated_at,
-          created_by: recruiter_id,
+          where: {
+            candidate_id: candidate_id,
+            candidate_status: interview_status,
+            status_date: updated_at,
+            created_by: recruiter_id,
+          },
+          defaults: {
+            candidate_id: candidate_id,
+            candidate_status: interview_status,
+            status_date: updated_at,
+            created_by: recruiter_id,
+          },
         });
       }
+
+      await InterviewStatus.create({
+          candidate_id: candidate_id,
+          interview_status: interview_status,
+          created_by: updated_at,
+          created_by: recruiter_id,
+      })
 
       return res.status(200).json({
         success: "Interview status updated successfully !",
@@ -737,7 +773,7 @@ exports.updateInterviewStatus = async (req, res) => {
     }
   } catch (error) {
     console.error("Error updating Interview Schedule:", error);
-    res.status(500).json({ error: "Internal Server Error" }, error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -763,7 +799,7 @@ exports.markInterviewDone = async (req, res) => {
     res.status(200).json({ success: `Interviews marked as ${interview_done}` });
   } catch (error) {
     console.error("Error updating Interview done:", error);
-    res.status(500).json({ error: "Internal Server Error" }, error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -917,6 +953,50 @@ exports.getPositionWiseCount = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getPositionWiseCount:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+exports.getInterviewHistory = async (req, res) => {
+  try {
+    const id = req.params.id;
+     const report= await InterviewHistory.findAll({
+        include: [
+          {
+            model: Candidate,
+            attributes: ['candidate', 'candidate_email'],
+            required: true,
+          }
+        ],
+       where:{candidate_id:id}
+      });
+
+    res.status(200).json({
+      msg: "Interview History fetched successfully !!",
+      report: report,
+    });
+    
+  } catch (error) {
+    console.error("Error getting interview history :", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+
+};
+
+exports.getInterviewStatusHistory = async (req, res)=>{
+  try {
+    const id = req.params.id;
+     const report= await InterviewStatus.findAll({
+       where:{candidate_id:id}
+      });
+
+    res.status(200).json({
+      msg: "Interview status history fetched successfully !!",
+      report: report,
+    }); 
+    
+  } catch (error) {
+    console.error("Error getting interview status history :", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };

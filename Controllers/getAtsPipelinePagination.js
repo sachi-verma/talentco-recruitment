@@ -53,6 +53,8 @@ exports.getAtsPipelinePagination = async (req, res) => {
       location,
       fromDate,
       toDate,
+      orderBy,
+      orderDirection,
       recruiter,
     } = filter;
 
@@ -72,10 +74,10 @@ exports.getAtsPipelinePagination = async (req, res) => {
     if (company) companyFilters.company_name = { [Op.like]: `%${company}%` };
     const positionFilters = {};
     if (position) positionFilters.position = { [Op.like]: `%${position}%` };
-
-    if (positionStatus) {
+    
+    if (positionStatus && positionStatus!=="" && positionStatus !== "All") {
       positionFilters.position_status = { [Op.like]: `%${positionStatus}%` };
-    } else {
+    } else if (!positionStatus || positionStatus==="") {
       positionFilters.position_status = "Open";
     }
 
@@ -125,6 +127,21 @@ exports.getAtsPipelinePagination = async (req, res) => {
       whereClause.created_by = recruiter;
     }
     console.log("==========>>>> recruiter filter", recruiterFilter);
+
+    let order = [["sent_to_client_date", "DESC"]];
+
+    if (orderBy && orderDirection) {
+      const validColumns = {
+        sent_to_client_date: "Candidate.sent_to_client_date",
+        candidate: "Candidate.candidate",
+        company_name: "Candidate.Position.Company.company_name",
+        position: "Candidate.Position.position",
+      };
+       
+      if (validColumns[orderBy]) {
+        order = [[Sequelize.col(validColumns[orderBy]), orderDirection]];
+      }
+    }
 
     const [report, totalRecords] = await Promise.all([
       Candidate.findAll({
@@ -202,7 +219,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
         ],
         where: whereClause,
         // parameters
-        order: [["sent_to_client_date", "DESC"]],
+        order: order,
         limit,
         offset,
       }),

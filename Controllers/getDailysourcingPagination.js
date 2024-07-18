@@ -504,13 +504,13 @@ exports.getFilteredUpdateByPage = async (req, res) => {
             ['sent_to_client', 'total_sent_to_client'],
             ['report_date', 'update_date']
           ],
-          where:recruiterFilter , limit, offset}),
+          where:recruiterFilter , order: [["update_date", "DESC"]], limit, offset}),
         await sourcingReportByRecruiter.count({where:recruiterFilter}),
       ]);
     } else{
 
         [report, totalRecords] = await Promise.all([
-        await Update.findAll({ where: whereClause, limit, offset }),
+        await Update.findAll({ where: whereClause, order: [["update_date", "DESC"]], limit, offset }),
         await Update.count({ limit, offset }),
         
          
@@ -705,6 +705,7 @@ exports.getAdminReportByPage = async (req, res) => {
         // "Position.User.name",
       ],
       limit,
+      order:[["date","DESC"]],
       offset,
     });
 

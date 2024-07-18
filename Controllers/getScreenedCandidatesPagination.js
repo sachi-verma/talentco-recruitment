@@ -38,7 +38,7 @@ exports.getScreenedCandidatePagination = async (req, res) => {
 
     console.log(filter);
 
-    const { position, company, location, candidate, fromDate, toDate } = filter;
+    const { position, company, location, candidate, fromDate, toDate, orderBy, orderDirection } = filter;
 
     const whereClause = {
       sourcing_status: "Screened",
@@ -67,6 +67,21 @@ exports.getScreenedCandidatePagination = async (req, res) => {
       whereClause.sourcing_date = {
         [Op.lte]: toDate,
       };
+    }
+   
+    let order = [["sourcing_date", "DESC"]];
+
+    if (orderBy && orderDirection) {
+      const validColumns = {
+        sourcing_date: "Candidate.sourcing_date",
+        candidate: "Candidate.candidate",
+        company_name: "Candidate.Position.Company.company_name",
+        position: "Candidate.Position.position",
+      };
+       
+      if (validColumns[orderBy]) {
+        order = [[Sequelize.col(validColumns[orderBy]), orderDirection]];
+      }
     }
 
     const [candidates, totalRecords] = await Promise.all([
@@ -98,7 +113,7 @@ exports.getScreenedCandidatePagination = async (req, res) => {
         where: whereClause,
         limit,
         offset,
-        order: [["sourcing_date", "DESC"]],
+        order: order
       }),
 
       await Candidate.count({

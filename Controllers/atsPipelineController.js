@@ -316,7 +316,7 @@ exports.editAtsStatus = async (req, res) => {
 
       } else {
          // Prevent changing status if the candidate is not shortlisted or already selected
-         if (!["CV Rejected", "Duplicate CV"].includes(candidate_status)) {
+         if (!["CV Rejected", "Duplicate CV", "Shortlisted"].includes(candidate_status)) {
           let shortlistedStatus = 'Shortlisted';
           let cand = await Status.findOne({ where: { candidate_id: id, candidate_status: shortlistedStatus } });
           if (!cand) {
