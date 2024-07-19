@@ -38,6 +38,8 @@ exports.getSourcingReportByDate = async (req, res) => {
       candidate,
       cvSourcedFrom,
       relevant,
+      orderBy,
+      orderDirection,
       status,
       location,
     } = filter;
@@ -100,6 +102,20 @@ exports.getSourcingReportByDate = async (req, res) => {
         if (role && (role.role_name === "Recruiter" || role.role_name === "Team Lead")) {
           whereClause.created_by = userId;
         }
+      }
+    }
+
+    let order = [["candidate", "ASC"]];
+
+    if (orderBy && orderDirection) {
+      const validColumns = {
+        candidate: "candidate",
+        company_name: "company_name",
+        position: "position", 
+      };
+       
+      if (validColumns[orderBy]) {
+        order = [[Sequelize.literal(validColumns[orderBy]), orderDirection]];
       }
     }
 
@@ -177,6 +193,7 @@ exports.getSourcingReportByDate = async (req, res) => {
           }
         ],
         where: whereClause,
+        order:order,
         limit,
         offset,
       }),
@@ -225,11 +242,13 @@ exports.getSourcingReportByDate = async (req, res) => {
               "min_ctc",
               "max_ctc",
             ],
+            where: positionFilter,
             include: [
               {
                 model: Company,
                 required: true,
                 attributes: ["company_name"],
+                where: companyFilters,
               },
               // {
               //   model: assignRecruiter,
@@ -321,12 +340,12 @@ exports.getSourcingReportByDate = async (req, res) => {
       res.status(200).send(buffer);
     } else {
       let records = report.length;
-      const pages = Math.ceil(filter ? records / limit : totalRecords.length / limit);
+      const pages = Math.ceil(totalRecords.length / limit);
       res
         .status(200)
         .json({
           message: "Candidates fetched successfully",
-           totalRecords: filter ? records : totalRecords.length,
+           totalRecords: totalRecords.length,
           //totalRecords: totalRecords,
           pages: pages,
           Candidates: report,

@@ -125,6 +125,8 @@ exports.getInterviewSchedule = async (req, res) => {
       interview_round,
       interview_date,
       interview_status,
+      orderBy, 
+      orderDirection,
       fromDate,
       toDate,
       interview_location,
@@ -191,10 +193,10 @@ exports.getInterviewSchedule = async (req, res) => {
     }
 
     // Log whereClause and other filters
-    console.log("Where Clause: ", whereClause);
-    console.log("Candidate Filter: ", candidateFilter);
-    console.log("Position Filter: ", positionFilter);
-    console.log("Company Filter: ", companyFilter);
+    // console.log("Where Clause: ", whereClause);
+    // console.log("Candidate Filter: ", candidateFilter);
+    // console.log("Position Filter: ", positionFilter);
+    // console.log("Company Filter: ", companyFilter);
 
     const user = await Users.findByPk(userId);
     let role_id;
@@ -212,6 +214,22 @@ exports.getInterviewSchedule = async (req, res) => {
         (role.role_name === "Recruiter" || role.role_name === "Team Lead")
       ) {
         whereClause.created_by = userId;
+      }
+    }
+
+    let order = [["scheduled_date", "DESC"]];
+
+    if (orderBy && orderDirection) {
+      const validColumns = {
+        scheduled_date: "scheduled_date",  
+        candidate: "candidate",
+        company_name: "company_name",
+        position: "position", 
+        round:"interview_round"
+      };
+       
+      if (validColumns[orderBy]) {
+        order = [[Sequelize.literal(validColumns[orderBy]), orderDirection]];
       }
     }
 
@@ -247,7 +265,7 @@ exports.getInterviewSchedule = async (req, res) => {
         limit,
         offset,
         where: whereClause,
-        order: [["scheduled_date", "DESC"]],
+        order: order,
       }),
 
       await Interview.count({
@@ -284,13 +302,13 @@ exports.getInterviewSchedule = async (req, res) => {
     let records = report.length;
 
     // Log the results of the query
-    console.log("Records: ", records);
-    console.log("Total Reports: ", totalReports);
+    // console.log("Records: ", records);
+    // console.log("Total Reports: ", totalReports);
 
-    const pages = Math.ceil(filter ? records / limit : totalReports / limit);
+    const pages = Math.ceil(totalReports / limit);
     res.status(200).json({
       message: "interview schedule fetched successfully",
-      totalRecords: filter ? records : totalReports,
+      totalRecords: totalReports,
       pages: pages,
       Interview: report,
     });

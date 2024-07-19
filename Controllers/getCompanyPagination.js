@@ -106,7 +106,7 @@ const [companys, totalRecords] = await Promise.all([
     limit,
     offset,
   }),
-  await Companys.count()
+  await Companys.count({ where: filters})
 
 ]);
 
@@ -187,9 +187,9 @@ const [companys, totalRecords] = await Promise.all([
     }else{
       let records = companys.length;
 
-      const pages = Math.ceil( filter? records/ limit: totalRecords / limit);
+      const pages = Math.ceil( totalRecords / limit);
   
-      res.status(200).json({totalRecords: filter? records: totalRecords, pages:pages, data: [...companys]});
+      res.status(200).json({totalRecords: totalRecords, pages:pages, data: [...companys]});
     }
    
   } catch (error) {

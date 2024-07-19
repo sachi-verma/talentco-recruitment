@@ -31,6 +31,8 @@ exports.getJobByPage = async (req, res) => {
       gender,
       qualification,
       recruiterId,
+      orderBy,
+      orderDirection,
       notAssigned,
       positionStatus,
       fromDate,
@@ -94,9 +96,9 @@ exports.getJobByPage = async (req, res) => {
       
     // if (positionStatus)
     //   whereClause.position_status = { [Op.like]: `%${positionStatus}` };
-    if (positionStatus) {
+    if (positionStatus && positionStatus!=="" && positionStatus !== "All") {
       whereClause.position_status = { [Op.like]: `%${positionStatus}%` };
-    } else {
+    } else if (!positionStatus || positionStatus==="") {
       whereClause.position_status = "Open";
     }
 
@@ -116,8 +118,21 @@ exports.getJobByPage = async (req, res) => {
       };
     }
 
-    console.log("Where clause:", whereClause);
-    console.log("Company filters:", companyFilters);
+    // console.log("Where clause:", whereClause);
+    // console.log("Company filters:", companyFilters);
+    let order = [["upload_date", "DESC"]];
+
+    if (orderBy && orderDirection) {
+      const validColumns = {
+        upload_date: "upload_date",  
+        company_name: "company_name",
+        position: "position",
+      };
+       
+      if (validColumns[orderBy]) {
+        order = [[Sequelize.literal(validColumns[orderBy]), orderDirection]];
+      }
+    }
 
     const [job, totalRecords] = await Promise.all([
       Positions.findAll({
@@ -142,7 +157,7 @@ exports.getJobByPage = async (req, res) => {
         ],
         where: whereClause,
         limit,
-        order:[["upload_date", "DESC"]],
+        order:order,
         offset,
       }),
       Positions.count({
@@ -163,9 +178,9 @@ exports.getJobByPage = async (req, res) => {
     ]);
     let records = job.length;
 
-    const pages = Math.ceil(filter ? records / limit : totalRecords / limit);
+    const pages = Math.ceil( totalRecords / limit);
     res.status(200).json({
-      totalRecords: filter ? records : totalRecords,
+      totalRecords: totalRecords,
       pages: pages,
       data: [...job],
     });

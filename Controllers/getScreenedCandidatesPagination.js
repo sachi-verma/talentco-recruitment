@@ -38,7 +38,7 @@ exports.getScreenedCandidatePagination = async (req, res) => {
 
     console.log(filter);
 
-    const { position, company, location, candidate, fromDate, toDate, orderBy, orderDirection } = filter;
+    const { position, company, location, candidate, fromDate, toDate, orderBy, orderDirection, recruiter } = filter;
 
     const whereClause = {
       sourcing_status: "Screened",
@@ -68,19 +68,21 @@ exports.getScreenedCandidatePagination = async (req, res) => {
         [Op.lte]: toDate,
       };
     }
-   
+    if (recruiter) {
+      whereClause.created_by = recruiter;
+    }
     let order = [["sourcing_date", "DESC"]];
 
     if (orderBy && orderDirection) {
       const validColumns = {
-        sourcing_date: "Candidate.sourcing_date",
+        sourcing_date: "Candidate.sourcing_date",  
         candidate: "Candidate.candidate",
-        company_name: "Candidate.Position.Company.company_name",
-        position: "Candidate.Position.position",
+        company_name: "company_name",
+        position: "position",
       };
        
       if (validColumns[orderBy]) {
-        order = [[Sequelize.col(validColumns[orderBy]), orderDirection]];
+        order = [[Sequelize.literal(validColumns[orderBy]), orderDirection]];
       }
     }
 
@@ -122,6 +124,7 @@ exports.getScreenedCandidatePagination = async (req, res) => {
             model: Position,
             required: true,
             attributes: ["company_id", "position", "location"],
+            where: positionFilter,
             include: [
               {
                 model: Company,
@@ -221,12 +224,12 @@ exports.getScreenedCandidatePagination = async (req, res) => {
     } else {
       let records = candidates.length;
 
-      const pages = Math.ceil(filter ? records / limit : totalRecords / limit);
+      const pages = Math.ceil(totalRecords / limit);
 
       res.json({
         candidates: candidates,
         pages: pages,
-        totalRecords: filter ? records : totalRecords,
+        totalRecords: totalRecords,
       });
     }
   } catch (error) {
@@ -326,6 +329,8 @@ exports.getPositionWiseCount = async (req, res) => {
         // }
       ],
       order: order,
+      limit,
+      offset,
       where:whereClause,
       group: [
         "Position.id",

@@ -126,7 +126,7 @@ exports.getAtsPipelinePagination = async (req, res) => {
       //recruiterFilter.recruiter_id=recruiter
       whereClause.created_by = recruiter;
     }
-    console.log("==========>>>> recruiter filter", recruiterFilter);
+   // console.log("==========>>>> recruiter filter", recruiterFilter);
 
     let order = [["sent_to_client_date", "DESC"]];
 
@@ -134,12 +134,12 @@ exports.getAtsPipelinePagination = async (req, res) => {
       const validColumns = {
         sent_to_client_date: "Candidate.sent_to_client_date",
         candidate: "Candidate.candidate",
-        company_name: "Candidate.Position.Company.company_name",
-        position: "Candidate.Position.position",
+        company_name: "company_name",
+        position: "position",
       };
        
       if (validColumns[orderBy]) {
-        order = [[Sequelize.col(validColumns[orderBy]), orderDirection]];
+        order = [[Sequelize.literal(validColumns[orderBy]), orderDirection]];
       }
     }
 
@@ -438,15 +438,13 @@ exports.getAtsPipelinePagination = async (req, res) => {
     } else {
       let records = report.length;
 
-      console.log("=============>>> total", totalRecords.length);
+      //console.log("=============>>> total", totalRecords.length);
 
-      const pages = Math.ceil(
-        filter ? records / limit : totalRecords.length / limit
-      );
+      const pages = Math.ceil(totalRecords.length / limit);
       res.status(200).json({
         message: "candidates fetched successfully",
         // totalRecords: filter ? records : totalRecords,
-        totalRecords: filter ? records : totalRecords.length,
+        totalRecords: totalRecords.length,
         pages: pages,
         Candidates: report,
       });
@@ -491,6 +489,7 @@ exports.getPositionWiseCount = async (req, res) => {
       position,
       orderBy,
       orderDirection,
+      positionStatus,
       status,
     } = filter;
 
@@ -526,6 +525,12 @@ exports.getPositionWiseCount = async (req, res) => {
 
     if (position) {
       positionFilter.position = { [Op.like]: `%${position}%` };
+    }
+
+    if (positionStatus && positionStatus!=="" && positionStatus !== "All") {
+      positionFilter.position_status = { [Op.like]: `%${positionStatus}%` };
+    } else if (!positionStatus || positionStatus==="") {
+      positionFilter.position_status = "Open";
     }
 
     if (fromDate && toDate) {
@@ -625,6 +630,8 @@ exports.getPositionWiseCount = async (req, res) => {
         }
       ],
       order: order,
+      limit,
+      offset,
       where:whereClause,
       group: [
         "Position.id",
