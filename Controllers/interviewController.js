@@ -152,10 +152,15 @@ exports.getInterviewSchedule = async (req, res) => {
     if (interview_status) {
       whereClause.interview_status = { [Op.like]: `%${interview_status}%` };
     }
-    if (interview_done) {
+    // if (interview_done ) {
+    //   whereClause.interview_done = { [Op.like]: `%${interview_done}%` };
+    // }
+
+    if (interview_done && interview_done!=="" && interview_done !== "All") {
       whereClause.interview_done = { [Op.like]: `%${interview_done}%` };
+    } else if (!interview_done || interview_done==="") {
+      whereClause.interview_done = "In Progress";
     }
-  
 
     // if (candidate !== undefined)
     //   candidateFilter.candidate = { [Op.like]: `%${candidate}%` };
@@ -839,6 +844,7 @@ exports.getPositionWiseCount = async (req, res) => {
       orderBy,
       orderDirection,
       interview_status,
+      recruiter
     } = filter;
 
     const positionFilter = {};
@@ -847,7 +853,6 @@ exports.getPositionWiseCount = async (req, res) => {
     const user = await Users.findByPk(userId);
     let role_id;
     let role;
-    let recruiter;
 
     if (user) {
       role_id = user.role_id;
@@ -889,10 +894,23 @@ exports.getPositionWiseCount = async (req, res) => {
       };
     }
 
-    let order = [["upload_date", "DESC"]];
+    if(recruiter){
+      whereClause.created_by= recruiter;
+      }
+
+
+    let order =[[Sequelize.col("Position.upload_date"), "DESC"]];
 
     if (orderBy && orderDirection) {
-      order = [[orderBy, orderDirection]];
+      const validColumns = {
+        upload_date: "Position.upload_date",
+        company_name: "Position.Company.company_name",
+        position: "Position.position",
+      };
+
+      if (validColumns[orderBy]) {
+        order = [[Sequelize.col(validColumns[orderBy]), orderDirection]];
+      }
     }
 
     const report = await Interview.findAll({

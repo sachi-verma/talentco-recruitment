@@ -132,8 +132,8 @@ exports.getAtsPipelinePagination = async (req, res) => {
 
     if (orderBy && orderDirection) {
       const validColumns = {
-        sent_to_client_date: "Candidate.sent_to_client_date",
-        candidate: "Candidate.candidate",
+        sent_to_client_date: "Candidates.sent_to_client_date",
+        candidate: "Candidates.candidate",
         company_name: "company_name",
         position: "position",
       };
@@ -490,6 +490,7 @@ exports.getPositionWiseCount = async (req, res) => {
       orderBy,
       orderDirection,
       positionStatus,
+      recruiter,
       status,
     } = filter;
 
@@ -501,7 +502,6 @@ exports.getPositionWiseCount = async (req, res) => {
     const user = await Users.findByPk(userId);
     let role_id;
     let role;
-    let recruiter;
 
     if (user) {
       role_id = user.role_id;
@@ -517,7 +517,7 @@ exports.getPositionWiseCount = async (req, res) => {
       }
     }
 
-    if (status) whereClause.candidate_status = { [Op.like]: `%${status}%` };
+    if (status) whereClause.candidate_status = status;
 
     if (company) {
       companyFilter.company_name = { [Op.like]: `%${company}%` };
@@ -550,6 +550,10 @@ exports.getPositionWiseCount = async (req, res) => {
         [Op.lte]: newDate,
       };
     }
+
+ if(recruiter){
+  whereClause.created_by= recruiter;
+  }
 
     let order =[[Sequelize.col("Position.upload_date"), "DESC"]];
 
@@ -600,6 +604,7 @@ exports.getPositionWiseCount = async (req, res) => {
     const report = await Candidate.findAll({
       attributes: [
         "position",
+        "candidate_status",
         [Sequelize.fn("COUNT", Sequelize.col("Candidates.id")), "candidate_count"],
         [Sequelize.col("Position.id"), "position_id"],
         [Sequelize.col("Position.company_id"), "company_id"],

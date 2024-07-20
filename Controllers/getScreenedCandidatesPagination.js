@@ -75,8 +75,8 @@ exports.getScreenedCandidatePagination = async (req, res) => {
 
     if (orderBy && orderDirection) {
       const validColumns = {
-        sourcing_date: "Candidate.sourcing_date",  
-        candidate: "Candidate.candidate",
+        sourcing_date: "Candidates.sourcing_date",  
+        candidate: "Candidates.candidate",
         company_name: "company_name",
         position: "position",
       };
@@ -248,7 +248,7 @@ exports.getPositionWiseCount = async (req, res) => {
 
     const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
 
-    const { fromDate, toDate, company, position, orderBy, orderDirection } =
+    const { fromDate, toDate, company, position, orderBy, orderDirection, recruiter } =
       filter;
 
       const positionFilter = {};
@@ -282,6 +282,11 @@ exports.getPositionWiseCount = async (req, res) => {
         [Op.lte]: newDate,
       };
     }
+
+    if(recruiter){
+      whereClause.created_by= recruiter;
+      }
+
     let order = [[Sequelize.col("Position.upload_date"), "DESC"]];
 
     if (orderBy && orderDirection) {

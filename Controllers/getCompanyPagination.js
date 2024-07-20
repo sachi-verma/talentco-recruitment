@@ -26,7 +26,7 @@ exports.getCompanyByPage = async (req, res) => {
 
     const filter = req.query.filter ? JSON.parse(req.query.filter):"";
 
-    const { company, industry, fromDate, toDate}= filter;
+    const { company, industry, orderBy, orderDirection, fromDate, toDate}= filter;
 
 
     const filters = {};
@@ -37,6 +37,19 @@ exports.getCompanyByPage = async (req, res) => {
       filters.industry = { [Op.like]: `%${industry}%` };
     }
 
+    let order = [["company_name", "ASC"]];
+
+    if (orderBy && orderDirection) {
+      const validColumns = {
+        company_name: "company_name",
+        contact_person: "poc1_name",
+        industry : "industry",
+      };
+       
+      if (validColumns[orderBy]) {
+        order = [[Sequelize.literal(validColumns[orderBy]), orderDirection]];
+      }
+    }
 //     const userId = req.query.id; 
 // const user = await Users.findByPk(userId);
 
@@ -103,6 +116,7 @@ exports.getCompanyByPage = async (req, res) => {
 const [companys, totalRecords] = await Promise.all([
   await Companys.findAll({
     where: filters,
+    order:order,
     limit,
     offset,
   }),
