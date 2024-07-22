@@ -8,6 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const readline = require('readline');
 const { exec } = require('child_process');
+const cors = require('cors');
 
 const roleRoutes = require('./Routes/roleRoutes');
 const moduleRoutes = require('./Routes/moduleRoutes');
@@ -32,7 +33,8 @@ const downloadFileController = require('./Routes/downloadFileRoutes');
 
 const app = express();
 
-app.use(corsMiddleware);
+//app.use(corsMiddleware);
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

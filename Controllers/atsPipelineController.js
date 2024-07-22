@@ -85,6 +85,7 @@ exports.editAtsPipeline = async (req, res) => {
   try {
     const id = req.params.id;
     const {
+      candidate,
       candidate_phone,
       candidate_email,
       candidate_location,
@@ -118,6 +119,10 @@ exports.editAtsPipeline = async (req, res) => {
       return res.status(404).json({ error: "Candidate already exist for this Position !", candidate_email, candidate_phone, position_id })
     } else {
 
+      if (candidate !== undefined) {
+        updateData.candidate = candidate;
+
+      }
       if (candidate_phone !== undefined) {
         updateData.candidate_phone = candidate_phone;
 

@@ -13,7 +13,7 @@ const Roles = require("../Models/roles");
 const assignRecruiter = require("../Models/assignRecruiter");
 const InterviewHistory = require("../Models/interviewHistory");
 const InterviewStatus = require("../Models/interviewStatusHistory");
-
+const excel = require("exceljs");
 const e = require("express");
 
 // assignRecruiter.belongsTo(Users, { foreignKey: "recruiter_id" });
@@ -835,6 +835,11 @@ exports.getPositionWiseCount = async (req, res) => {
     const userId = req.query.id;
 
     const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
+    const download = req.query.download ? true : false;
+    if (download) {
+      limit = null;
+      offset = null;
+    }
 
     const {
       fromDate,
@@ -899,17 +904,17 @@ exports.getPositionWiseCount = async (req, res) => {
       }
 
 
-    let order =[[Sequelize.col("Position.upload_date"), "DESC"]];
+    let order =[[Sequelize.literal("upload_date"), "DESC"]];
 
     if (orderBy && orderDirection) {
       const validColumns = {
-        upload_date: "Position.upload_date",
-        company_name: "Position.Company.company_name",
-        position: "Position.position",
+        upload_date: "upload_date",
+        company_name: "company_name",
+        position: "position",
       };
 
       if (validColumns[orderBy]) {
-        order = [[Sequelize.col(validColumns[orderBy]), orderDirection]];
+        order = [[Sequelize.literal(validColumns[orderBy]), orderDirection]];
       }
     }
 
@@ -979,14 +984,68 @@ exports.getPositionWiseCount = async (req, res) => {
       limit,
       offset,
     });
+    if(download){
+      // Create Excel workbook and worksheet
+      const workbook = new excel.Workbook();
+      const worksheet = workbook.addWorksheet("interviewpositonwisecount");
 
+      // Add headers to the worksheet
+
+      const headerRow = worksheet.addRow([
+        "Sr. No.",
+        "Upload Date",
+        "Company Name",
+        "Company Position",
+        "Count"
+      ]);
+
+      headerRow.eachCell((cell) => {
+        cell.font = { bold: true };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFD3D3D3" },
+        };
+      });
+
+      // Add data rows to the worksheet
+      report.forEach((re, index) => {
+        worksheet.addRow([
+          index + 1,
+          re.getDataValue('upload_date'),
+          re.getDataValue('company_name'),
+          re.getDataValue('position_name'),
+          re.getDataValue('interview_count'),
+        ]);
+      });
+
+      // Generate a unique filename for the Excel file
+
+      const filename = `Exported_interviewpositionwisecount.xlsx`;
+
+      // Save the workbook to a buffer
+      const buffer = await workbook.xlsx.writeBuffer();
+
+      // Send the Excel file as a response
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`
+      );
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.status(200).send(buffer);
+
+    }else{
     const pages = Math.ceil(report.length / limit);
     res.status(200).json({
       msg: "Report fetched successfully !!",
       totalReports: report.length,
       pages: pages,
       report: report,
-    });
+    })
+  }
   } catch (error) {
     console.error("Error in getPositionWiseCount:", error);
     res.status(500).json({ error: "Internal Server Error" });

@@ -24,7 +24,7 @@ exports.exportJobs = async (req, res) => {
   
       const filter = req.query.filter ? JSON.parse(req.query.filter):"";
   
-      const {position, company, location, gender, qualification, recruiterId, notAssigned, fromDate, toDate}= filter;
+      const {position, company, location, gender, qualification, recruiterId, notAssigned, fromDate, toDate, positionStatus}= filter;
 
       const companyFilters = {};
       if (company) {
@@ -34,31 +34,54 @@ exports.exportJobs = async (req, res) => {
       const whereClause = {};
       if (position) whereClause.position = { [Op.like]: `%${position}%` };
       if (location) whereClause.location = { [Op.like]: `%${location}%` };
-      if (gender) whereClause.gender_pref = { [Op.like]: `%${gender}%` };
-      if (qualification) whereClause.qualification = { [Op.like]: `%${qualification}%` };
-     // if (recruiterId) whereClause.recruiter_assign = { [Op.like]: `%${recruiterId}%` };
-      if (fromDate) whereClause.upload_date = { [Op.gte]: `%${fromDate}%` };
-      const assignRecruiterFilters = {};
-      if (recruiterId)
-        assignRecruiterFilters.recruiter_id = { [Op.like]: `%${recruiterId}%` };
+      if (gender && gender ==="Male") whereClause.gender_pref = "Male";
+      if (gender && gender ==="Female") whereClause.gender_pref = "Female";
+      if(gender && gender ==="No preference") whereClause.gender_pref = "No preference";
   
-      if (notAssigned === "Not assigned") assignRecruiterFilters.recruiter_id = null;
+      if (qualification)
+        whereClause.qualification = { [Op.like]: `%${qualification}%` };
+  
+      if (fromDate) whereClause.upload_date = { [Op.gte]: `%${fromDate}%` };
+  
+      const assignRecruiterFilters = {};
+      
+      if (recruiterId && recruiterId !== "Not Assigned" && recruiterId !== "Only Assigned") {
+        assignRecruiterFilters.recruiter_id = recruiterId;
+         
+      }
+      if(recruiterId && recruiterId === "Not Assigned") {
+        whereClause.recruiter_assign = 0;
+      }
+      if(recruiterId && recruiterId === "Only Assigned") {
+        whereClause.recruiter_assign = 1;
+      }
+  
+      
+        
+      // if (positionStatus)
+      //   whereClause.position_status = { [Op.like]: `%${positionStatus}` };
+      if (positionStatus && positionStatus!=="" && positionStatus !== "All") {
+        whereClause.position_status = { [Op.like]: `%${positionStatus}%` };
+      } else if (!positionStatus || positionStatus==="") {
+        whereClause.position_status = "Open";
+      }
   
       if (fromDate && toDate) {
-        let theDate = parseInt(toDate.split('-')[2]) + 1;
-        let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, '0');
+        let theDate = parseInt(toDate.split("-")[2]) + 1;
+        let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, "0");
         whereClause.upload_date = {
           [Op.between]: [fromDate, newDate],
         };
-      } else if (fromDate) { 
+      } else if (fromDate) {
         whereClause.upload_date = {
-          [Op.gte]:  fromDate,
+          [Op.gte]: fromDate,
         };
       } else if (toDate) {
         whereClause.upload_date = {
-          [Op.lte]:  toDate,
+          [Op.lte]: toDate,
         };
       }
+  
 
 
      const job = await Positions.findAll({
@@ -71,15 +94,16 @@ exports.exportJobs = async (req, res) => {
           },
           {
             model: assignRecruiter,
-            required: false, // Set to false if a position can have no recruiters assigned
-            attributes:["recruiter_id"],
+            required: recruiterId && recruiterId !== "Not Assigned"? true :false, // Include all positions, even if they don't have an assigned recruiter
+            attributes: ["recruiter_id"],
+            where: assignRecruiterFilters,
             include: [
               {
                 model: Users,
                 attributes: ["name"], // Fetch recruiter names
-              }
-            ]
-          }
+              },
+            ],
+          },
         ],
         where:whereClause,
       });

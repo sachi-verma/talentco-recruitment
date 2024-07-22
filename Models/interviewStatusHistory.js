@@ -3,13 +3,13 @@ const {DataTypes} = require('sequelize');
 
 const InterviewStatus = sequelize.define('InterviewStatus',{
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       autoIncrement: true,
       primaryKey: true,
       allowNull: false,
     },
     candidate_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false,
         references: {
             model: 'allCandidates',
@@ -24,7 +24,7 @@ const InterviewStatus = sequelize.define('InterviewStatus',{
         defaultValue: DataTypes.NOW,
     },
     created_by: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false,
         references: {
             model: 'userDetails',

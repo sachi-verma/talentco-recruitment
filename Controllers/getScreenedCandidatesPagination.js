@@ -250,6 +250,11 @@ exports.getPositionWiseCount = async (req, res) => {
 
     const { fromDate, toDate, company, position, orderBy, orderDirection, recruiter } =
       filter;
+      const download = req.query.download ? true : false;
+      if (download) {
+        limit = null;
+        offset = null;
+      }
 
       const positionFilter = {};
       const companyFilter = {};
@@ -376,6 +381,61 @@ exports.getPositionWiseCount = async (req, res) => {
     //   offset,
     // });
 
+    if(download){
+      // Create Excel workbook and worksheet
+      const workbook = new excel.Workbook();
+      const worksheet = workbook.addWorksheet("screenedpositonwisecount");
+
+      // Add headers to the worksheet
+
+      const headerRow = worksheet.addRow([
+        "Sr. No.",
+        "Upload Date",
+        "Company Name",
+        "Company Position",
+        "Count"
+      ]);
+
+      headerRow.eachCell((cell) => {
+        cell.font = { bold: true };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFD3D3D3" },
+        };
+      });
+
+      // Add data rows to the worksheet
+      report.forEach((re, index) => {
+        worksheet.addRow([
+          index + 1,
+          re.getDataValue('upload_date'),
+          re.getDataValue('company_name'),
+          re.getDataValue('position_name'),
+          re.getDataValue('candidate_count'),
+        ]);
+      });
+
+      // Generate a unique filename for the Excel file
+
+      const filename = `Exported_screenedpositionwisecount.xlsx`;
+
+      // Save the workbook to a buffer
+      const buffer = await workbook.xlsx.writeBuffer();
+
+      // Send the Excel file as a response
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`
+      );
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.status(200).send(buffer);
+
+    }else{
+
     const pages = Math.ceil(report.length / limit);
 
     res.status(200).json({
@@ -384,6 +444,7 @@ exports.getPositionWiseCount = async (req, res) => {
       pages: pages,
       report: report,
     });
+  }
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");
