@@ -30,6 +30,10 @@ const dashboardRoutes = require('./Routes/dashboardRoutes');
 const reportAndAnalysis = require('./Routes/reportAndAnalysisRoute');
 const downloadFileController = require('./Routes/downloadFileRoutes');
 
+// CV management routes
+
+const CVsRouts = require('./Routes/CVmanagementRoute/CVsRoute');
+
 
 const app = express();
 
@@ -57,6 +61,7 @@ app.use(authRoutes);
 app.use(dashboardRoutes);
 app.use(reportAndAnalysis);
 app.use(downloadFileController);
+app.use(CVsRouts);
 
 //https://atsapi.abstarthr.in/restartNodeServer
 //route to restart the server
