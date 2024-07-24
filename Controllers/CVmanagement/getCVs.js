@@ -239,50 +239,50 @@ exports.importExcel = async (req, res) => {
             'Date of birth': 'dob',
             'Age': 'age',
         };
-
+        let index = 1;
         for (const row of sheet) {
-            let index = 1;
+           
             const transformedRow = {};
             for (const [excelColumn, key] of Object.entries(columnMapping)) {
                 transformedRow[key] = row[excelColumn] || null;
             }
 
-            if (!transformedRow.cand_name || transformedRow.cand_name.trim() === "") {
+            if (!transformedRow.cand_name || transformedRow.cand_name.toString().trim() === "") {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
-                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. Candidate name is required.` });
+                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index+1}. Candidate name is required.` });
             }
 
-            if (!transformedRow.job_title || transformedRow.job_title.trim() === "") {
+            if (!transformedRow.job_title || transformedRow.job_title.toString().trim() === "") {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
-                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. Job Title is required.` });
+                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index+1}. Job Title is required.` });
             }
 
-            if (!transformedRow.email || transformedRow.email.trim() === "") {
+            if (!transformedRow.email || transformedRow.email.toString().trim() === "") {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
-                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. Candidate email is required.` });
+                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index+1}. Candidate email is required.` });
             }
-            if (!transformedRow.phone) {
+            if (!transformedRow.phone || transformedRow.phone.toString().trim() === "") {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
-                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. Candidate phone is required.` });
+                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index+1}. Candidate phone is required.` });
             }
-            if (!transformedRow.skills || transformedRow.skills.trim() === "") {
+            if (!transformedRow.skills || transformedRow.skills.toString().trim() === "") {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
-                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. Candidate skills are required.` });
+                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index+1}. Candidate skills are required.` });
             }
-            if (transformedRow.cand_name && !ValidateAlphabets(transformedRow.cand_name.trim())) {
+            if (transformedRow.cand_name && !ValidateAlphabets(transformedRow.cand_name.toString().trim())) {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
-                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. Invalid Candidate Name.` });
+                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index+1}. Invalid Candidate Name.` });
             }
             if (transformedRow.dob && !ValidateDate(transformedRow.dob)) {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
-                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. date of birth should be in YYYY-MM-DD format.` });
+                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index+1}. date of birth should be in YYYY-MM-DD format.` });
             }
 
             const {
