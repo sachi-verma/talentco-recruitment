@@ -2,6 +2,8 @@ const CV = require('../../Models/CVmanagment/allCV');
 const XLSX = require('xlsx');
 const path = require('path');
 const fs = require('fs');
+const { Op, Sequelize } = require("sequelize");
+const db = require("../../Models/db");
 
 exports.getAllCVs = async (req, res) => {
 
@@ -13,12 +15,119 @@ exports.getAllCVs = async (req, res) => {
         const upload = req.query.upload ? true : false;
 
         const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
-        const {candidateName, skills,summary, industry, currentCompany, currentDesignation, currentLocation, experience, ugDegree, ugSpecialization, orderBy, orderDirection } = filter;
+        const {jobTitle, candidateName, phone, email, gender, skills, summary, industry, currentCompany, currentDesignation, currentLocation, experience, ugDegree, ugSpecialization,
+            pgDegree, pgSpecialization, functionArea, preferredLocation, annualSalary, noticePeriod, age , workPermit, maritalStatus,fromDate, toDate,dobFromDate, dobToDate, orderBy, orderDirection } = filter;
        
         // if (upload) {
         //     whereClause.resume = null;
         //     order = [["uploaded_at", "DESC"]];
         // }
+
+        if(jobTitle){
+            whereClause.job_title = { [Op.like]: `%${jobTitle}%` };
+        }
+        if(candidateName){
+            whereClause.cand_name = { [Op.like]: `%${candidateName}%` };
+        }
+        if(phone){
+            whereClause.phone = { [Op.like]: `%${phone}%` };
+        }
+        if(email){
+            whereClause.email = { [Op.like]: `%${email}%` };
+        }
+        if(gender){
+            whereClause.gender = { [Op.like]: `%${gender}%` };
+        }
+        if(skills){
+            whereClause.skills = { [Op.like]: `%${skills}%` };
+        }
+        if(summary){
+            whereClause.summary = { [Op.like]: `%${summary}%` };
+        }
+        if(industry){
+            whereClause.industry = { [Op.like]: `%${industry}%` };
+        }
+        if(currentCompany){
+            whereClause.current_company = { [Op.like]: `%${currentCompany}%` };
+        }
+        if(currentDesignation){
+            whereClause.current_designation = { [Op.like]: `%${currentDesignation}%` };
+        }
+        if(currentLocation){
+            whereClause.current_location = { [Op.like]: `%${currentLocation}%` };
+        }
+        if(experience){
+            whereClause.experience = { [Op.like]: `%${experience}%` };
+        }
+        if(ugDegree){
+            whereClause.ug_degree = { [Op.like]: `%${ugDegree}%` };
+        }
+        if(ugSpecialization){
+            whereClause.ug_spl = { [Op.like]: `%${ugSpecialization}%` };
+        }
+        if(pgDegree){
+            whereClause.pg_degree = { [Op.like]: `%${pgDegree}%` };
+        }
+        if(pgSpecialization){
+            whereClause.pg_spl = { [Op.like]: `%${pgSpecialization}%` };
+        }
+        if(functionArea){
+            whereClause.func_area = { [Op.like]: `%${functionArea}%` };
+        }
+        if(preferredLocation){
+            whereClause.preferred_location = { [Op.like]: `%${preferredLocation}%` };
+        }
+        if(annualSalary){
+            whereClause.annual_salary = { [Op.like]: `%${annualSalary}%` };
+        }
+        if(noticePeriod){
+            whereClause.notice_period = { [Op.like]: `%${noticePeriod}%` };
+        }
+        if(age){
+            whereClause.age = { [Op.like]: `%${age}%` };
+        }
+        if(workPermit){
+            whereClause.work_permit = { [Op.like]: `%${workPermit}%` };
+        }
+        if(maritalStatus){
+            whereClause.marital_status = { [Op.like]: `%${maritalStatus}%` };
+        }
+
+        if (fromDate && toDate) {
+            let theDate = parseInt(toDate.split("-")[2]) + 1;
+            let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, "0");
+            whereClause.uploaded_at = {
+              [Op.between]: [fromDate, newDate],
+            };
+          } else if (fromDate) {
+            whereClause.uploaded_at = {
+              [Op.gte]: fromDate,
+            };
+          } else if (toDate) {
+            let theDate = parseInt(toDate.split("-")[2]) + 1;
+            let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, "0");
+            whereClause.uploaded_at = {
+              [Op.lte]: newDate,
+            };
+          }
+
+        if (dobFromDate && dobToDate) {
+            let theDate = parseInt(dobToDate.split("-")[2]) + 1;
+            let newDate = dobToDate.slice(0, 8) + theDate.toString().padStart(2, "0");
+            whereClause.dob = {
+              [Op.between]: [dobFromDate, newDate],
+            };
+          } else if (dobFromDate) {
+            whereClause.dob = {
+              [Op.gte]: dobFromDate,
+            };
+          } else if (dobToDate) {
+            let theDate = parseInt(dobToDate.split("-")[2]) + 1;
+            let newDate = dobToDate.slice(0, 8) + theDate.toString().padStart(2, "0");
+            whereClause.dob = {
+              [Op.lte]: newDate,
+            };
+          }
 
         let order =[[Sequelize.col("uploaded_at"), "DESC"]];
 
@@ -74,8 +183,9 @@ exports.getAllCVs = async (req, res) => {
     }
 };
 
-exports.importExcel = async (req, res) => {
 
+exports.importExcel = async (req, res) => {
+    const transaction = await db.sequelize.transaction();
     try {
         if (!req.file) {
             return res.status(400).send('No file uploaded');
@@ -86,8 +196,6 @@ exports.importExcel = async (req, res) => {
             return res.status(400).json({ error: 'Invalid file' });
         }
 
-        console.log("=====>>>>>", req.file);
-        // Parse the Excel file
         const workbook = XLSX.readFile(req.file.path);
         const sheetName = workbook.SheetNames[0];
         const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
@@ -124,13 +232,30 @@ exports.importExcel = async (req, res) => {
         };
 
         for (const row of sheet) {
+            let index = 1;
             const transformedRow = {};
             for (const [excelColumn, key] of Object.entries(columnMapping)) {
                 transformedRow[key] = row[excelColumn] || null;
             }
-            console.log("====>Now here", transformedRow);
 
-            // Parse and format the date of birth if it exists
+            if (!transformedRow.cand_name || transformedRow.cand_name.trim() === "") {
+                await transaction.rollback();
+                return res.status(400).json({ error: `There is a error in the sheet at row no ${index}. Candidate name is required.` });
+            }
+
+            if (!transformedRow.job_title || transformedRow.job_title.trim() === "") {
+                await transaction.rollback();
+                return res.status(400).json({ error: `There is a error in the sheet at row no ${index}. Job Title is required.` });
+            }
+
+            if (!transformedRow.email || transformedRow.email.trim() === "") {
+                await transaction.rollback();
+                return res.status(400).json({ error: `There is a error in the sheet at row no ${index}. Candidate email is required.` });
+            }
+            if (!transformedRow.phone || transformedRow.phone.trim() === "") {
+                await transaction.rollback();
+                return res.status(400).json({ error: `There is a error in the sheet at row no ${index}. Candidate phone is required.` });
+            }
 
             const {
                 job_title,
@@ -161,10 +286,10 @@ exports.importExcel = async (req, res) => {
 
             try {
                 const result = await CV.create({
-                    job_title,
-                    cand_name,
-                    email,
-                    phone,
+                    job_title: job_title.trim(),
+                    cand_name: cand_name.trim(),
+                    email: email.trim(),
+                    phone: phone.trim(),
                     current_location,
                     preferred_location,
                     experience,
@@ -172,7 +297,7 @@ exports.importExcel = async (req, res) => {
                     current_designation,
                     func_area,
                     industry,
-                    skills,
+                    skills: skills.trim(),
                     annual_salary,
                     notice_period,
                     summary,
@@ -186,26 +311,30 @@ exports.importExcel = async (req, res) => {
                     dob,
                     age,
                     filename
-                });
+                }, { transaction });
 
                 if (result) {
                     successData.push(row);
                 } else {
-                    errorData.push(row);
+                    throw new Error('Row insertion failed');
                 }
             } catch (err) {
                 console.error('Error inserting row: ', err.message);
                 errorData.push(row);
             }
+             index ++;
         }
 
-        // Delete the uploaded file after processing
+        await transaction.commit();
+
+        // Optionally delete the uploaded file after processing
         // fs.unlinkSync(req.file.path);
 
         res.status(200).json({ msg: "Successful!!!", successData: successData, errorData: errorData });
 
     } catch (error) {
         console.log("Error posting CVs", error);
+        await transaction.rollback();
         if (req.file && req.file.path) {
             fs.unlinkSync(req.file.path);
         }
