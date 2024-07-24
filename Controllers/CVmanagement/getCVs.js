@@ -264,7 +264,7 @@ exports.importExcel = async (req, res) => {
                 fs.unlinkSync(req.file.path);
                 return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. Candidate email is required.` });
             }
-            if (!transformedRow.phone || transformedRow.phone.trim() === "") {
+            if (!transformedRow.phone) {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
                 return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. Candidate phone is required.` });
@@ -279,7 +279,7 @@ exports.importExcel = async (req, res) => {
                 fs.unlinkSync(req.file.path);
                 return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. Invalid Candidate Name.` });
             }
-            if (transformedRow.dob && !ValidateDate(transformedRow.dob.trim())) {
+            if (transformedRow.dob && !ValidateDate(transformedRow.dob)) {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
                 return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. date of birth should be in YYYY-MM-DD format.` });
