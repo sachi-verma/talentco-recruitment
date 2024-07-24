@@ -170,7 +170,7 @@ exports.getAllCVs = async (req, res) => {
                 limit,
                 offset
             }),
-            await CV.count(),
+            await CV.count({ where: whereClause}),
 
         ]);
         const pages = Math.ceil(totalRecords / limit);
@@ -183,6 +183,15 @@ exports.getAllCVs = async (req, res) => {
     }
 };
 
+const ValidateDate = (val) => {
+    const pattern = /^\d{4}-\d{2}-\d{2}$/;
+    return pattern.test(val);
+}
+
+const ValidateAlphabets = (val) => {
+    var pattern = /^[a-zA-Z\s]+$/;
+    return pattern.test(val);
+}
 
 exports.importExcel = async (req, res) => {
     const transaction = await db.sequelize.transaction();
@@ -240,21 +249,40 @@ exports.importExcel = async (req, res) => {
 
             if (!transformedRow.cand_name || transformedRow.cand_name.trim() === "") {
                 await transaction.rollback();
-                return res.status(400).json({ error: `There is a error in the sheet at row no ${index}. Candidate name is required.` });
+                fs.unlinkSync(req.file.path);
+                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. Candidate name is required.` });
             }
 
             if (!transformedRow.job_title || transformedRow.job_title.trim() === "") {
                 await transaction.rollback();
-                return res.status(400).json({ error: `There is a error in the sheet at row no ${index}. Job Title is required.` });
+                fs.unlinkSync(req.file.path);
+                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. Job Title is required.` });
             }
 
             if (!transformedRow.email || transformedRow.email.trim() === "") {
                 await transaction.rollback();
-                return res.status(400).json({ error: `There is a error in the sheet at row no ${index}. Candidate email is required.` });
+                fs.unlinkSync(req.file.path);
+                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. Candidate email is required.` });
             }
             if (!transformedRow.phone || transformedRow.phone.trim() === "") {
                 await transaction.rollback();
-                return res.status(400).json({ error: `There is a error in the sheet at row no ${index}. Candidate phone is required.` });
+                fs.unlinkSync(req.file.path);
+                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. Candidate phone is required.` });
+            }
+            if (!transformedRow.skills || transformedRow.skills.trim() === "") {
+                await transaction.rollback();
+                fs.unlinkSync(req.file.path);
+                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. Candidate skills are required.` });
+            }
+            if (transformedRow.cand_name && !ValidateAlphabets(transformedRow.cand_name.trim())) {
+                await transaction.rollback();
+                fs.unlinkSync(req.file.path);
+                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. Invalid Candidate Name.` });
+            }
+            if (transformedRow.dob && !ValidateDate(transformedRow.dob.trim())) {
+                await transaction.rollback();
+                fs.unlinkSync(req.file.path);
+                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index}. date of birth should be in YYYY-MM-DD format.` });
             }
 
             const {
