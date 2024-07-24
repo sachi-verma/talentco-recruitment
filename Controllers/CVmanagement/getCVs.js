@@ -9,13 +9,48 @@ exports.getAllCVs = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         let limit = parseInt(req.query.limit) || 10;
         let offset = (page - 1) * limit;
-        let order =null;
         const whereClause = {};
         const upload = req.query.upload ? true : false;
 
-        if (upload) {
-            whereClause.resume = null;
-            order = [["uploaded_at", "DESC"]];
+        const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
+        const {candidateName, skills,summary, industry, currentCompany, currentDesignation, currentLocation, experience, ugDegree, ugSpecialization, orderBy, orderDirection } = filter;
+       
+        // if (upload) {
+        //     whereClause.resume = null;
+        //     order = [["uploaded_at", "DESC"]];
+        // }
+
+        let order =[[Sequelize.col("uploaded_at"), "DESC"]];
+
+        if (orderBy && orderDirection) {
+        //   const validColumns = {
+        //     upload_date: "job_title",
+        //     skills: "skills",
+        //     position: "summary",
+        //     position: "industry",
+        //     position: "current_location",
+        //     position: "experience",
+        //     position: "current_designation",
+        //     position: "ug_degree",
+        //     position: "ug_spl",
+        //     position: "pg_degree",
+        //     position: "pg_spl",
+        //     position: "cand_name",
+        //     position: "func_area",
+        //     position: "current_company",
+        //     position: "preferred_location",
+        //     position: "annual_salary",
+        //     position: "notice_period",
+        //     position: "dob",
+        //     position: "age",
+        //     position: "marital_status",
+        //     position: "phone",
+        //     position: "email",
+        //     position: "gender",
+        //     position: "work_permit",
+        //   };
+            order = [[Sequelize.col(orderBy), orderDirection]];
+          
         }
 
         const [report, totalRecords] = await Promise.all([
@@ -221,7 +256,7 @@ exports.exportResumes = async (req, res) => {
             }
 
             // Construct the full path to the resume file
-            const fullPath = path.join(__dirname, '..', resumepath);
+            const fullPath = path.join(__dirname, '..','..', resumepath);
 
             // Check if the file exists
             if (!fs.existsSync(fullPath)) {

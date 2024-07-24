@@ -46,6 +46,6 @@ router.post('/importexcel', upload.single('file'), getCVs.importExcel);
 
 router.patch('/uploadresume/:id', resumeUpload.single('resume'), getCVs.uploadResume);
 
-router.get('/downloadresume/:id', getCVs.exportResumes);
+router.get('/downloadcv/:id', getCVs.exportResumes);
 
 module.exports = router;
