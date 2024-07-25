@@ -193,6 +193,11 @@ const ValidateAlphabets = (val) => {
     return pattern.test(val);
 }
 
+const ValidateNumber = (val) => {
+    var pattern = /^[1-9]\d*$/;
+    return pattern.test(val);
+}
+
 exports.importExcel = async (req, res) => {
     const transaction = await db.sequelize.transaction();
     try {
@@ -250,39 +255,49 @@ exports.importExcel = async (req, res) => {
             if (!transformedRow.cand_name || transformedRow.cand_name.toString().trim() === "") {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
-                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index+1}. Candidate name is required.` });
+                return res.status(400).json({ error: `There is a error in the sheet at row no- ${index+1}. Candidate name is required.` });
             }
 
             if (!transformedRow.job_title || transformedRow.job_title.toString().trim() === "") {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
-                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index+1}. Job Title is required.` });
+                return res.status(400).json({ error: `There is a error in the sheet at row no- ${index+1}. Job Title is required.` });
             }
 
             if (!transformedRow.email || transformedRow.email.toString().trim() === "") {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
-                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index+1}. Candidate email is required.` });
+                return res.status(400).json({ error: `There is a error in the sheet at row no- ${index+1}. Candidate email is required.` });
             }
             if (!transformedRow.phone || transformedRow.phone.toString().trim() === "") {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
-                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index+1}. Candidate phone is required.` });
+                return res.status(400).json({ error: `There is a error in the sheet at row no- ${index+1}. Candidate phone is required.` });
             }
             if (!transformedRow.skills || transformedRow.skills.toString().trim() === "") {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
-                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index+1}. Candidate skills are required.` });
+                return res.status(400).json({ error: `There is a error in the sheet at row no- ${index+1}. Candidate skills are required.` });
             }
             if (transformedRow.cand_name && !ValidateAlphabets(transformedRow.cand_name.toString().trim())) {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
-                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index+1}. Invalid Candidate Name.` });
+                return res.status(400).json({ error: `There is a error in the sheet at row no- ${index+1}. Invalid Candidate Name.` });
             }
             if (transformedRow.dob && !ValidateDate(transformedRow.dob)) {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
-                return res.status(400).json({ error: `There is a error in the sheet at row no. ${index+1}. date of birth should be in YYYY-MM-DD format.` });
+                return res.status(400).json({ error: `There is a error in the sheet at row no- ${index+1}. date of birth should be in YYYY-MM-DD format.` });
+            }
+            if (transformedRow.dob && !ValidateNumber(transformedRow.experience)) {
+                await transaction.rollback();
+                fs.unlinkSync(req.file.path);
+                return res.status(400).json({ error: `There is a error in the sheet at row no- ${index+1}. Experience should be Integer.` });
+            }
+            if (transformedRow.dob && !ValidateNumber(transformedRow.age)) {
+                await transaction.rollback();
+                fs.unlinkSync(req.file.path);
+                return res.status(400).json({ error: `There is a error in the sheet at row no- ${index+1}. Age should be Integer.` });
             }
 
             const {

@@ -852,6 +852,7 @@ exports.getPositionWiseCount = async (req, res) => {
       recruiter
     } = filter;
 
+    const whereClause = {};
     const positionFilter = {};
     const companyFilter = {};
 
@@ -980,6 +981,7 @@ exports.getPositionWiseCount = async (req, res) => {
         "Candidate.Position.upload_date",
         "Candidate.Position.Company.company_name",
       ],
+      where:whereClause,
       order: order,
       limit,
       offset,

@@ -12,10 +12,10 @@ const CVs = sequelize.define('allCV',{
         type: DataTypes.STRING,
     },
     skills: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
     },
     summary: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
     },
     industry: {
         type: DataTypes.STRING,
