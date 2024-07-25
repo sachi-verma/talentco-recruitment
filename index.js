@@ -66,7 +66,7 @@ app.use(CVsRouts);
 //https://atsapi.abstarthr.in/restartNodeServer
 //route to restart the server
 app.post('/restartNodeServer', (req, res) => {
-  exec('pm2 restart ATS --watch', (error, stdout, stderr) => {
+  exec('pm2 restart ats_server --watch', (error, stdout, stderr) => {
       if (error) {
           console.error(`exec error: ${error}`);
           return res.status(500).send('Error restarting server');

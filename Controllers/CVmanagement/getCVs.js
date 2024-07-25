@@ -314,10 +314,10 @@ exports.importExcel = async (req, res) => {
 
             try {
                 const result = await CV.create({
-                    job_title: job_title.trim(),
-                    cand_name: cand_name.trim(),
-                    email: email.trim(),
-                    phone: phone.trim(),
+                    job_title: job_title.toString().trim(),
+                    cand_name: cand_name.toString().trim(),
+                    email: email.toString().trim(),
+                    phone: phone.toString().trim(),
                     current_location,
                     preferred_location,
                     experience,
@@ -325,7 +325,7 @@ exports.importExcel = async (req, res) => {
                     current_designation,
                     func_area,
                     industry,
-                    skills: skills.trim(),
+                    skills: skills.toString().trim(),
                     annual_salary,
                     notice_period,
                     summary,

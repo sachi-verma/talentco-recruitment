@@ -841,7 +841,7 @@ exports.getPositionWiseCount = async (req, res) => {
       offset = null;
     }
 
-    const {
+    let {
       fromDate,
       toDate,
       company,
