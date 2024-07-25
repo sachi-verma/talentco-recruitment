@@ -3,7 +3,7 @@ const {DataTypes} = require('sequelize');
 
 const CVs = sequelize.define('allCV',{
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       autoIncrement: true,
       primaryKey: true,
       allowNull: false,
