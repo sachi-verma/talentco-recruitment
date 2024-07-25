@@ -194,9 +194,12 @@ const ValidateAlphabets = (val) => {
 }
 
 const ValidateNumber = (val) => {
+    if (val === null || val === undefined || val === '') {
+      return false;
+    }
     var pattern = /^[1-9]\d*$/;
-    return pattern.test(val);
-}
+    return pattern.test(String(val));
+  };
 
 exports.importExcel = async (req, res) => {
     const transaction = await db.sequelize.transaction();
@@ -289,15 +292,15 @@ exports.importExcel = async (req, res) => {
                 fs.unlinkSync(req.file.path);
                 return res.status(400).json({ error: `There is a error in the sheet at row no- ${index+1}. date of birth should be in YYYY-MM-DD format.` });
             }
-            if (transformedRow.dob && !ValidateNumber(transformedRow.experience)) {
+            if (transformedRow.experience && !ValidateNumber(transformedRow.experience)) {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
-                return res.status(400).json({ error: `There is a error in the sheet at row no- ${index+1}. Experience should be Integer.` });
+                return res.status(400).json({ error: `There is a error in the sheet at row no- ${index+1}. Experience should be Number.` });
             }
-            if (transformedRow.dob && !ValidateNumber(transformedRow.age)) {
+            if (transformedRow.age && !ValidateNumber(transformedRow.age)) {
                 await transaction.rollback();
                 fs.unlinkSync(req.file.path);
-                return res.status(400).json({ error: `There is a error in the sheet at row no- ${index+1}. Age should be Integer.` });
+                return res.status(400).json({ error: `There is a error in the sheet at row no- ${index+1}. Age should be Number.` });
             }
 
             const {
