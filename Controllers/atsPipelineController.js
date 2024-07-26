@@ -11,9 +11,13 @@ const Interview = require("../Models/interviewSchedule");
 const { assignRecruiter } = require("./assignRecruiterController");
 const Users = require("../Models/userDetails");
 const InterviewHistory = require("../Models/interviewHistory");
+const formateDate= require("../Helper/helper");
 
 Users.hasMany(Candidate, { foreignKey: 'created_by' });
 Candidate.belongsTo(Users, { foreignKey: 'created_by' });
+
+const monthData = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 exports.getAtsPipeline = async (req, res) => {
   try {
@@ -612,19 +616,23 @@ async function scheduleInterview({ id, candidate_status, status_date, recruiter_
 
 Greetings from TalentCo HR Services LLP!
 
-Your interview is scheduled with  ${company} on ${interviewdate} at  ${interview_time} for the post of ${position}.
-Interview Round : ${interview_round}.
-${interview_mode === "In Person" ? `Company Address: ${companyaddress}` : `${interview_location.includes('https') ? `Link` : `Interview Location`}: ${interview_location}`}.
-Contact Person: ${contactperson}, ${contactpersonphone} 
+Your interview is scheduled with ${company} for the post of ${position}.
+
+Please find below the interview details for your reference:
+Interview Round : ${interview_round}
+Interview Date  : ${interview_date?.split("-")[2]} ${monthData[parseInt(interview_date?.split("-")[1])]} ${interview_date?.split("-")[0]}
+Interview Time  : ${interview_time}
+Interview Mode  : ${interview_mode}
+${interview_mode === "In Person" ? `Interview Location : ${interview_location}` : `${interview_location.includes('https') ? `Link` : `Interview Location`} : ${interview_location}`}.
               
-Try to ${interview_location.includes('https') ? `Join 5 minutes` : `reach 15 minutes`} before the scheduled time to avoid any last-minute rush. 
+Try to ${interview_location.includes('https') ? `Join 5 minutes before the scheduled time to avoid any last-minute inconvenience.` : `reach 15 minutes before the scheduled time to avoid any last-minute rush.`}
                                                                                                                                                                                                                                                        
 Kindly send your acknowledgment as a confirmation to this mail. 
               
 All the very best.
 
-Regards,
-TalentCo HR Services`
+Thanks & Regards,
+TalentCo HR Services LLP`
         });
       } catch (mailError) {
         errorinmail = true;
