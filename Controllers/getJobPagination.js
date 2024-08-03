@@ -247,7 +247,7 @@ exports.getAssignRecuitersLog = async (req, res) => {
       companyFilters.company_name = { [Op.like]: `%${company}%` };
     }
     if (recruiter) {
-      RecruiterFilters.name = { [Op.like]: `%${recruiter}%` };
+      RecruiterFilters.id =  recruiter;
     }
 
     // if (positionStatus && positionStatus!=="" && positionStatus !== "All") {
