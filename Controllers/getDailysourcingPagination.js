@@ -778,10 +778,16 @@ exports.getAdminReportInDetail = async (req, res) => {
     let offset = (page - 1) * limit; 
     const dateFromParams = req.query.date;
     const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
+    const download = req.query.download ? true : false;
 
+    if (download) {
+      limit = null;
+      offset = null;
+    }
     if(!dateFromParams){
       return res.status(404).json({error: "Date not found"});
     }
+
 
     const {
       company,
@@ -917,6 +923,63 @@ exports.getAdminReportInDetail = async (req, res) => {
         ],
       })
     ]);
+
+    if(download){
+      // Create Excel workbook and worksheet
+      const workbook = new excel.Workbook();
+      const worksheet = workbook.addWorksheet("dailyadminreport");
+
+      // Add headers to the worksheet
+
+      const headerRow = worksheet.addRow([
+        "Sr. No.",
+        "Date",
+        "Recruiter Name",
+        "Company Name",
+        "Company Position",
+        "Total CV Sent"
+      ]);
+
+      headerRow.eachCell((cell) => {
+        cell.font = { bold: true };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFD3D3D3" },
+        };
+      });
+
+      // Add data rows to the worksheet
+      report.forEach((re, index) => {
+        worksheet.addRow([
+          index + 1,
+          re.getDataValue('sourcing_date'),
+          re.getDataValue('recruiter_name'),
+          re.getDataValue('company_name'),
+          re.getDataValue('position_name'),
+          re.getDataValue('candidate_count'),
+        ]);
+      });
+
+      // Generate a unique filename for the Excel file
+
+      const filename = `Exported_admindailyreport.xlsx`;
+
+      // Save the workbook to a buffer
+      const buffer = await workbook.xlsx.writeBuffer();
+
+      // Send the Excel file as a response
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`
+      );
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.status(200).send(buffer);
+
+    }else{
     
     const pages = Math.ceil(totalRecords.length / limit);
     res.status(200).json({message: 'report fetched successfully!',
@@ -924,7 +987,7 @@ exports.getAdminReportInDetail = async (req, res) => {
       pages: pages,
       report: report
     });	
-    
+  }
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");

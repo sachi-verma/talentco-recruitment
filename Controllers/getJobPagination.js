@@ -278,11 +278,11 @@ exports.getAssignRecuitersLog = async (req, res) => {
       };
     }
 
-    let order =[[Sequelize.col("assigned_at"), "DESC"]];
+    let order =[[Sequelize.col("created_at"), "DESC"]];
 
     if (orderBy && orderDirection) {
       const validColumns = {
-        assigned_at: "assigned_at",
+        assigned_at: "created_at",
         company_name: "Position.Company.company_name",
         position: "Position.position",
         recruiter: "User.name",
