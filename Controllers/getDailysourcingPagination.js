@@ -717,20 +717,14 @@ exports.getAdminReportByPage = async (req, res) => {
          // Add headers to the worksheet
          worksheet.addRow([
            "Date",
-           "Position",
-           "Recruiter Name",
            "Total CV Sent ",
-           "Company Name",
          ]);
    
          // Add data rows to the worksheet
          report.forEach((reportItem) => {
            worksheet.addRow([
              reportItem.dataValues.date,
-             reportItem.Position.position,
-             reportItem.Position.User?.name,
              reportItem.dataValues.sentToClientCount,
-             reportItem.Position.Company.company_name
            ]);
          });
    
