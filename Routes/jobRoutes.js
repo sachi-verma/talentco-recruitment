@@ -50,4 +50,6 @@ router.get('/exportAssignRecruiter', exportJobsController.exportJobs);
 
 router.patch('/updatePositionStatus/:id', getJobPagination.updatePositionStatus);
 
+router.get('/getassignrecruiterlog', getJobPagination.getAssignRecuitersLog);
+
 module.exports = router;

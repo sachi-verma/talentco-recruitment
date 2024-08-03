@@ -198,7 +198,7 @@ const ValidateNumber = (val) => {
       return false;
     }
     var pattern = /^[1-9]\d*$/;
-    return pattern.test(String(val));
+    return pattern.test(String(Math.ceil(val)));
   };
 
 exports.importExcel = async (req, res) => {

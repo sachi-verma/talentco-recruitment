@@ -1,9 +1,9 @@
 const {sequelize} = require('./db');
 const {DataTypes} = require('sequelize');
 
-const assignRecruiter = sequelize.define('assignRecuiter',{
+const assignRecruiterLogs = sequelize.define('assignRecuiterLogs',{
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       autoIncrement: true,
       primaryKey: true,
       allowNull: false,
@@ -24,10 +24,24 @@ const assignRecruiter = sequelize.define('assignRecuiter',{
             key: 'id'
         }
     },
+    active:{
+        type: DataTypes.INTEGER,
+        default:0
+    },
+    created_by:{
+        type: DataTypes.INTEGER,
+        references:{
+            model: 'userDetails',
+            key: 'id'
+        }
+    },
     created_at:{
         type: DataTypes.DATEONLY
     },
-    created_by:{
+    removed_at:{
+        type: DataTypes.DATEONLY
+    },
+    removed_by:{
         type: DataTypes.INTEGER,
         references:{
             model: 'userDetails',
@@ -36,7 +50,7 @@ const assignRecruiter = sequelize.define('assignRecuiter',{
     }
 } ,
 {
-    tableName: 'assign_recruiter',
+    tableName: 'assign_recruiter_logs',
 });
 
-module.exports = assignRecruiter;
+module.exports = assignRecruiterLogs;

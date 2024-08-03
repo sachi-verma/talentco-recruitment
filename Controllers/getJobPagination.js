@@ -5,14 +5,22 @@ const Company = require("../Models/companyDetails");
 const { Op } = require("sequelize");
 const Users = require("../Models/userDetails");
 const assignRecruiter = require("../Models/assignRecruiter");
+const assignRecruiterLogs = require('../Models/assignRecruiterLogs');
 
 Company.hasMany(Positions, { foreignKey: "company_id" });
 Positions.belongsTo(Company, { foreignKey: "company_id" });
+
 Positions.hasMany(assignRecruiter, { foreignKey: "position_id" });
 assignRecruiter.belongsTo(Positions, { foreignKey: "position_id" });
 
+Positions.hasMany(assignRecruiterLogs, { foreignKey: "position_id" });
+assignRecruiterLogs.belongsTo(Positions, { foreignKey: "position_id" });
+
 assignRecruiter.belongsTo(Users, { foreignKey: "recruiter_id" });
 Users.hasMany(assignRecruiter, { foreignKey: "recruiter_id" });
+
+assignRecruiterLogs.belongsTo(Users, { foreignKey: "recruiter_id" });
+Users.hasMany(assignRecruiterLogs, { foreignKey: "recruiter_id" });
 
 exports.getJobByPage = async (req, res) => {
   try {
@@ -79,7 +87,9 @@ exports.getJobByPage = async (req, res) => {
 
     if (fromDate) whereClause.upload_date = { [Op.gte]: `%${fromDate}%` };
 
-    const assignRecruiterFilters = {};
+    const assignRecruiterFilters = {
+     // active:1,
+    };
     
     if (recruiterId && recruiterId !== "Not Assigned" && recruiterId !== "Only Assigned") {
       assignRecruiterFilters.recruiter_id = recruiterId;
@@ -204,5 +214,129 @@ exports.updatePositionStatus = async (req, res) => {
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");
+  }
+};
+
+
+exports.getAssignRecuitersLog = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
+    const {
+      position,
+      company,
+      orderBy,
+      orderDirection,
+      positionStatus,
+      recruiterStatus,
+      fromDate,
+      toDate,
+    } = filter;
+
+    const whereClause={};
+    const companyFilters={};
+    const assignRecruiterFilters={
+     // active:1,
+    };
+
+    if (position) whereClause.position = { [Op.like]: `%${position}%` };
+    if (company) {
+      companyFilters.company_name = { [Op.like]: `%${company}%` };
+    }
+
+    // if (positionStatus && positionStatus!=="" && positionStatus !== "All") {
+    //   whereClause.position_status = { [Op.like]: `%${positionStatus}%` };
+    // } else if (!positionStatus || positionStatus==="") {
+    //   whereClause.position_status = "Open";
+    // }
+
+    if(recruiterStatus === 0){
+      assignRecruiterFilters.active = 0;
+    }
+
+    if (fromDate && toDate) {
+      let theDate = parseInt(toDate.split("-")[2]) + 1;
+      let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, "0");
+      assignRecruiterFilters.created_at = {
+        [Op.between]: [fromDate, newDate],
+      };
+    } else if (fromDate) {
+      assignRecruiterFilters.created_at = {
+        [Op.gte]: fromDate,
+      };
+    } else if (toDate) {
+      assignRecruiterFilters.created_at = {
+        [Op.lte]: toDate,
+      };
+    }
+
+   const [report, totalRecords] = await Promise.all([
+    assignRecruiterLogs.findAll({
+      include: [
+        {
+          model:Positions,
+          attributes:['id','position'],
+          required: true,
+          where: companyFilters,
+          include:[
+            {
+              model:Company,
+              attributes:['id','company_name'],
+              required: true,
+            }
+          ]
+        },
+        {
+          model: Users,
+           required:true,
+          where: assignRecruiterFilters,
+         attributes: ["name"],
+            
+        },
+      ],
+       limit,
+       offset,
+       where: whereClause
+    }),
+
+    assignRecruiterLogs.count({
+      include: [
+        {
+          model:Positions,
+          attributes:['id','position'],
+          required: true,
+          where: companyFilters,
+          include:[
+            {
+              model:Company,
+              attributes:['id','company_name'],
+              required: true,
+            }
+          ]
+        },
+        {
+          model: Users,
+          required:true,
+          where: assignRecruiterFilters,
+         attributes: ["name"],
+        },
+      ]
+    })
+   ]);
+   const pages = Math.ceil( totalRecords  / limit);
+   return res.status(200).json({
+     totalRecords: totalRecords,
+     pages: pages,
+     data: [...report],
+     
+   });
+    
+  } catch (error) {
+
+    console.error('Error getting assigned recruiters log:', error);
+    return res.status(500).json({ error: 'Internal server error', msg: error.message });
   }
 };

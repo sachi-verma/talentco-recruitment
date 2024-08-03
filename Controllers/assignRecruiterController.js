@@ -6,6 +6,7 @@ const Roles = require('../Models/roles');
 const {Op}= require("sequelize");
 const Company = require('../Models/companyDetails');
 const { sendMail } = require("../Controllers/emailController");
+const assignRecruiterLogs = require('../Models/assignRecruiterLogs');
 
 // exports.getRecruiter = async (req,res) => {
 //   try {
@@ -38,10 +39,13 @@ exports.getRecruiter = async (req,res) => {
 exports.assignRecruiter = async (req, res) => {
     try {
         const position_id = req.params.id;
-        const { recruiter_id } = req.body;
+        const { recruiter_id, user_id } = req.body;
         //await Positions.update({ recruiter_assign }, {where: {id: position_id}});
         let assigned = 1;
         let errorinmail =false;
+        let date = new Date();
+        let created_at = date.toISOString().split('T')[0];
+        
         let position = await Positions.findOne({
           include: [
             {
@@ -55,7 +59,7 @@ exports.assignRecruiter = async (req, res) => {
 
         if(position && recruiter){
 
-          console.log("=========>>>>>", position, '========>>>> recruiter', recruiter)
+         // console.log("=========>>>>>", position, '========>>>> recruiter', recruiter)
 
         const recruiterExist =await assignRecruiter.findOne({where: {position_id: position_id, recruiter_id: recruiter_id}});
 
@@ -63,36 +67,37 @@ exports.assignRecruiter = async (req, res) => {
           return res.status(404).json({error:"This recruiter already assigned for this position", position_id: position_id, recruiter_id:recruiter_id});
         }
         else{
-          await assignRecruiter.create({position_id, recruiter_id });
+          await assignRecruiter.create({position_id, recruiter_id, created_at, created_by:user_id});
           await Positions.update({recruiter_assign:assigned }, {where:{id:position_id}});
+
+          await assignRecruiterLogs.create({position_id, recruiter_id, created_at, created_by:user_id, active:1});
 
           let recruitername = recruiter.name;
           let recruiteremail = recruiter.email;
           let positionname = position.position;
           let companyname = position.Company.company_name;
 
-          console.log(positionname, companyname, recruitername, recruiteremail);
+         // console.log(positionname, companyname, recruitername, recruiteremail);
           if(recruiteremail){
           try {
             await sendMail({
               to: recruiteremail,
               subject: `Assigned to a New Position || ${positionname} at ${companyname} !!`,
               text: `Dear, ${recruitername}!
-              
-        You have been assigned to a new position for company ${companyname}. You can find the Position Details below, 
+You have been assigned to a new position for company ${companyname}. You can find the Position Details below, 
                
-               Position Name: ${positionname},
-               Company Name: ${companyname},
-               Number of Positions : ${position.no_of_positions},
-               Location : ${position.location},
-               Experience : ${position.min_experience} to ${position.max_experience},
-               Min CTC : ${position.min_ctc},
-               Max CTC : ${position.max_ctc},
-               Qualification : ${position.qualification},
-               Gender Preferences : ${position.gender_pref},
+Position Name: ${positionname},
+Company Name: ${companyname},
+Number of Positions : ${position.no_of_positions},
+Location : ${position.location},
+Experience : ${position.min_experience} to ${position.max_experience},
+Min CTC : ${position.min_ctc},
+Max CTC : ${position.max_ctc},
+Qualification : ${position.qualification},
+Gender Preferences : ${position.gender_pref},
 
-           Regards,
-           Talent Co Hr Services`,
+Regards,
+Talent Co Hr Services`,
             });
           } catch (mailError) {
             errorinmail=true;
@@ -118,12 +123,16 @@ exports.assignRecruiter = async (req, res) => {
   exports.deleteAssignRecruiter = async (req, res) => {
     try {
       const position_id = req.params.id;
-      const { recruiter_id } = req.body;
+      const { recruiter_id, user_id } = req.body;
       let notassigned = 0;
+      let date = new Date();
+      let removed_at = date.toISOString().split('T')[0];
 
-      await assignRecruiter.destroy({
-        where: { position_id, recruiter_id }
-      });
+  
+      await assignRecruiter.destroy(
+        {where: { position_id, recruiter_id }}
+      );
+      await assignRecruiterLogs.update({removed_at, removed_by:user_id, active:0}, {where: {position_id, recruiter_id, removed_at:null, removed_by:null}});
 
       let recruiterassigned = await assignRecruiter.findOne({ where:{ position_id}});
 
@@ -131,7 +140,7 @@ exports.assignRecruiter = async (req, res) => {
         await Positions.update({recruiter_assign:notassigned }, {where:{id:position_id}});
       }
   
-      res.status(200).json({ success: "Recruiter Removed Successfully !!", recruiter_id, position_id });
+      res.status(200).json({ success: "Recruiter Removed Successfully !!", recruiter_id, position_id});
     } catch (error) {
       console.error('Error deleting assigned recruiter:', error);
       return res.status(500).json({ error: 'Internal server error', msg: error.message });
