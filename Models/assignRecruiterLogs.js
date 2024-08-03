@@ -39,7 +39,7 @@ const assignRecruiterLogs = sequelize.define('assignRecuiterLogs',{
         type: DataTypes.DATEONLY
     },
     created_at:{
-        type: DataTypes.DATE
+        type: DataTypes.STRING
     },
     removed_at:{
         type: DataTypes.DATEONLY
@@ -51,8 +51,11 @@ const assignRecruiterLogs = sequelize.define('assignRecuiterLogs',{
             key: 'id'
         }
     },
+    remarks:{
+        type: DataTypes.STRING,
+    },
     updated_at:{
-        type: DataTypes.DATE
+        type: DataTypes.STRING
     },
 } ,
 {

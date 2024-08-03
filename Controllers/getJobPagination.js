@@ -2,7 +2,7 @@ const db = require("../Models/db");
 const Jobs = require("../Models/jobDetails");
 const Positions = require("../Models/allPositions");
 const Company = require("../Models/companyDetails");
-const { Op } = require("sequelize");
+const { Op,Sequelize } = require("sequelize");
 const Users = require("../Models/userDetails");
 const assignRecruiter = require("../Models/assignRecruiter");
 const assignRecruiterLogs = require('../Models/assignRecruiterLogs');
@@ -232,19 +232,22 @@ exports.getAssignRecuitersLog = async (req, res) => {
       orderDirection,
       positionStatus,
       recruiterStatus,
+      recruiter,
       fromDate,
       toDate,
     } = filter;
 
     const whereClause={};
+    const positionFilters={};
     const companyFilters={};
-    const assignRecruiterFilters={
-     // active:1,
-    };
+    const RecruiterFilters={};
 
-    if (position) whereClause.position = { [Op.like]: `%${position}%` };
+    if (position) positionFilters.position = { [Op.like]: `%${position}%` };
     if (company) {
       companyFilters.company_name = { [Op.like]: `%${company}%` };
+    }
+    if (recruiter) {
+      RecruiterFilters.name = { [Op.like]: `%${recruiter}%` };
     }
 
     // if (positionStatus && positionStatus!=="" && positionStatus !== "All") {
@@ -253,26 +256,44 @@ exports.getAssignRecuitersLog = async (req, res) => {
     //   whereClause.position_status = "Open";
     // }
 
-    if(recruiterStatus === 0){
-      assignRecruiterFilters.active = 0;
+   if(recruiterStatus && recruiterStatus !== "" && recruiterStatus !== 'All') {
+      whereClause.active = recruiterStatus;
+   }else if(!recruiterStatus || recruiterStatus === '') {
+    whereClause.active =1;
     }
 
     if (fromDate && toDate) {
       let theDate = parseInt(toDate.split("-")[2]) + 1;
       let newDate = toDate.slice(0, 8) + theDate.toString().padStart(2, "0");
-      assignRecruiterFilters.created_at = {
+      whereClause.assigned_at = {
         [Op.between]: [fromDate, newDate],
       };
     } else if (fromDate) {
-      assignRecruiterFilters.created_at = {
+      whereClause.assigned_at = {
         [Op.gte]: fromDate,
       };
     } else if (toDate) {
-      assignRecruiterFilters.created_at = {
+      whereClause.assigned_at = {
         [Op.lte]: toDate,
       };
     }
 
+    let order =[[Sequelize.col("assigned_at"), "DESC"]];
+
+    if (orderBy && orderDirection) {
+      const validColumns = {
+        assigned_at: "assigned_at",
+        company_name: "Position.Company.company_name",
+        position: "Position.position",
+        recruiter: "User.name",
+        removed_at:"removed_at"
+      };
+
+      if (validColumns[orderBy]) {
+        order = [[Sequelize.col(validColumns[orderBy]), orderDirection]];
+      }
+    }
+    
    const [report, totalRecords] = await Promise.all([
     assignRecruiterLogs.findAll({
       include: [
@@ -280,25 +301,27 @@ exports.getAssignRecuitersLog = async (req, res) => {
           model:Positions,
           attributes:['id','position'],
           required: true,
-          where: companyFilters,
+          where: positionFilters,
           include:[
             {
               model:Company,
               attributes:['id','company_name'],
               required: true,
+              where: companyFilters,
             }
           ]
         },
         {
           model: Users,
            required:true,
-          where: assignRecruiterFilters,
+          where: RecruiterFilters,
          attributes: ["name"],
             
         },
       ],
        limit,
        offset,
+       order:order,
        where: whereClause
     }),
 
@@ -308,24 +331,27 @@ exports.getAssignRecuitersLog = async (req, res) => {
           model:Positions,
           attributes:['id','position'],
           required: true,
-          where: companyFilters,
+          where: positionFilters,
           include:[
             {
               model:Company,
               attributes:['id','company_name'],
               required: true,
+              where: companyFilters,
             }
           ]
         },
         {
           model: Users,
           required:true,
-          where: assignRecruiterFilters,
+          where: RecruiterFilters,
          attributes: ["name"],
         },
-      ]
+      ],
+      where: whereClause,
     })
    ]);
+
    const pages = Math.ceil( totalRecords  / limit);
    return res.status(200).json({
      totalRecords: totalRecords,

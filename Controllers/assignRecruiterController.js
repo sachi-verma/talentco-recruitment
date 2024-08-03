@@ -126,7 +126,7 @@ Talent Co Hr Services`,
   exports.deleteAssignRecruiter = async (req, res) => {
     try {
       const position_id = req.params.id;
-      const { recruiter_id, user_id, current_date } = req.body;
+      const { recruiter_id, user_id, current_date, remarks } = req.body;
       let notassigned = 0;
       // let date = new Date();
       // let removed_at = date.toISOString().split('T')[0];
@@ -137,7 +137,7 @@ Talent Co Hr Services`,
       await assignRecruiter.destroy(
         {where: { position_id, recruiter_id }}
       );
-      await assignRecruiterLogs.update({removed_at, removed_by:user_id, active:0, updated_at}, {where: {position_id, recruiter_id, removed_at:null, removed_by:null}});
+      await assignRecruiterLogs.update({removed_at, removed_by:user_id, active:0, updated_at, remarks:remarks}, {where: {position_id, recruiter_id, removed_at:null, removed_by:null}});
 
       let recruiterassigned = await assignRecruiter.findOne({ where:{ position_id}});
 
