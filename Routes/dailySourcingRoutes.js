@@ -57,6 +57,8 @@ router.get('/getSourcingReportByDate', getDailySourcingByDateController.getSourc
 
 router.delete('/deleteCandidate/:id', dailySourcingController.deleteCandidate);
 
+router.get('/getadminreportbydate',getDailysourcingPagination.getAdminReportInDetail);
+
 
 
 module.exports = router;

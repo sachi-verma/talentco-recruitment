@@ -769,3 +769,164 @@ exports.getAdminReportByPage = async (req, res) => {
     res.status(500).send("500 server error");
   }
 };
+
+exports.getAdminReportInDetail = async (req, res) => {
+
+  try {
+    const page = parseInt(req.query.page) || 1;  
+    let limit = parseInt(req.query.limit) || 10;  
+    let offset = (page - 1) * limit; 
+    const dateFromParams = req.query.date;
+    const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
+
+    if(!dateFromParams){
+      return res.status(404).json({error: "Date not found"});
+    }
+
+    const {
+      company,
+      position,
+      orderBy,
+      orderDirection,
+      recruiter,
+    } = filter;
+
+    const whereClause = {
+      sourcing_date: dateFromParams,
+      sourcing_status: "Sent To Client",
+    };
+
+    const companyFilter={};
+    const positionFilter ={};
+
+    if(recruiter){
+      whereClause.created_by= recruiter;
+    }
+
+    if (company) {
+      companyFilter.company_name = { [Op.like]: `%${company}%` };
+    }
+
+    if (position) {
+      positionFilter.position = { [Op.like]: `%${position}%` };
+    }
+
+    let order =[[Sequelize.col("Position.position"), "ASC"]];
+
+    if (orderBy && orderDirection) {
+      const validColumns = {
+        company_name: "Position.Company.company_name",
+        position: "Position.position",
+      };
+
+      if (validColumns[orderBy]) {
+        order = [[Sequelize.col(validColumns[orderBy]), orderDirection]];
+      }
+    }
+
+    const [report, totalRecords] = await Promise.all([
+      await Candidate.findAll({
+        attributes: [
+          "created_by",
+          [Sequelize.fn("COUNT", Sequelize.col("Candidates.id")), "candidate_count"],
+          [Sequelize.col("Candidates.sourcing_date"), "sourcing_date"],
+          [Sequelize.col("Position.id"), "position_id"],
+          [Sequelize.col("Position.company_id"), "company_id"],
+          [Sequelize.col("Position.position"), "position_name"],
+          [Sequelize.col("Position.Company.company_name"), "company_name"],
+          [Sequelize.col("User.id"), "id"],
+          [Sequelize.col("User.name"), "recruiter_name"],
+        ],
+        include: [
+          {
+            model: Position,
+            required: true,
+            attributes: [],
+            where: positionFilter,
+            include: [
+              {
+                model: Company,
+                required: true,
+                attributes: [],
+               where:companyFilter
+              },
+            ],
+          },
+          {
+            model :User,
+            required: true,
+            attributes: [],
+          }
+        ],
+        where:whereClause,
+        group: [
+          "Position.id",
+          "Position.company_id",
+          "Position.position",
+          "Candidates.sourcing_date",
+          "Position.Company.company_name",
+          "User.id",
+          "User.name",
+        ],
+        order:order,
+        limit,
+        offset
+      }),
+      await Candidate.findAll({
+        attributes: [
+          "created_by",
+          [Sequelize.fn("COUNT", Sequelize.col("Candidates.id")), "candidate_count"],
+          [Sequelize.col("Candidates.sourcing_date"), "sourcing_date"],
+          [Sequelize.col("Position.id"), "position_id"],
+          [Sequelize.col("Position.company_id"), "company_id"],
+          [Sequelize.col("Position.position"), "position_name"],
+          [Sequelize.col("Position.Company.company_name"), "company_name"],
+          [Sequelize.col("User.id"), "id"],
+          [Sequelize.col("User.name"), "recruiter_name"],
+        ],
+        include: [
+          {
+            model: Position,
+            required: true,
+            attributes: [],
+           where: positionFilter,
+            include: [
+              {
+                model: Company,
+                required: true,
+                attributes: [],
+               where:companyFilter
+              },
+            ],
+          },
+          {
+            model :User,
+            required: true,
+            attributes: [],
+          }
+        ],
+        where:whereClause,
+        group: [
+          "Position.id",
+          "Position.company_id",
+          "Position.position",
+          "Candidates.sourcing_date",
+          "Position.Company.company_name",
+          "User.id",
+          "User.name",
+        ],
+      })
+    ]);
+    
+    const pages = Math.ceil(totalRecords.length / limit);
+    res.status(200).json({message: 'report fetched successfully!',
+      totalRecords: totalRecords.length,
+      pages: pages,
+      report: report
+    });	
+    
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).send("500 server error");
+  }
+};
