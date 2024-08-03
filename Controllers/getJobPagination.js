@@ -6,6 +6,7 @@ const { Op,Sequelize } = require("sequelize");
 const Users = require("../Models/userDetails");
 const assignRecruiter = require("../Models/assignRecruiter");
 const assignRecruiterLogs = require('../Models/assignRecruiterLogs');
+const excel = require("exceljs");
 
 Company.hasMany(Positions, { foreignKey: "company_id" });
 Positions.belongsTo(Company, { foreignKey: "company_id" });
@@ -221,10 +222,16 @@ exports.updatePositionStatus = async (req, res) => {
 exports.getAssignRecuitersLog = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = (page - 1) * limit;
+    let limit = parseInt(req.query.limit) || 10;
+    let offset = (page - 1) * limit;
 
     const filter = req.query.filter ? JSON.parse(req.query.filter) : "";
+    const download = req.query.download ? true : false;
+
+    if (download) {
+      limit = null;
+      offset = null;
+    }
     const {
       position,
       company,
@@ -352,6 +359,64 @@ exports.getAssignRecuitersLog = async (req, res) => {
     })
    ]);
 
+   if(download){
+    // Create Excel workbook and worksheet
+    const workbook = new excel.Workbook();
+    const worksheet = workbook.addWorksheet("assign recuiter log");
+
+    // Add headers to the worksheet
+
+    const headerRow = worksheet.addRow([
+      "Sr. No.",
+      "Assigned Date",
+      "End Date",
+      "Recruiter Name",
+      "Company Name",
+      "Company Position",
+      "Remarks"
+    ]);
+
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFD3D3D3" },
+      };
+    });
+
+    // Add data rows to the worksheet
+    report.forEach((re, index) => {
+      worksheet.addRow([
+        index + 1,
+        re.assigned_at,
+        re.removed_at ? re.removed_at : "On going",
+        re.User?.name,
+        re.Position.Company.company_name,
+        re.Position.position,
+        re.remarks
+      ]);
+    });
+
+    // Generate a unique filename for the Excel file
+
+    const filename = `Exported_atspositionwisecount.xlsx`;
+
+    // Save the workbook to a buffer
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    // Send the Excel file as a response
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${filename}"`
+    );
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.status(200).send(buffer);
+
+  }else{
    const pages = Math.ceil( totalRecords  / limit);
    return res.status(200).json({
      totalRecords: totalRecords,
@@ -359,7 +424,7 @@ exports.getAssignRecuitersLog = async (req, res) => {
      data: [...report],
      
    });
-    
+  }
   } catch (error) {
 
     console.error('Error getting assigned recruiters log:', error);
