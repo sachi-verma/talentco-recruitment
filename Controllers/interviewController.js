@@ -304,6 +304,76 @@ exports.getInterviewSchedule = async (req, res) => {
       }),
     ]);
 
+    if(download){
+      // Create Excel workbook and worksheet
+      const workbook = new excel.Workbook();
+      const worksheet = workbook.addWorksheet("interviewscheduled");
+
+      // Add headers to the worksheet
+
+      const headerRow = worksheet.addRow([
+        "Sr. No.",
+        "Scheduled Date",
+        "Candidate Name",
+        "Company Name",
+        "Position Name",
+        "Interview Round",
+        "Interview Mode",
+        "Interview Date",
+        "Interview Time",
+        "Interview Location",
+        "Interview Status",
+        "Interview Done",
+        "Interview Remarks",
+      ]);
+
+      headerRow.eachCell((cell) => {
+        cell.font = { bold: true };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFD3D3D3" },
+        };
+      });
+
+      // Add data rows to the worksheet
+      report.forEach((re, index) => {
+        worksheet.addRow([
+          index + 1,
+           re.scheduled_date,
+           re.Candidate.candidate,
+           re.Candidate.Position.Company.company_name,
+           re.Candidate.Position.position,
+           re.interview_round,
+           re.interview_mode,
+           re.interview_date,
+           re.interview_time,
+           re.interview_location,
+           re.interview_status,
+           re.interview_done,
+           re.interview_remarks,
+        ]);
+      });
+
+      // Generate a unique filename for the Excel file
+
+      const filename = `Exported_interviewscheduled.xlsx`;
+
+      // Save the workbook to a buffer
+      const buffer = await workbook.xlsx.writeBuffer();
+
+      // Send the Excel file as a response
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`
+      );
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.status(200).send(buffer);
+
+    }else{
     let records = report.length;
 
     // Log the results of the query
@@ -317,6 +387,7 @@ exports.getInterviewSchedule = async (req, res) => {
       pages: pages,
       Interview: report,
     });
+  }
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("500 server error");

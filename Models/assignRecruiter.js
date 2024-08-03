@@ -25,7 +25,7 @@ const assignRecruiter = sequelize.define('assignRecuiter',{
         }
     },
     created_at:{
-        type: DataTypes.DATEONLY
+        type: DataTypes.DATE
     },
     created_by:{
         type: DataTypes.INTEGER,

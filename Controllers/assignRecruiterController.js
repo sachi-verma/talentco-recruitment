@@ -39,12 +39,15 @@ exports.getRecruiter = async (req,res) => {
 exports.assignRecruiter = async (req, res) => {
     try {
         const position_id = req.params.id;
-        const { recruiter_id, user_id } = req.body;
+        const { recruiter_id, user_id, current_date } = req.body;
         //await Positions.update({ recruiter_assign }, {where: {id: position_id}});
         let assigned = 1;
         let errorinmail =false;
-        let date = new Date();
-        let created_at = date.toISOString().split('T')[0];
+        // let date = new Date();
+        // let created_at = date.toISOString().split('T')[0];
+        let created_at =  current_date;
+        let assigned_at = current_date.split('T')[0];
+
         
         let position = await Positions.findOne({
           include: [
@@ -67,10 +70,10 @@ exports.assignRecruiter = async (req, res) => {
           return res.status(404).json({error:"This recruiter already assigned for this position", position_id: position_id, recruiter_id:recruiter_id});
         }
         else{
-          await assignRecruiter.create({position_id, recruiter_id, created_at, created_by:user_id});
+          await assignRecruiter.create({position_id, recruiter_id, created_at:assigned_at, created_by:user_id});
           await Positions.update({recruiter_assign:assigned }, {where:{id:position_id}});
 
-          await assignRecruiterLogs.create({position_id, recruiter_id, created_at, created_by:user_id, active:1});
+          await assignRecruiterLogs.create({position_id, recruiter_id, created_at, created_by:user_id, active:1,assigned_at});
 
           let recruitername = recruiter.name;
           let recruiteremail = recruiter.email;
@@ -123,16 +126,18 @@ Talent Co Hr Services`,
   exports.deleteAssignRecruiter = async (req, res) => {
     try {
       const position_id = req.params.id;
-      const { recruiter_id, user_id } = req.body;
+      const { recruiter_id, user_id, current_date } = req.body;
       let notassigned = 0;
-      let date = new Date();
-      let removed_at = date.toISOString().split('T')[0];
+      // let date = new Date();
+      // let removed_at = date.toISOString().split('T')[0];
+      let removed_at = current_date.split('T')[0];
+      let updated_at= current_date;
 
   
       await assignRecruiter.destroy(
         {where: { position_id, recruiter_id }}
       );
-      await assignRecruiterLogs.update({removed_at, removed_by:user_id, active:0}, {where: {position_id, recruiter_id, removed_at:null, removed_by:null}});
+      await assignRecruiterLogs.update({removed_at, removed_by:user_id, active:0, updated_at}, {where: {position_id, recruiter_id, removed_at:null, removed_by:null}});
 
       let recruiterassigned = await assignRecruiter.findOne({ where:{ position_id}});
 
