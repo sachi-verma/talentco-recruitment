@@ -608,53 +608,100 @@ exports.getPositionWiseCount = async (req, res) => {
     //   limit,
     //   offset,
     // });
-    const report = await Candidate.findAll({
-      attributes: [
-        "position",
-        "candidate_status",
-        [Sequelize.fn("COUNT", Sequelize.col("Candidates.id")), "candidate_count"],
-        [Sequelize.col("Position.id"), "position_id"],
-        [Sequelize.col("Position.company_id"), "company_id"],
-        [Sequelize.col("Position.position"), "position_name"],
-        [Sequelize.col("Position.upload_date"), "upload_date"],
-        [Sequelize.col("Position.Company.company_name"), "company_name"],
-        [Sequelize.col("User.id"), "id"],
-      ],
-      include: [
-        {
-          model: Position,
-          required: true,
-          attributes: [],
-          where: positionFilter,
-          include: [
-            {
-              model: Company,
-              required: true,
-              attributes: [],
-              where:companyFilter
-            },
-          ],
-        },
-        {
-          model :Users,
-          required: true,
-          attributes: [],
-        }
-      ],
-      order: order,
-      limit,
-      offset,
-      where:whereClause,
-      group: [
-        "Candidates.candidate_status",
-        "Position.id",
-        "Position.company_id",
-        "Position.position",
-        "Position.upload_date",
-        "Position.Company.company_name",
-        "User.id"
-      ],
-    });
+    const [report, totalRecords] = await Promise.all([
+      await Candidate.findAll({
+        attributes: [
+          "position",
+          "candidate_status",
+          [Sequelize.fn("COUNT", Sequelize.col("Candidates.id")), "candidate_count"],
+          [Sequelize.col("Position.id"), "position_id"],
+          [Sequelize.col("Position.company_id"), "company_id"],
+          [Sequelize.col("Position.position"), "position_name"],
+          [Sequelize.col("Position.upload_date"), "upload_date"],
+          [Sequelize.col("Position.Company.company_name"), "company_name"],
+          [Sequelize.col("User.id"), "id"],
+        ],
+        include: [
+          {
+            model: Position,
+            required: true,
+            attributes: [],
+            where: positionFilter,
+            include: [
+              {
+                model: Company,
+                required: true,
+                attributes: [],
+                where:companyFilter
+              },
+            ],
+          },
+          {
+            model :Users,
+            required: true,
+            attributes: [],
+          }
+        ],
+        order: order,
+        limit,
+        offset,
+        where:whereClause,
+        group: [
+          "Candidates.candidate_status",
+          "Position.id",
+          "Position.company_id",
+          "Position.position",
+          "Position.upload_date",
+          "Position.Company.company_name",
+          "User.id"
+        ],
+      }),
+      await Candidate.findAll({
+        attributes: [
+          "position",
+          "candidate_status",
+          [Sequelize.fn("COUNT", Sequelize.col("Candidates.id")), "candidate_count"],
+          [Sequelize.col("Position.id"), "position_id"],
+          [Sequelize.col("Position.company_id"), "company_id"],
+          [Sequelize.col("Position.position"), "position_name"],
+          [Sequelize.col("Position.upload_date"), "upload_date"],
+          [Sequelize.col("Position.Company.company_name"), "company_name"],
+          [Sequelize.col("User.id"), "id"],
+        ],
+        include: [
+          {
+            model: Position,
+            required: true,
+            attributes: [],
+            where: positionFilter,
+            include: [
+              {
+                model: Company,
+                required: true,
+                attributes: [],
+                where:companyFilter
+              },
+            ],
+          },
+          {
+            model :Users,
+            required: true,
+            attributes: [],
+          }
+        ],
+        where:whereClause,
+        group: [
+          "Candidates.candidate_status",
+          "Position.id",
+          "Position.company_id",
+          "Position.position",
+          "Position.upload_date",
+          "Position.Company.company_name",
+          "User.id"
+        ],
+      })
+    ]);
+   
 
     if(download){
       // Create Excel workbook and worksheet
@@ -710,10 +757,10 @@ exports.getPositionWiseCount = async (req, res) => {
       res.status(200).send(buffer);
 
     }else{
-      const pages = Math.ceil(report.length / limit);
+      const pages = Math.ceil(totalRecords.length / limit);
       res.status(200).json({
         msg: "Fetched Successfully !!",
-        totalRecords: report.length,
+        totalRecords: totalRecords.length,
         pages: pages,
         report: report,
       });

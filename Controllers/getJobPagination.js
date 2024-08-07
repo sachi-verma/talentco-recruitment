@@ -138,9 +138,13 @@ exports.getJobByPage = async (req, res) => {
         upload_date: "upload_date",  
         company_name: "company_name",
         position: "position",
+        max_ctc: Sequelize.literal("CAST(SUBSTRING_INDEX(max_ctc, ' ', 1) AS DECIMAL(10, 2))"),
       };
-       
-      if (validColumns[orderBy]) {
+
+       if(orderBy === 'ctc' && validColumns[orderBy]){
+        order = [[validColumns[orderBy], orderDirection]];
+
+       }else if (validColumns[orderBy]) {
         order = [[Sequelize.literal(validColumns[orderBy]), orderDirection]];
       }
     }
